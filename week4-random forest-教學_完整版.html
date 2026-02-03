@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Molly Bot" />
+  <meta name="dcterms.date" content="2026-02-02" />
+  <title>week4-random forest-教學 v2（完整版｜Random Forest）</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      font-size: 11pt;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">week4-random forest-教學 v2（完整版｜Random
+Forest）</h1>
+<p class="author">Molly Bot</p>
+<p class="date">2026-02-02</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#part-0你要先記住的一句話"
+id="toc-part-0你要先記住的一句話">Part 0｜你要先記住的一句話</a></li>
+<li><a href="#part-1資料與目標老師-colab-q0q2"
+id="toc-part-1資料與目標老師-colab-q0q2">Part 1｜資料與目標（老師 Colab
+Q0–Q2）</a>
+<ul>
+<li><a href="#我們在解什麼問題分類" id="toc-我們在解什麼問題分類">1.1
+我們在解什麼問題？（分類）</a></li>
+<li><a href="#q1---資料清理data-cleaning"
+id="toc-q1---資料清理data-cleaning">1.2 Q1 - 資料清理（Data
+cleaning）</a></li>
+<li><a href="#q2---切訓練測試-固定亂數traintest-split-random-seed"
+id="toc-q2---切訓練測試-固定亂數traintest-split-random-seed">1.3 Q2 -
+切訓練/測試 + 固定亂數（train/test split + random seed）</a></li>
+</ul></li>
+<li><a href="#part-2random-forest-到底-random-在哪裡老師-colab-q3"
+id="toc-part-2random-forest-到底-random-在哪裡老師-colab-q3">Part
+2｜Random Forest 到底 random 在哪裡？（老師 Colab Q3）</a>
+<ul>
+<li><a href="#兩個-random抽資料-抽特徵"
+id="toc-兩個-random抽資料-抽特徵">2.1 兩個 random：抽資料 +
+抽特徵</a></li>
+<li><a href="#看圖就懂bootstrap-投票"
+id="toc-看圖就懂bootstrap-投票">2.2 看圖就懂：bootstrap + 投票</a>
+<ul>
+<li><a href="#為什麼要這樣做你一定要懂的原因"
+id="toc-為什麼要這樣做你一定要懂的原因">為什麼要這樣做？（你一定要懂的原因）</a></li>
+</ul></li>
+</ul></li>
+<li><a
+href="#part-3oob不用另外切-validation也能內建驗證你的森林老師-colab-q5"
+id="toc-part-3oob不用另外切-validation也能內建驗證你的森林老師-colab-q5">Part
+3｜OOB：不用另外切 validation，也能「內建驗證」你的森林（老師 Colab
+Q5）</a>
+<ul>
+<li><a href="#新手白話版oob-到底在幫你做什麼用一句話記"
+id="toc-新手白話版oob-到底在幫你做什麼用一句話記">新手白話版：OOB
+到底在幫你做什麼？（用一句話記）</a></li>
+<li><a href="#你最需要懂的-3-句話"
+id="toc-你最需要懂的-3-句話">你最需要懂的 3 句話</a></li>
+<li><a href="#為什麼-oob-通常比-training-低再白話一次"
+id="toc-為什麼-oob-通常比-training-低再白話一次">為什麼 OOB 通常比
+training 低？（再白話一次）</a></li>
+<li><a href="#先用一句話把-oob-講完" id="toc-先用一句話把-oob-講完">3.1
+先用一句話把 OOB 講完</a></li>
+<li><a href="#oob-是怎麼來的你腦中要有畫面"
+id="toc-oob-是怎麼來的你腦中要有畫面">3.2 OOB
+是怎麼來的？（你腦中要有畫面）</a>
+<ul>
+<li><a href="#白話例子小數字"
+id="toc-白話例子小數字">白話例子（小數字）</a></li>
+</ul></li>
+<li><a href="#為什麼-oob-會像-validation"
+id="toc-為什麼-oob-會像-validation">3.3 為什麼 OOB 會像
+validation？</a></li>
+<li><a
+href="#你一定會被問的觀察為什麼-oob-通常比-training-低老師-q5-的核心"
+id="toc-你一定會被問的觀察為什麼-oob-通常比-training-低老師-q5-的核心">3.4
+你一定會被問的觀察：為什麼 OOB 通常比 training 低？（老師 Q5
+的核心）</a></li>
+<li><a href="#可直接貼進-colab-的-codeoob-recall"
+id="toc-可直接貼進-colab-的-codeoob-recall">3.5 可直接貼進 Colab 的
+code（OOB + recall）</a>
+<ul>
+<li><a href="#你可能會問為什麼是用-y_train-來算-oob-recall"
+id="toc-你可能會問為什麼是用-y_train-來算-oob-recall">你可能會問：為什麼是用
+y_train 來算 OOB recall？</a></li>
+</ul></li>
+<li><a href="#常見踩雷我幫你先避掉" id="toc-常見踩雷我幫你先避掉">3.6
+常見踩雷（我幫你先避掉）</a></li>
+<li><a href="#小練習含解答" id="toc-小練習含解答">3.7
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-4confusion-matrix-recall你怎麼知道模型到底漏掉了誰老師-colab-q9q10-延伸"
+id="toc-part-4confusion-matrix-recall你怎麼知道模型到底漏掉了誰老師-colab-q9q10-延伸">Part
+4｜Confusion Matrix + Recall：你怎麼知道模型到底「漏掉了誰」？（老師
+Colab Q9–Q10 延伸）</a>
+<ul>
+<li><a href="#新手一定要會的一秒判讀法"
+id="toc-新手一定要會的一秒判讀法">新手一定要會的「一秒判讀法」</a></li>
+<li><a href="#precision-vs-recall最常搞混的差別用一句話記"
+id="toc-precision-vs-recall最常搞混的差別用一句話記">precision vs
+recall：最常搞混的差別（用一句話記）</a></li>
+<li><a href="#小例子同一個模型調-threshold-會發生什麼概念版"
+id="toc-小例子同一個模型調-threshold-會發生什麼概念版">小例子：同一個模型，調
+threshold 會發生什麼？（概念版）</a></li>
+<li><a href="#先用一句話把這章講完" id="toc-先用一句話把這章講完">4.1
+先用一句話把這章講完</a></li>
+<li><a href="#你先把-4-個格子背起來這是新手最常卡的"
+id="toc-你先把-4-個格子背起來這是新手最常卡的">4.2 你先把 4
+個格子背起來（這是新手最常卡的）</a>
+<ul>
+<li><a href="#超白話比喻你腦中要有畫面"
+id="toc-超白話比喻你腦中要有畫面">超白話比喻（你腦中要有畫面）</a></li>
+</ul></li>
+<li><a href="#recall-是什麼為什麼這堂課一直看它"
+id="toc-recall-是什麼為什麼這堂課一直看它">4.3 recall
+是什麼？為什麼這堂課一直看它？</a></li>
+<li><a href="#用一個小例子讓你真的懂不用怕"
+id="toc-用一個小例子讓你真的懂不用怕">4.4
+用一個小例子讓你真的懂（不用怕）</a></li>
+<li><a href="#可直接貼進-colab-的-codeconfusion-matrix-recall"
+id="toc-可直接貼進-colab-的-codeconfusion-matrix-recall">4.5 可直接貼進
+Colab 的 code（confusion matrix + recall）</a>
+<ul>
+<li><a href="#新手最常搞混的事我直接幫你釘住"
+id="toc-新手最常搞混的事我直接幫你釘住">新手最常搞混的事（我直接幫你釘住）</a></li>
+</ul></li>
+<li><a href="#小練習含解答-1" id="toc-小練習含解答-1">4.6
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-5q6---validation_curve調-n_estimators-樹變多到底在改善什麼"
+id="toc-part-5q6---validation_curve調-n_estimators-樹變多到底在改善什麼">Part
+5｜Q6 - validation_curve（調 n_estimators）— 樹變多到底在改善什麼？</a>
+<ul>
+<li><a href="#新手白話validation_curve-其實在回答-2-個問題"
+id="toc-新手白話validation_curve-其實在回答-2-個問題">新手白話：validation_curve
+其實在回答 2 個問題</a></li>
+<li><a href="#你怎麼選-n_estimators最穩的選法"
+id="toc-你怎麼選-n_estimators最穩的選法">你怎麼選
+n_estimators（最穩的選法）</a></li>
+<li><a href="#常見誤解直接避免"
+id="toc-常見誤解直接避免">常見誤解（直接避免）</a></li>
+<li><a href="#一句話先講完" id="toc-一句話先講完">5.1
+一句話先講完</a></li>
+<li><a href="#你要看的不是最高點而是-3-件事"
+id="toc-你要看的不是最高點而是-3-件事">5.2 你要看的不是“最高點”，而是 3
+件事</a></li>
+<li><a href="#超白話直覺n_estimators-變大會發生什麼"
+id="toc-超白話直覺n_estimators-變大會發生什麼">5.3
+超白話直覺：n_estimators 變大會發生什麼？</a></li>
+<li><a href="#可直接貼進-colab-的-codevalidation_curve-recall"
+id="toc-可直接貼進-colab-的-codevalidation_curve-recall">5.4 可直接貼進
+Colab 的 code（validation_curve + recall）</a>
+<ul>
+<li><a href="#新手常見踩雷" id="toc-新手常見踩雷">新手常見踩雷</a></li>
+</ul></li>
+<li><a href="#小練習含解答-2" id="toc-小練習含解答-2">5.5
+小練習（含解答）</a></li>
+</ul></li>
+<li><a href="#part-6q7---gap-趨勢-樹變多時訓練-vs-cv差距會怎麼變"
+id="toc-part-6q7---gap-趨勢-樹變多時訓練-vs-cv差距會怎麼變">Part 6｜Q7 -
+gap 趨勢— 樹變多時「訓練 vs CV」差距會怎麼變？</a>
+<ul>
+<li><a href="#一句話先講完-1" id="toc-一句話先講完-1">6.1
+一句話先講完</a></li>
+<li><a href="#什麼是-gap你要怎麼讀它"
+id="toc-什麼是-gap你要怎麼讀它">6.2 什麼是 gap？你要怎麼讀它？</a></li>
+<li><a href="#為什麼-n_estimators-通常會讓-gap-變得更可控"
+id="toc-為什麼-n_estimators-通常會讓-gap-變得更可控">6.3 為什麼
+n_estimators ↑ 通常會讓 gap 變得更可控？</a></li>
+<li><a href="#你在圖上該做的事老師要你觀察的重點"
+id="toc-你在圖上該做的事老師要你觀察的重點">6.4
+你在圖上該做的事（老師要你觀察的重點）</a></li>
+<li><a href="#可直接貼進-colab-的-code計算並畫-gap"
+id="toc-可直接貼進-colab-的-code計算並畫-gap">6.5 可直接貼進 Colab 的
+code（計算並畫 gap）</a></li>
+<li><a href="#常見踩雷新手很容易誤判"
+id="toc-常見踩雷新手很容易誤判">6.6 常見踩雷（新手很容易誤判）</a></li>
+<li><a href="#小練習含解答-3" id="toc-小練習含解答-3">6.7
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-7q8---heatmap-選參數-n_estimators-max_depth-怎麼挑穩定又不會太慢"
+id="toc-part-7q8---heatmap-選參數-n_estimators-max_depth-怎麼挑穩定又不會太慢">Part
+7｜Q8 - Heatmap 選參數— n_estimators × max_depth
+怎麼挑「穩定又不會太慢」？</a>
+<ul>
+<li><a href="#新手白話heatmap-就是一次看很多組參數"
+id="toc-新手白話heatmap-就是一次看很多組參數">新手白話：heatmap
+就是「一次看很多組參數」</a></li>
+<li><a href="#你要怎麼挑3-步驟最實用"
+id="toc-你要怎麼挑3-步驟最實用">你要怎麼挑：3 步驟（最實用）</a></li>
+<li><a href="#一個很重要的取捨觀念"
+id="toc-一個很重要的取捨觀念">一個很重要的取捨觀念</a></li>
+<li><a href="#一句話先講完-2" id="toc-一句話先講完-2">7.1
+一句話先講完</a></li>
+<li><a href="#你先理解兩個參數在控制什麼"
+id="toc-你先理解兩個參數在控制什麼">7.2
+你先理解兩個參數在控制什麼</a></li>
+<li><a href="#你看-heatmap-要用的選法新手也不會選錯"
+id="toc-你看-heatmap-要用的選法新手也不會選錯">7.3 你看 heatmap
+要用的選法（新手也不會選錯）</a></li>
+<li><a href="#可直接貼進-colab-的-code掃參數-畫-heatmap"
+id="toc-可直接貼進-colab-的-code掃參數-畫-heatmap">7.4 可直接貼進 Colab
+的 code（掃參數 + 畫 heatmap）</a>
+<ul>
+<li><a href="#你可能會遇到的小細節"
+id="toc-你可能會遇到的小細節">你可能會遇到的小細節</a></li>
+</ul></li>
+<li><a href="#小練習含解答-4" id="toc-小練習含解答-4">7.5
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-8q9---rf_final最後模型-用你選的參數訓練並把結果都印出來"
+id="toc-part-8q9---rf_final最後模型-用你選的參數訓練並把結果都印出來">Part
+8｜Q9 - rf_final（最後模型）— 用你選的參數訓練，並把結果都印出來</a>
+<ul>
+<li><a href="#一句話先講完-3" id="toc-一句話先講完-3">8.1
+一句話先講完</a></li>
+<li><a href="#你要先決定你選的參數是哪一組"
+id="toc-你要先決定你選的參數是哪一組">8.2
+你要先決定：你選的參數是哪一組？</a></li>
+<li><a href="#可直接貼進-colab-的-code訓練-rf_final-三種評估"
+id="toc-可直接貼進-colab-的-code訓練-rf_final-三種評估">8.3 可直接貼進
+Colab 的 code（訓練 rf_final + 三種評估）</a></li>
+<li><a href="#你要怎麼解讀結果新手不會迷路版"
+id="toc-你要怎麼解讀結果新手不會迷路版">8.4
+你要怎麼解讀結果？（新手不會迷路版）</a>
+<ul>
+<li><a href="#正常的情況你看到這樣就放心"
+id="toc-正常的情況你看到這樣就放心">正常的情況（你看到這樣就放心）</a></li>
+<li><a href="#不正常的警訊你看到這樣就要調參檢查資料"
+id="toc-不正常的警訊你看到這樣就要調參檢查資料">不正常的警訊（你看到這樣就要調參/檢查資料）</a></li>
+</ul></li>
+<li><a href="#小練習含解答-5" id="toc-小練習含解答-5">8.5
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-9q10---為什麼-oob-recall-接近-test-recall-是好消息泛化可信度"
+id="toc-part-9q10---為什麼-oob-recall-接近-test-recall-是好消息泛化可信度">Part
+9｜Q10 - 為什麼 OOB recall 接近 test recall 是好消息？（泛化可信度）</a>
+<ul>
+<li><a href="#一句話先講完-4" id="toc-一句話先講完-4">9.1
+一句話先講完</a></li>
+<li><a href="#你要先把三個-recall-的角色記住"
+id="toc-你要先把三個-recall-的角色記住">9.2 你要先把三個 recall
+的角色記住</a></li>
+<li><a href="#為什麼-oob-test-代表比較可靠"
+id="toc-為什麼-oob-test-代表比較可靠">9.3 為什麼 OOB ≈ test
+代表比較可靠？</a></li>
+<li><a href="#什麼情況下-oob-可能跟-test-差很多你要知道例外"
+id="toc-什麼情況下-oob-可能跟-test-差很多你要知道例外">9.4 什麼情況下
+OOB 可能跟 test 差很多？（你要知道例外）</a></li>
+<li><a href="#可直接貼進-colab-的小檢查把三個-recall-放在一起看"
+id="toc-可直接貼進-colab-的小檢查把三個-recall-放在一起看">9.5
+可直接貼進 Colab 的小檢查（把三個 recall 放在一起看）</a></li>
+<li><a href="#小練習含解答-6" id="toc-小練習含解答-6">9.6
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-10q11---feature-importance重要性-permutation-importance置換重要性-你要會解讀也要會懷疑"
+id="toc-part-10q11---feature-importance重要性-permutation-importance置換重要性-你要會解讀也要會懷疑">Part
+10｜Q11 - Feature importance（重要性）+ permutation
+importance（置換重要性）— 你要會解讀、也要會懷疑</a>
+<ul>
+<li><a href="#新手白話importance-是模型用什麼線索不是世界真相"
+id="toc-新手白話importance-是模型用什麼線索不是世界真相">新手白話：importance
+是「模型用什麼線索」，不是「世界真相」</a></li>
+<li><a href="#什麼時候你會解讀錯最常見-3-種"
+id="toc-什麼時候你會解讀錯最常見-3-種">什麼時候你會“解讀錯”？（最常見 3
+種）</a></li>
+<li><a href="#你怎麼用這個結果來幫助學習"
+id="toc-你怎麼用這個結果來幫助學習">你怎麼用這個結果來幫助學習？</a></li>
+<li><a href="#一句話先講完-5" id="toc-一句話先講完-5">10.1
+一句話先講完</a></li>
+<li><a href="#先講一個超重要觀念新手最常誤會"
+id="toc-先講一個超重要觀念新手最常誤會">10.2
+先講一個超重要觀念（新手最常誤會）</a></li>
+<li><a href="#兩種常見重要性你要知道差別"
+id="toc-兩種常見重要性你要知道差別">10.3
+兩種常見重要性：你要知道差別</a>
+<ul>
+<li><a href="#a-impurity-based-importance樹模型內建的重要性"
+id="toc-a-impurity-based-importance樹模型內建的重要性">(A)
+impurity-based importance（樹模型內建的重要性）</a></li>
+<li><a href="#b-permutation-importance置換重要性"
+id="toc-b-permutation-importance置換重要性">(B) permutation
+importance（置換重要性）</a></li>
+</ul></li>
+<li><a href="#可直接貼進-colab-的-coderf_final-的兩種重要性"
+id="toc-可直接貼進-colab-的-coderf_final-的兩種重要性">10.4 可直接貼進
+Colab 的 code（rf_final 的兩種重要性）</a></li>
+<li><a href="#常見踩雷" id="toc-常見踩雷">10.5 常見踩雷</a></li>
+<li><a href="#小練習含解答-7" id="toc-小練習含解答-7">10.6
+小練習（含解答）</a></li>
+</ul></li>
+<li><a
+href="#part-11q12---把-rf_final-的結果整理成一頁總表你交作業複習用"
+id="toc-part-11q12---把-rf_final-的結果整理成一頁總表你交作業複習用">Part
+11｜Q12 - 把 rf_final 的結果整理成「一頁總表」（你交作業/複習用）</a>
+<ul>
+<li><a href="#建議你輸出的-5-行可直接貼-colab"
+id="toc-建議你輸出的-5-行可直接貼-colab">建議你輸出的 5 行（可直接貼
+Colab）</a></li>
+</ul></li>
+<li><a href="#part-12q13---你要會回答這個模型可靠嗎限制與改進"
+id="toc-part-12q13---你要會回答這個模型可靠嗎限制與改進">Part 12｜Q13 -
+你要會回答「這個模型可靠嗎？」（限制與改進）</a></li>
+<li><a href="#part-13q14---考點清單exam-checklist可直接背版本"
+id="toc-part-13q14---考點清單exam-checklist可直接背版本">Part 13｜Q14 -
+考點清單（Exam checklist｜可直接背版本）</a>
+<ul>
+<li><a href="#用白話說出-rf-的兩個-randombootstrap-max_features"
+id="toc-用白話說出-rf-的兩個-randombootstrap-max_features">1) 用白話說出
+RF 的兩個 random（bootstrap + max_features）</a></li>
+<li><a href="#解釋-oob-是什麼為什麼像-validation"
+id="toc-解釋-oob-是什麼為什麼像-validation">2) 解釋 OOB 是什麼、為什麼像
+validation</a></li>
+<li><a href="#看懂-confusion-matrix並算出-recall"
+id="toc-看懂-confusion-matrix並算出-recall">3) 看懂 confusion
+matrix，並算出 recall</a></li>
+<li><a href="#用-validation_curve-解釋-n_estimators-增加時的變化與-gap"
+id="toc-用-validation_curve-解釋-n_estimators-增加時的變化與-gap">4) 用
+validation_curve 解釋 n_estimators 增加時的變化與 gap</a></li>
+<li><a href="#用-heatmap-選一組穩定區參數"
+id="toc-用-heatmap-選一組穩定區參數">5) 用 heatmap
+選一組「穩定區」參數</a></li>
+<li><a
+href="#解釋-feature-importance-與-permutation-importance且知道重要性因果"
+id="toc-解釋-feature-importance-與-permutation-importance且知道重要性因果">6)
+解釋 feature importance 與 permutation
+importance，且知道重要性≠因果</a></li>
+</ul></li>
+<li><a href="#下一步我會補上的內容你確認方向後我就狂補"
+id="toc-下一步我會補上的內容你確認方向後我就狂補">下一步我會補上的內容（你確認方向後我就狂補）</a></li>
+</ul>
+</nav>
+<h1 id="part-0你要先記住的一句話">Part 0｜你要先記住的一句話</h1>
+<p><strong>一句話總結：</strong> Random Forest（random forest: many
+randomized trees +
+voting）=「很多棵不太一樣的決策樹一起投票」，所以比單棵樹更穩。</p>
+<p><strong>你要背的 3 個重點：</strong> 1)
+決策樹很直覺，但容易不穩（high variance: sensitive to small data
+changes） 2) 森林用兩種隨機來做出「不太一樣的樹」（diversity: trees are
+different） 3) 不太一樣的樹一起投票，錯誤比較不會同時發生 →
+整體更準、更穩</p>
+<p><strong>最容易錯的 1 個地方：</strong> -
+以為「樹越多一定越好」。其實樹越多通常更穩，但會更慢；而且如果樹都很像，投票提升有限。</p>
+<hr />
+<h1 id="part-1資料與目標老師-colab-q0q2">Part 1｜資料與目標（老師 Colab
+Q0–Q2）</h1>
+<h2 id="我們在解什麼問題分類">1.1 我們在解什麼問題？（分類）</h2>
+<p>這個作業是「分類（classification: predict a class label）」問題。</p>
+<ul>
+<li><strong>X（features: input
+columns）</strong>：一堆你拿來做判斷的欄位，例如 Age、Cholesterol。</li>
+<li><strong>y（target/label: what to
+predict）</strong>：你要預測的答案欄位；老師用 Diag（診斷）。</li>
+</ul>
+<p><strong>超白話場景（Intuition story）</strong>
+你是醫師助理，你手上有： - 年齡、血壓、膽固醇、心電圖結果…
+你要做的事是： - 猜這個人「有沒有心臟病」（0=沒有、1=有）</p>
+<p><strong>小練習（Quick check）</strong> Q：如果你的 y
+是「身高」，那還是分類嗎？ A：不是。那是迴歸（regression: predict a
+numeric value）。</p>
+<p><strong>一句話總結：</strong> 這堂課先用分類當例子，因為最容易用
+confusion matrix/recall 看出模型好不好。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) X=輸入，y=要預測的答案 2)
+classification=預測類別（0/1） 3) 先把 y 變成二元，後面評估會更清楚</p>
+<p><strong>最容易錯的 1 個地方：</strong> -
+把「特徵」和「標籤」搞反。</p>
+<hr />
+<h2 id="q1---資料清理data-cleaning">1.2 Q1 - 資料清理（Data
+cleaning）</h2>
+<p>老師提醒：sklearn 的樹模型在新版能處理 missing value（missing values:
+absent entries），但你的資料裡常見會有 <code>?</code>
+這種字元，<strong>你要先把它變成真正的缺失（NaN）</strong>，不然模型會把它當成文字，直接炸掉。</p>
+<p>你要做到三件事： 1) 把 <code>?</code> 變成 NaN 2) 讓欄位都變
+numeric（numeric: numbers） 3) 把 Diag 轉成 binary（二元） - 0 →
+0（negative class: no disease） - &gt;0 → 1（positive class:
+disease）</p>
+<p>**直覺：為什麼要做這些？ - 模型只吃得下「數字」 - 而且我們希望 y 是
+0/1，這樣 recall（recall: TP/(TP+FN)）才好解釋</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) 讀資料（依你的 notebook 路徑調整）</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">&quot;heart.csv&quot;</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) 把 &#39;?&#39; 變成 NaN</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.replace(<span class="st">&quot;?&quot;</span>, np.nan)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) 轉成數值（無法轉的會變 NaN）</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col <span class="kw">in</span> df.columns:</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    df[col] <span class="op">=</span> pd.to_numeric(df[col], errors<span class="op">=</span><span class="st">&quot;coerce&quot;</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) Diag 二元化：0-&gt;0, &gt;0-&gt;1</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#    （假設 Diag 欄位存在）</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>df[<span class="st">&quot;Diag&quot;</span>] <span class="op">=</span> (df[<span class="st">&quot;Diag&quot;</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）</strong> - 你只做了
+<code>replace("?", np.nan)</code>，但沒 <code>to_numeric</code>： →
+有些欄位還是 object，模型會報錯。</p>
+<p><strong>小練習（Quick check）</strong>
+Q：<code>errors="coerce"</code> 的意思是什麼？ A：轉不了就變
+NaN（coerce: force invalid to NaN）。</p>
+<p><strong>一句話總結：</strong>
+清理的目的就是把資料變成「模型吃得下」的乾淨數字。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) <code>?</code> 不是
+missing，NaN 才是 missing 2) 欄位要 numeric 3) y（Diag）轉
+0/1，後面評估才清楚</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 忘記把 y 二元化，導致你後面
+confusion matrix/recall 解釋全亂掉。</p>
+<hr />
+<h2 id="q2---切訓練測試-固定亂數traintest-split-random-seed">1.3 Q2 -
+切訓練/測試 + 固定亂數（train/test split + random seed）</h2>
+<p>關鍵字： - random_state / seed（random seed: makes results
+reproducible） - train/test split（split data into train/test: hold out
+data for evaluation）</p>
+<p><strong>直覺（Intuition）</strong> Random Forest 很多地方都會隨機： -
+抽資料（bootstrap） - 抽特徵（max_features）</p>
+<p>所以如果你不固定
+random_state，你每次跑都不一樣，根本不知道自己到底學到什麼。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>RS <span class="op">=</span> <span class="dv">42</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df.drop(columns<span class="op">=</span>[<span class="st">&quot;Diag&quot;</span>])</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df[<span class="st">&quot;Diag&quot;</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    X, y,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    test_size<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span>RS,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    stratify<span class="op">=</span>y,  <span class="co"># 分層抽樣：讓 train/test 的 0/1 比例接近</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><strong>小練習（Quick check）</strong> Q：為什麼要
+<code>stratify=y</code>？ A：避免剛好抽到「train 幾乎都 0、test 很多
+1」這種不公平切法。</p>
+<p><strong>一句話總結：</strong> 固定 random_state
+讓你能「重現結果」，stratify 讓切分更公平。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) random_state=固定亂數 2)
+train 用來學，test 留到最後評估 3) stratify 讓 0/1 比例更平均</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 一直用 test set 調參（這會讓
+test 失去“最後考試”的意義）。</p>
+<hr />
+<h1 id="part-2random-forest-到底-random-在哪裡老師-colab-q3">Part
+2｜Random Forest 到底 random 在哪裡？（老師 Colab Q3）</h1>
+<h2 id="兩個-random抽資料-抽特徵">2.1 兩個 random：抽資料 + 抽特徵</h2>
+<p>Random Forest 的核心不是「神秘」，而是非常清楚的兩件事：</p>
+<ol type="1">
+<li><strong>bootstrap（bootstrapping: sample rows with
+replacement）</strong>
+<ul>
+<li>每棵樹都拿到一份「用有放回抽樣」抽出的訓練資料</li>
+</ul></li>
+<li><strong>max_features（feature subsampling: only some features per
+split）</strong>
+<ul>
+<li>每次樹要做 split（split: choose a
+feature+threshold）時，不是看全部特徵，而是看一部分</li>
+</ul></li>
+</ol>
+<h2 id="看圖就懂bootstrap-投票">2.2 看圖就懂：bootstrap + 投票</h2>
+<p><img
+src="/Users/moltbot/Desktop/WK4_RandomForest/diagrams/rf_bootstrap.png" /></p>
+<p><strong>直覺（Intuition｜白話解釋）</strong>
+你可以把每棵樹想成「一個朋友的意見」： -
+每個朋友看的資料不太一樣（bootstrap） -
+每個朋友思考時只看部分線索（max_features） 最後大家投票（voting）</p>
+<h3
+id="為什麼要這樣做你一定要懂的原因">為什麼要這樣做？（你一定要懂的原因）</h3>
+<p>如果每棵樹都一模一樣，投票就沒意義。</p>
+<p>我們要的是： - 每棵樹都「有點不一樣」 - 但每棵樹也不要太爛</p>
+<p>所以 random 的目的只有一個： &gt;
+<strong>讓樹彼此不太像（diversity），投票才能互相補洞。</strong></p>
+<p><strong>小練習（Quick check）</strong> Q：如果
+<code>max_features</code> 設超大（每次 split 幾乎看全部特徵），會怎樣？
+A：樹會變得很像 → 投票提升變小。</p>
+<p><strong>一句話總結：</strong> Random Forest 的 random
+是為了做出「多樣化的樹」。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) bootstrap=抽資料列 2)
+max_features=每次 split 抽特徵 3) 多樣化（diversity）讓投票有效</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 只背名詞，不知道「為什麼要
+random」。</p>
+<hr />
+<hr />
+<h1
+id="part-3oob不用另外切-validation也能內建驗證你的森林老師-colab-q5">Part
+3｜OOB：不用另外切 validation，也能「內建驗證」你的森林（老師 Colab
+Q5）</h1>
+<h3 id="新手白話版oob-到底在幫你做什麼用一句話記">新手白話版：OOB
+到底在幫你做什麼？（用一句話記）</h3>
+<ul>
+<li><strong>OOB 就是 Random Forest 的「內建模擬考」</strong>：不用另外切
+validation，就能先估你模型大概會不會翻車。</li>
+</ul>
+<h3 id="你最需要懂的-3-句話">你最需要懂的 3 句話</h3>
+<ol type="1">
+<li>每棵樹都用 bootstrap 抽資料 →
+所以每棵樹「沒抽到」一部分訓練資料</li>
+<li>沒抽到的那部分資料，就是那棵樹的 OOB</li>
+<li>把每筆資料「由沒看過它的那些樹」來投票，就得到 OOB 預測 → 用來算 OOB
+recall</li>
+</ol>
+<h3 id="為什麼-oob-通常比-training-低再白話一次">為什麼 OOB 通常比
+training 低？（再白話一次）</h3>
+<ul>
+<li>training：你讓學生寫「做過的考古題」</li>
+<li>OOB：你讓學生寫「沒做過的題目」</li>
+</ul>
+<p>所以 OOB 比 training
+低是正常，而且其實是好事：代表你在看比較接近真實的估計。</p>
+<h2 id="先用一句話把-oob-講完">3.1 先用一句話把 OOB 講完</h2>
+<p><strong>一句話總結：</strong> OOB（out-of-bag: rows not sampled for a
+tree）=「對某棵樹來說，它沒抽到的那些訓練資料」，可以拿來當那棵樹的『小考題』。</p>
+<h2 id="oob-是怎麼來的你腦中要有畫面">3.2 OOB
+是怎麼來的？（你腦中要有畫面）</h2>
+<p>Random Forest 每棵樹都會做 bootstrap（bootstrapping: sample rows with
+replacement）。</p>
+<p>這件事會自然產生兩種資料： -
+<strong>in-bag</strong>：被那棵樹抽到的資料（它用來學習） -
+<strong>out-of-bag
+(OOB)</strong>：沒被那棵樹抽到的資料（它用來測試）</p>
+<p><img
+src="/Users/moltbot/Desktop/WK4_RandomForest/diagrams/rf_oob.png" /></p>
+<h3 id="白話例子小數字">白話例子（小數字）</h3>
+<p>假設你的訓練集有 10 筆資料（1~10）。 Tree 1 bootstrap 抽 10
+次（有放回），可能抽到： - 1, 1, 2, 4, 4, 4, 5, 7, 8, 10</p>
+<p>那對 Tree 1 來說： - in-bag 可能是 {1,2,4,5,7,8,10} - OOB 可能是
+{3,6,9}</p>
+<p>Tree 1 沒看過 3/6/9，於是你就可以拿 3/6/9 來測 Tree 1。</p>
+<h2 id="為什麼-oob-會像-validation">3.3 為什麼 OOB 會像
+validation？</h2>
+<p>你可以把 OOB 想成： - 每棵樹都自帶一份「沒看過的考卷」 -
+森林整體也就能用這些 OOB 預測做一個「類 validation」的估計</p>
+<p>關鍵字： - OOB score（oob_score: built-in generalization estimate） -
+OOB recall（oob recall: recall computed from OOB predictions）</p>
+<h2
+id="你一定會被問的觀察為什麼-oob-通常比-training-低老師-q5-的核心">3.4
+你一定會被問的觀察：為什麼 OOB 通常比 training 低？（老師 Q5
+的核心）</h2>
+<p>因為： - <strong>training</strong> 的評估：模型在「看過的資料」上算 →
+通常偏樂觀 - <strong>OOB</strong> 的評估：更接近「沒看過的資料」 →
+比較像真實泛化（generalization）→ 通常更低</p>
+<p>用新手能懂的比喻： - training = 你背過的題目再考一次 - OOB =
+沒背過的題目突然小考</p>
+<p>所以 OOB 低是正常的，不是模型壞掉。</p>
+<h2 id="可直接貼進-colab-的-codeoob-recall">3.5 可直接貼進 Colab 的
+code（OOB + recall）</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> recall_score</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>RS <span class="op">=</span> <span class="dv">42</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>rf <span class="op">=</span> RandomForestClassifier(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span><span class="dv">300</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    max_features<span class="op">=</span><span class="st">&quot;sqrt&quot;</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    oob_score<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span>RS,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>rf.fit(X_train, y_train)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) OOB score（sklearn 內建）</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;OOB score:&quot;</span>, rf.oob_score_)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) OOB 預測：用 oob_decision_function_ 轉成 class prediction</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#    oob_decision_function_ 是每筆資料被 OOB 樹投票後的 class probability</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>proba_oob <span class="op">=</span> rf.oob_decision_function_[:, <span class="dv">1</span>]</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>y_pred_oob <span class="op">=</span> (proba_oob <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;OOB recall:&quot;</span>, recall_score(y_train, y_pred_oob))</span></code></pre></div>
+<h3
+id="你可能會問為什麼是用-y_train-來算-oob-recall">你可能會問：為什麼是用
+y_train 來算 OOB recall？</h3>
+<p>因為 OOB 是「在訓練集內部」做的驗證： - 這些 row 仍然屬於 training
+set - 只是『對某些樹來說』它們是沒看過的</p>
+<h2 id="常見踩雷我幫你先避掉">3.6 常見踩雷（我幫你先避掉）</h2>
+<ol type="1">
+<li><strong>忘記開 oob_score=True</strong>
+<ul>
+<li>就不會有 rf.oob_score_ / rf.oob_decision_function_</li>
+</ul></li>
+<li><strong>用 test set 調參</strong>
+<ul>
+<li>正確順序：先用 OOB/CV 調參 → 最後才碰 test</li>
+</ul></li>
+<li><strong>把 oob_score_ 當成 recall</strong>
+<ul>
+<li>oob_score_ 預設是 accuracy（accuracy: fraction correct）</li>
+<li>你要 recall 要自己算（像上面那段）</li>
+</ul></li>
+</ol>
+<h2 id="小練習含解答">3.7 小練習（含解答）</h2>
+<p>Q：如果你的資料正負類很不平衡（例如有病的人很少），為什麼你會更在意
+recall？</p>
+<p>A：因為你不想漏抓真正有病的人（FN 太多）。 Recall
+高代表你漏掉的少。</p>
+<p><strong>一句話總結：</strong> OOB 幫你在不額外切 validation
+的情況下，得到一個接近泛化的估計。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) OOB =
+對某棵樹沒抽到的訓練資料 2) OOB 通常比 training
+低是正常（比較像沒看過的考卷） 3) oob_score_ 多半是 accuracy；要 recall
+你要自己算</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 把 oob_score_ 當成
+recall，然後做出錯誤結論。</p>
+<hr />
+<h1
+id="part-4confusion-matrix-recall你怎麼知道模型到底漏掉了誰老師-colab-q9q10-延伸">Part
+4｜Confusion Matrix + Recall：你怎麼知道模型到底「漏掉了誰」？（老師
+Colab Q9–Q10 延伸）</h1>
+<h3 id="新手一定要會的一秒判讀法">新手一定要會的「一秒判讀法」</h3>
+<p><img
+src="/Users/moltbot/Desktop/WK4_RandomForest/diagrams/confusion_matrix_explain.png" /></p>
+<p>把混淆矩陣想成： - <strong>列（row）= 真實答案</strong> -
+<strong>欄（col）= 你預測的答案</strong></p>
+<p>所以： - 左上 = TN（真 0、判 0） - 右上 = FP（真 0、判 1） - 左下 =
+FN（真 1、判 0） - 右下 = TP（真 1、判 1）</p>
+<h3 id="precision-vs-recall最常搞混的差別用一句話記">precision vs
+recall：最常搞混的差別（用一句話記）</h3>
+<ul>
+<li>precision（precision: of predicted positives, how many are truly
+positive）= 「你說有病的人裡，真的有病的比例」→ 盯誤報 FP</li>
+<li>recall（recall/sensitivity: of true positives, how many you
+caught）= 「真的有病的人裡，你抓到多少」→ 盯漏報 FN</li>
+</ul>
+<p><strong>醫療篩檢常更在意
+recall</strong>：漏掉病人（FN）通常成本更高。</p>
+<h3
+id="小例子同一個模型調-threshold-會發生什麼概念版">小例子：同一個模型，調
+threshold 會發生什麼？（概念版）</h3>
+<ul>
+<li>threshold 變低：更容易判 1 → TP 可能增加、但 FP 也可能增加 → recall
+往往上升、precision 往往下降</li>
+<li>threshold 變高：更嚴格判 1 → FP 可能下降、但 TP 也可能下降 →
+precision 往往上升、recall 往往下降</li>
+</ul>
+<h2 id="先用一句話把這章講完">4.1 先用一句話把這章講完</h2>
+<p><strong>一句話總結：</strong> 混淆矩陣（confusion matrix: table of
+TP/FP/FN/TN）就是把「你判對/判錯」拆成 4 種情況；而
+recall（recall/sensitivity:
+TP/(TP+FN)）專門在乎「真正有病的人，你有沒有漏掉」。</p>
+<h2 id="你先把-4-個格子背起來這是新手最常卡的">4.2 你先把 4
+個格子背起來（這是新手最常卡的）</h2>
+<p>先定義：我們把「有病」當作正類（positive class = 1）。</p>
+<ul>
+<li><strong>TP（true positive）</strong>：真的有病（1），你也判有病（1）
+→ 抓到了</li>
+<li><strong>FN（false
+negative）</strong>：真的有病（1），你卻判沒病（0） →
+漏掉（最危險）</li>
+<li><strong>FP（false
+positive）</strong>：真的沒病（0），你卻判有病（1） → 誤報</li>
+<li><strong>TN（true negative）</strong>：真的沒病（0），你也判沒病（0）
+→ 判對</li>
+</ul>
+<h3 id="超白話比喻你腦中要有畫面">超白話比喻（你腦中要有畫面）</h3>
+<p>你在機場做安檢： - 正類（1）= 有帶危險物品 - FN =
+有帶危險物品但你放他過 → 這就是你最不想發生的
+所以很多安全/醫療情境會很在意 recall。</p>
+<h2 id="recall-是什麼為什麼這堂課一直看它">4.3 recall
+是什麼？為什麼這堂課一直看它？</h2>
+<p>公式：</p>
+<ul>
+<li><strong>recall = TP / (TP + FN)</strong></li>
+</ul>
+<p>白話： - 在「真的有病的人」裡，你抓到多少？</p>
+<p><strong>你要背的重點：</strong> - recall 越高 → 漏掉（FN）越少 -
+recall
+不管你把多少健康的人誤報成有病（FP），它只在乎「有病的人有沒有被你漏掉」</p>
+<blockquote>
+<p>這也是為什麼只看 accuracy（accuracy: fraction correct）很危險：
+如果有病的人本來就很少，你就算全部猜「沒病」 accuracy
+也可能很高，但其實你完全沒抓到病人。</p>
+</blockquote>
+<h2 id="用一個小例子讓你真的懂不用怕">4.4
+用一個小例子讓你真的懂（不用怕）</h2>
+<p>假設測試集有 10 個人： - 真的有病：4 人 - 真的沒病：6 人</p>
+<p>模型預測結果： - 抓到 3 個有病（TP=3） - 漏掉 1 個有病（FN=1）</p>
+<p>那 recall = 3/(3+1) = 0.75</p>
+<p>你看懂了嗎？它只看「4 個有病的人裡，你抓到幾個」。</p>
+<h2 id="可直接貼進-colab-的-codeconfusion-matrix-recall">4.5 可直接貼進
+Colab 的 code（confusion matrix + recall）</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix, ConfusionMatrixDisplay, recall_score</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) 用 test set 做預測</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> rf.predict(X_test)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) confusion matrix</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_pred)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cm)  <span class="co"># [[TN FP]</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>           <span class="co">#  [FN TP]]</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) 畫出來（更直覺）</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>disp <span class="op">=</span> ConfusionMatrixDisplay(confusion_matrix<span class="op">=</span>cm, display_labels<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">1</span>])</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>disp.plot(values_format<span class="op">=</span><span class="st">&#39;d&#39;</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Confusion Matrix&#39;</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) recall</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Test recall:&#39;</span>, recall_score(y_test, y_pred))</span></code></pre></div>
+<h3
+id="新手最常搞混的事我直接幫你釘住">新手最常搞混的事（我直接幫你釘住）</h3>
+<ol type="1">
+<li><code>confusion_matrix</code> 的排列順序是：
+<ul>
+<li>第一列：真實 0（negative）</li>
+<li>第二列：真實 1（positive）</li>
+<li>第一欄：預測 0</li>
+<li>第二欄：預測 1</li>
+</ul></li>
+</ol>
+<p>所以印出來是：</p>
+<ul>
+<li><code>[[TN, FP],  [FN, TP]]</code></li>
+</ul>
+<ol start="2" type="1">
+<li>不要把 TP/FP/FN/TN 的英文背錯：</li>
+</ol>
+<ul>
+<li>True/False 指的是「你判對還判錯」</li>
+<li>Positive/Negative 指的是「你判成 1 還是 0」</li>
+</ul>
+<h2 id="小練習含解答-1">4.6 小練習（含解答）</h2>
+<p>Q：如果你的 confusion matrix 是：</p>
+<ul>
+<li>TN=50, FP=10</li>
+<li>FN=20, TP=20</li>
+</ul>
+<p>請問 recall 是多少？</p>
+<p>A：recall = TP/(TP+FN) = 20/(20+20) = 0.5</p>
+<p><strong>一句話總結：</strong> Confusion matrix 把錯誤拆開看；recall
+專門盯住「漏抓」這件事。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) confusion matrix = [[TN
+FP],[FN TP]] 2) recall = TP/(TP+FN) 3) 醫療/安全情境通常更在意
+FN（漏掉）</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 把 confusion matrix
+的格子位置看反，導致你算出錯的 recall。</p>
+<hr />
+<h1
+id="part-5q6---validation_curve調-n_estimators-樹變多到底在改善什麼">Part
+5｜Q6 - validation_curve（調 n_estimators）— 樹變多到底在改善什麼？</h1>
+<h3
+id="新手白話validation_curve-其實在回答-2-個問題">新手白話：validation_curve
+其實在回答 2 個問題</h3>
+<ol type="1">
+<li><strong>這個參數從小到大，CV
+表現會不會變好？</strong>（有沒有必要加）</li>
+<li><strong>training 跟 CV 差多少？</strong>（gap
+大不大，會不會過擬合）</li>
+</ol>
+<h3 id="你怎麼選-n_estimators最穩的選法">你怎麼選
+n_estimators（最穩的選法）</h3>
+<ul>
+<li>先找 CV 曲線「上升 → 趨於平坦」的拐點附近（飽和點）</li>
+<li>在那附近選較小的 n_estimators（省時間、結果通常差不多）</li>
+</ul>
+<h3 id="常見誤解直接避免">常見誤解（直接避免）</h3>
+<ul>
+<li>「樹越多一定越準」：通常到某個點就飽和了，再加只是更慢</li>
+<li>「gap 變小一定更好」：如果 train/CV 都很低，那是
+underfitting，不是好</li>
+</ul>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q6
+validation_curve（n_estimators）</strong>。</p>
+</blockquote>
+<h2 id="一句話先講完">5.1 一句話先講完</h2>
+<p><strong>一句話總結：</strong> validation_curve（validation curve:
+performance vs hyperparameter）就是「把超參數從小到大掃一遍」，同時畫出
+training 表現與 cross-validation
+表現，讓你看出：樹數變多時，模型是變好、變穩，還是只是更會背書。</p>
+<h2 id="你要看的不是最高點而是-3-件事">5.2 你要看的不是“最高點”，而是 3
+件事</h2>
+<p>你看圖時，請只盯這三件：</p>
+<ol type="1">
+<li><strong>CV 表現（cross-validation
+score）是不是上升後趨於平坦？</strong>
+<ul>
+<li>如果已經平坦，再加樹通常只會更慢，提升很小。</li>
+</ul></li>
+<li><strong>training vs CV 的差距（gap）大不大？</strong>
+<ul>
+<li>gap 大：可能有過擬合（overfitting: fits training too well）</li>
+<li>gap 小：通常更穩，但也可能代表模型太弱（underfitting）</li>
+</ul></li>
+<li><strong>曲線是不是很抖？</strong>
+<ul>
+<li>很抖代表不穩（variance 高），樹數增加通常會讓曲線更平滑、更穩。</li>
+</ul></li>
+</ol>
+<h2 id="超白話直覺n_estimators-變大會發生什麼">5.3
+超白話直覺：n_estimators 變大會發生什麼？</h2>
+<ul>
+<li>n_estimators（number of trees）小：投票人少 → 結果容易受某幾棵樹影響
+→ 不穩</li>
+<li>n_estimators 大：投票人多 → 平均掉運氣 → 通常更穩</li>
+</ul>
+<p>重要提醒： - 樹變多通常
+<strong>不太會讓模型更“複雜”到爆炸過擬合</strong>（跟把 max_depth
+拉很深不一樣），它多半改善的是「穩定性」。</p>
+<h2 id="可直接貼進-colab-的-codevalidation_curve-recall">5.4 可直接貼進
+Colab 的 code（validation_curve + recall）</h2>
+<p><img
+src="/Users/moltbot/Desktop/WK4_RandomForest/diagrams/validation_curve_gap.png" /></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> validation_curve</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> make_scorer, recall_score</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>RS <span class="op">=</span> <span class="dv">42</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 你要掃的樹數（可依老師 notebook 調整）</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>param_range <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>]</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>rf <span class="op">=</span> RandomForestClassifier(</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    max_features<span class="op">=</span><span class="st">&quot;sqrt&quot;</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    oob_score<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span>RS,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 用 recall 當評分：我們關心漏抓病人（FN）</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>scorer <span class="op">=</span> make_scorer(recall_score)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>train_scores, valid_scores <span class="op">=</span> validation_curve(</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    rf,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    X_train,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    y_train,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    param_name<span class="op">=</span><span class="st">&quot;n_estimators&quot;</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    param_range<span class="op">=</span>param_range,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    scoring<span class="op">=</span>scorer,</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>train_mean <span class="op">=</span> train_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>train_std  <span class="op">=</span> train_scores.std(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>valid_mean <span class="op">=</span> valid_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>valid_std  <span class="op">=</span> valid_scores.std(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">5</span>))</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>plt.plot(param_range, train_mean, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>, label<span class="op">=</span><span class="st">&#39;Training recall&#39;</span>)</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>plt.fill_between(param_range, train_mean<span class="op">-</span>train_std, train_mean<span class="op">+</span>train_std, alpha<span class="op">=</span><span class="fl">0.15</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>plt.plot(param_range, valid_mean, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>, label<span class="op">=</span><span class="st">&#39;CV recall&#39;</span>)</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>plt.fill_between(param_range, valid_mean<span class="op">-</span>valid_std, valid_mean<span class="op">+</span>valid_std, alpha<span class="op">=</span><span class="fl">0.15</span>)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">&#39;log&#39;</span>)</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;n_estimators (log scale)&#39;</span>)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;Recall&#39;</span>)</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Validation Curve: n_estimators vs Recall&#39;</span>)</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h3 id="新手常見踩雷">新手常見踩雷</h3>
+<ol type="1">
+<li><strong>忘記用 log scale</strong>：小樹數跟大樹數差很多，用 log
+更容易看趨勢。</li>
+<li><strong>只看 training 曲線</strong>：training 幾乎都會很高，重點是
+CV。</li>
+<li><strong>把 recall 換成 accuracy 卻沒發現</strong>：accuracy
+可能會騙你（不平衡資料尤其危險）。</li>
+</ol>
+<h2 id="小練習含解答-2">5.5 小練習（含解答）</h2>
+<p>Q：如果你看到「training recall 一直很高，但 CV recall
+一直很低」，你會懷疑什麼？</p>
+<p>A：可能過擬合（overfitting），或資料處理/切分有問題；也可能是模型參數（例如
+max_depth 太深）讓樹太會背。</p>
+<p><strong>一句話總結：</strong> validation_curve 讓你用圖把「穩定性 vs
+過擬合」看清楚。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) 看 CV
+曲線是否趨於平坦（飽和點） 2) 看 gap 判斷是否過擬合 3) n_estimators
+主要改善穩定性（variance），不是一味增加複雜度</p>
+<p><strong>最容易錯的 1 個地方：</strong> -
+只挑最高點，忽略「附近一片都不錯」才代表穩。</p>
+<hr />
+<h1 id="part-6q7---gap-趨勢-樹變多時訓練-vs-cv差距會怎麼變">Part 6｜Q7 -
+gap 趨勢— 樹變多時「訓練 vs CV」差距會怎麼變？</h1>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q7（觀察 gap 隨 n_estimators
+變化）</strong>。</p>
+</blockquote>
+<h2 id="一句話先講完-1">6.1 一句話先講完</h2>
+<p><strong>一句話總結：</strong> gap = training 表現 − CV
+表現；樹變多（n_estimators ↑）通常會讓結果更穩、CV 曲線更平滑，gap
+多半會「縮小或趨於穩定」，而不是一直飄來飄去。</p>
+<h2 id="什麼是-gap你要怎麼讀它">6.2 什麼是 gap？你要怎麼讀它？</h2>
+<ul>
+<li>training recall：模型在訓練集上的召回率</li>
+<li>CV recall：模型在交叉驗證（cross-validation: repeated holdout
+folds）上的召回率</li>
+</ul>
+<p>定義： - <strong>gap = training recall − CV recall</strong></p>
+<p>直覺： - gap 大：可能過擬合（overfitting）或模型不穩 - gap
+小：通常更可靠；但也可能模型太弱（underfitting）</p>
+<h2 id="為什麼-n_estimators-通常會讓-gap-變得更可控">6.3 為什麼
+n_estimators ↑ 通常會讓 gap 變得更可控？</h2>
+<p>Random Forest 的投票本質是「平均化」： -
+樹少：運氣成分大（抽樣抽到什麼、某棵樹剛好很偏）→ 表現容易跳 -
+樹多：平均掉單棵樹的偏差 → CV 表現更穩、方差更低（lower variance）</p>
+<p>所以你常會看到： - training 曲線：很快就高（甚至飽和） - CV
+曲線：慢慢上升後趨於平坦 - gap：一開始可能偏大，後來縮小或穩定</p>
+<h2 id="你在圖上該做的事老師要你觀察的重點">6.4
+你在圖上該做的事（老師要你觀察的重點）</h2>
+<p>請你把你 Q6 畫出來的 validation curve 拿來做這件事：</p>
+<ol type="1">
+<li>先算出每個 n_estimators 的 gap</li>
+<li>畫一條 gap 曲線（或直接印表）</li>
+<li>找到「gap 已經不再明顯改善」的區間 → 那裡通常就是樹數的合理選擇</li>
+</ol>
+<h2 id="可直接貼進-colab-的-code計算並畫-gap">6.5 可直接貼進 Colab 的
+code（計算並畫 gap）</h2>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 假設你已經有：param_range, train_scores, valid_scores</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>train_mean <span class="op">=</span> train_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>valid_mean <span class="op">=</span> valid_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>gap <span class="op">=</span> train_mean <span class="op">-</span> valid_mean</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n, g <span class="kw">in</span> <span class="bu">zip</span>(param_range, gap):</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;n_estimators=</span><span class="sc">{</span>n<span class="sc">:&gt;4}</span><span class="ss"> | gap=</span><span class="sc">{</span>g<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">4</span>))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>plt.plot(param_range, gap, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">&#39;log&#39;</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;n_estimators (log scale)&#39;</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;gap = train - CV&#39;</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Gap trend vs n_estimators&#39;</span>)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h2 id="常見踩雷新手很容易誤判">6.6 常見踩雷（新手很容易誤判）</h2>
+<ol type="1">
+<li><strong>gap 變小 ≠ 一定更好</strong>
+<ul>
+<li>如果 train 跟 CV 都很低，gap 也會很小，但那是 underfitting。</li>
+</ul></li>
+<li><strong>只看 gap，不看 CV 的高度</strong>
+<ul>
+<li>正確看法：先確保 CV 夠高，再看 gap 是否合理。</li>
+</ul></li>
+<li><strong>樹數加到很大但 CV 早就平了</strong>
+<ul>
+<li>這只是讓你更慢，不會讓你更準。</li>
+</ul></li>
+</ol>
+<h2 id="小練習含解答-3">6.7 小練習（含解答）</h2>
+<p>Q：如果你發現 n_estimators 從 100 → 300 時，CV recall
+幾乎不再上升，但訓練時間增加很多，你會怎麼選？</p>
+<p>A：選接近飽和點的樹數（例如 100 或
+200），因為之後是「花很多時間換很小提升」。</p>
+<p><strong>一句話總結：</strong> Q7 要你用 gap
+把「穩定性」量化，看出樹數何時已經夠了。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) gap = train − CV 2)
+樹變多通常讓 CV 更穩、gap 更可控 3) 選參數要看：CV 高度 + gap +
+計算成本</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 只看 gap
+很小就以為好，卻沒發現 CV 其實也很低（模型太弱）。</p>
+<hr />
+<h1
+id="part-7q8---heatmap-選參數-n_estimators-max_depth-怎麼挑穩定又不會太慢">Part
+7｜Q8 - Heatmap 選參數— n_estimators × max_depth
+怎麼挑「穩定又不會太慢」？</h1>
+<h3 id="新手白話heatmap-就是一次看很多組參數">新手白話：heatmap
+就是「一次看很多組參數」</h3>
+<p><img
+src="/Users/moltbot/Desktop/WK4_RandomForest/diagrams/heatmap_selection.png" /></p>
+<p>你可以把它想成： - 每一格 = 一組（max_depth, n_estimators） -
+顏色越深 = CV recall 越高</p>
+<h3 id="你要怎麼挑3-步驟最實用">你要怎麼挑：3 步驟（最實用）</h3>
+<ol type="1">
+<li>先找深色區域（高 recall）</li>
+<li>從深色區域挑「max_depth 不要太深」的那一列（更不容易過擬合）</li>
+<li>再選「n_estimators 不要太大」的那一欄（更快）</li>
+</ol>
+<h3 id="一個很重要的取捨觀念">一個很重要的取捨觀念</h3>
+<ul>
+<li>你不是在找「最高分」，你是在找「高分 + 穩定 + 夠快」</li>
+<li>所以“附近一片都好”通常比“孤零零最高的一格”更值得選</li>
+</ul>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q8（用 heatmap 同時比較 n_estimators 與
+max_depth）</strong>。</p>
+</blockquote>
+<h2 id="一句話先講完-2">7.1 一句話先講完</h2>
+<p><strong>一句話總結：</strong> heatmap（heatmap: color map of
+scores）就是把「很多組參數」的 CV recall
+用顏色畫成一張圖；你要找的通常不是“最高一個點”，而是「附近一整片都不錯」的穩定區（stable
+region）。</p>
+<h2 id="你先理解兩個參數在控制什麼">7.2 你先理解兩個參數在控制什麼</h2>
+<ul>
+<li>n_estimators（number of trees）
+<ul>
+<li>越大通常越穩（variance 下降），但越慢</li>
+</ul></li>
+<li>max_depth（maximum depth）
+<ul>
+<li>越深：單棵樹越會切得很細 → 訓練表現可能更高</li>
+<li>但太深容易過擬合（overfitting）或讓模型更不穩</li>
+</ul></li>
+</ul>
+<p><strong>超白話：</strong> - n_estimators = 投票人數 - max_depth =
+每個投票人的「規則複雜度」</p>
+<h2 id="你看-heatmap-要用的選法新手也不會選錯">7.3 你看 heatmap
+要用的選法（新手也不會選錯）</h2>
+<p>請照這個順序挑：</p>
+<ol type="1">
+<li><strong>先找 CV recall 的高區（顏色最深的那一帶）</strong></li>
+<li>在高區裡面，優先選 <strong>max_depth
+不要過深</strong>（避免過擬合、也更可解釋）</li>
+<li>在 max_depth 合理的前提下，選 <strong>n_estimators
+不要過大</strong>（避免太慢）</li>
+<li>最佳選擇通常是：
+<ul>
+<li>「附近一片都好」</li>
+<li>「再往右/往下也不會再明顯變好」</li>
+</ul></li>
+</ol>
+<h2 id="可直接貼進-colab-的-code掃參數-畫-heatmap">7.4 可直接貼進 Colab
+的 code（掃參數 + 畫 heatmap）</h2>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_score</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> make_scorer, recall_score</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>RS <span class="op">=</span> <span class="dv">42</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>scorer <span class="op">=</span> make_scorer(recall_score)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>n_list <span class="op">=</span> [<span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>]</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>d_list <span class="op">=</span> [<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="va">None</span>]  <span class="co"># None = 不限制深度</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> d <span class="kw">in</span> d_list:</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> n_list:</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        rf <span class="op">=</span> RandomForestClassifier(</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>            n_estimators<span class="op">=</span>n,</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>            max_depth<span class="op">=</span>d,</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            max_features<span class="op">=</span><span class="st">&quot;sqrt&quot;</span>,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>            oob_score<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>            random_state<span class="op">=</span>RS,</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>            n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        scores <span class="op">=</span> cross_val_score(rf, X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span>scorer)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        rows.append({</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;max_depth&quot;</span>: <span class="bu">str</span>(d),</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;n_estimators&quot;</span>: n,</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;cv_recall_mean&quot;</span>: scores.mean(),</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>df_grid <span class="op">=</span> pd.DataFrame(rows)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>pivot <span class="op">=</span> df_grid.pivot(index<span class="op">=</span><span class="st">&quot;max_depth&quot;</span>, columns<span class="op">=</span><span class="st">&quot;n_estimators&quot;</span>, values<span class="op">=</span><span class="st">&quot;cv_recall_mean&quot;</span>)</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>))</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>sns.heatmap(pivot, annot<span class="op">=</span><span class="va">True</span>, fmt<span class="op">=</span><span class="st">&quot;.3f&quot;</span>, cmap<span class="op">=</span><span class="st">&quot;viridis&quot;</span>)</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&quot;CV Recall heatmap: max_depth × n_estimators&quot;</span>)</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&quot;n_estimators&quot;</span>)</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&quot;max_depth&quot;</span>)</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h3 id="你可能會遇到的小細節">你可能會遇到的小細節</h3>
+<ul>
+<li><code>max_depth=None</code> 代表不限制深度，通常比較容易
+overfit（視資料而定）。</li>
+<li>如果你覺得跑太慢：
+<ul>
+<li>把 n_list/d_list 減少</li>
+<li>或先用較粗的 grid 找到好區域，再細掃。</li>
+</ul></li>
+</ul>
+<h2 id="小練習含解答-4">7.5 小練習（含解答）</h2>
+<p>Q：如果你看到 heatmap 顯示： - max_depth=8, n_estimators=300 的
+recall 最高 - 但 max_depth=6, n_estimators=200 也幾乎一樣高
+你會選哪個？</p>
+<p>A：通常選 <strong>max_depth=6, n_estimators=200</strong>。
+原因：更快、較不容易過擬合，而且表現幾乎一樣（這就是「穩定區」的概念）。</p>
+<p><strong>一句話總結：</strong> Q8 要你學會用 heatmap
+做「取捨」，不是只追最高分。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) heatmap 看的是「一片穩定區」
+2) max_depth 太深容易過擬合 3) n_estimators 太大會很慢，找飽和點就好</p>
+<p><strong>最容易錯的 1 個地方：</strong> -
+只挑最高那一格，結果變慢、變不穩，實際泛化沒有更好。</p>
+<hr />
+<h1
+id="part-8q9---rf_final最後模型-用你選的參數訓練並把結果都印出來">Part
+8｜Q9 - rf_final（最後模型）— 用你選的參數訓練，並把結果都印出來</h1>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q9（訓練 rf_final + 印出 OOB / train /
+test 的評估）</strong>。</p>
+</blockquote>
+<h2 id="一句話先講完-3">8.1 一句話先講完</h2>
+<p><strong>一句話總結：</strong> Q9 就是把你在 Q8 heatmap
+選到的那組參數，真的拿來訓練一個最後模型
+rf_final，然後用同一套指標（尤其 recall）把 train / OOB / test
+都算出來，確認你的模型不是只在訓練集好看。</p>
+<h2 id="你要先決定你選的參數是哪一組">8.2
+你要先決定：你選的參數是哪一組？</h2>
+<p>你在 Q8 heatmap 應該會挑到一組「穩定區」的參數，例如： - n_estimators
+= 200 - max_depth = 6 （這只是示例，你要用你自己 heatmap 的選擇）</p>
+<p>我建議你記錄成兩個變數，避免你後面改來改去搞混：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>N_FINAL <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>D_FINAL <span class="op">=</span> <span class="dv">6</span></span></code></pre></div>
+<h2 id="可直接貼進-colab-的-code訓練-rf_final-三種評估">8.3 可直接貼進
+Colab 的 code（訓練 rf_final + 三種評估）</h2>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> recall_score, confusion_matrix, ConfusionMatrixDisplay</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>RS <span class="op">=</span> <span class="dv">42</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 你從 Q8 選到的參數（請用你自己的）</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>N_FINAL <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>D_FINAL <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>rf_final <span class="op">=</span> RandomForestClassifier(</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span>N_FINAL,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span>D_FINAL,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    max_features<span class="op">=</span><span class="st">&quot;sqrt&quot;</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    oob_score<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span>RS,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>rf_final.fit(X_train, y_train)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) Training recall</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>y_pred_train <span class="op">=</span> rf_final.predict(X_train)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>train_recall <span class="op">=</span> recall_score(y_train, y_pred_train)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) OOB recall</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co"># oob_decision_function_: (n_samples, n_classes) probabilities aggregated from OOB trees</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>proba_oob <span class="op">=</span> rf_final.oob_decision_function_[:, <span class="dv">1</span>]</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>y_pred_oob <span class="op">=</span> (proba_oob <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>oob_recall <span class="op">=</span> recall_score(y_train, y_pred_oob)</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Test recall</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>y_pred_test <span class="op">=</span> rf_final.predict(X_test)</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>test_recall <span class="op">=</span> recall_score(y_test, y_pred_test)</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;=== rf_final summary ===&quot;</span>)</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;params:&quot;</span>, {<span class="st">&quot;n_estimators&quot;</span>: N_FINAL, <span class="st">&quot;max_depth&quot;</span>: D_FINAL, <span class="st">&quot;max_features&quot;</span>: <span class="st">&quot;sqrt&quot;</span>})</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;OOB score (accuracy):&quot;</span>, rf_final.oob_score_)</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Train recall:&quot;</span>, train_recall)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;OOB recall:&quot;</span>, oob_recall)</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Test recall:&quot;</span>, test_recall)</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Confusion matrix on test</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, y_pred_test)</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>disp <span class="op">=</span> ConfusionMatrixDisplay(confusion_matrix<span class="op">=</span>cm, display_labels<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">1</span>])</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>disp.plot(values_format<span class="op">=</span><span class="st">&#39;d&#39;</span>)</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;rf_final — Confusion Matrix (test)&#39;</span>)</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h2 id="你要怎麼解讀結果新手不會迷路版">8.4
+你要怎麼解讀結果？（新手不會迷路版）</h2>
+<p>你會得到三個 recall： - <strong>Train
+recall</strong>：模型在「看過的訓練資料」的召回率 - <strong>OOB
+recall</strong>：模型在「訓練集內部的類驗證（內建小考）」的召回率 -
+<strong>Test recall</strong>：模型在「真正最後考試（test
+set）」的召回率</p>
+<h3 id="正常的情況你看到這樣就放心">正常的情況（你看到這樣就放心）</h3>
+<ul>
+<li>Train recall 通常最高</li>
+<li>OOB recall 比 train 低一些</li>
+<li>Test recall 接近 OOB recall（或在附近波動）</li>
+</ul>
+<h3
+id="不正常的警訊你看到這樣就要調參檢查資料">不正常的警訊（你看到這樣就要調參/檢查資料）</h3>
+<ol type="1">
+<li>Train 很高，但 OOB/Test 很低
+<ul>
+<li>可能過擬合（max_depth 太深常見）</li>
+</ul></li>
+<li>三個都很低
+<ul>
+<li>模型太弱（underfitting）或資料訊號本來就弱</li>
+</ul></li>
+<li>Test 明顯比 OOB 高很多
+<ul>
+<li>可能只是剛好 split 很幸運（lucky split）</li>
+<li>或 test 很小、波動大</li>
+</ul></li>
+</ol>
+<h2 id="小練習含解答-5">8.5 小練習（含解答）</h2>
+<p>Q：如果你看到 train recall=0.98，但 oob recall=0.60、test
+recall=0.58，你會先調哪個參數？</p>
+<p>A：先懷疑 max_depth 太深（樹太會背）。你可以先把 max_depth
+降低，或限制 min_samples_leaf。</p>
+<p><strong>一句話總結：</strong> Q9 是把「選參數」落地成 rf_final，並用
+train/OOB/test 三段式檢查泛化。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) rf_final 用你在 Q8 選到的參數
+2) OOB 是內建驗證，常常比 training 低 3) 最重要是 test 是否接近
+OOB（代表比較可靠）</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 只看 training recall
+很高就以為成功，卻沒看 OOB/test。</p>
+<hr />
+<h1
+id="part-9q10---為什麼-oob-recall-接近-test-recall-是好消息泛化可信度">Part
+9｜Q10 - 為什麼 OOB recall 接近 test recall
+是好消息？（泛化可信度）</h1>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q10（解釋 OOB recall 與 test recall
+的關係）</strong>。</p>
+</blockquote>
+<h2 id="一句話先講完-4">9.1 一句話先講完</h2>
+<p><strong>一句話總結：</strong> 如果 OOB recall 跟 test recall
+很接近，通常代表你的模型表現不是「剛好運氣好」；OOB
+這個內建驗證估計在你的資料上是可信的。</p>
+<h2 id="你要先把三個-recall-的角色記住">9.2 你要先把三個 recall
+的角色記住</h2>
+<ul>
+<li><strong>Train recall</strong>：看過的題目 → 通常偏樂觀</li>
+<li><strong>OOB recall</strong>：訓練集內建小考（類 validation）→
+通常更接近真實</li>
+<li><strong>Test recall</strong>：最後考試（你最在乎）</li>
+</ul>
+<h2 id="為什麼-oob-test-代表比較可靠">9.3 為什麼 OOB ≈ test
+代表比較可靠？</h2>
+<p>因為 OOB 的本質是： - 每筆訓練資料只用「沒看過它的那些樹」來預測 -
+所以它更像是在模擬「模型遇到新資料」的狀態</p>
+<p>如果你看到： - OOB recall ≈ test recall 代表： - 你用 OOB
+做的調參/評估，大方向沒有偏掉 - test set
+的結果也比較像真實泛化，而不是抽樣巧合</p>
+<h2 id="什麼情況下-oob-可能跟-test-差很多你要知道例外">9.4 什麼情況下
+OOB 可能跟 test 差很多？（你要知道例外）</h2>
+<ol type="1">
+<li><strong>test set 太小</strong></li>
+</ol>
+<ul>
+<li>小測試集波動大（variance 大），一次切分就可能差很多。</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>資料分佈不一致（distribution shift）</strong></li>
+</ol>
+<ul>
+<li>train/test 來源不一樣，OOB 估的是「訓練分佈內」的泛化，test
+卻是另一種分佈。</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>資料洩漏（data leakage）</strong></li>
+</ol>
+<ul>
+<li>你不小心把答案訊息漏到特徵裡，train/OOB 會假好看，test
+可能突然掉。</li>
+</ul>
+<h2 id="可直接貼進-colab-的小檢查把三個-recall-放在一起看">9.5
+可直接貼進 Colab 的小檢查（把三個 recall 放在一起看）</h2>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Train recall:&#39;</span>, train_recall)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;OOB recall:  &#39;</span>, oob_recall)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Test recall: &#39;</span>, test_recall)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 粗略判斷：OOB 和 test 的差距</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;abs(OOB - Test):&#39;</span>, <span class="bu">abs</span>(oob_recall <span class="op">-</span> test_recall))</span></code></pre></div>
+<p>你不用追求「完全一樣」，接近就好。</p>
+<h2 id="小練習含解答-6">9.6 小練習（含解答）</h2>
+<p>Q：如果你的 OOB recall = 0.72，test recall = 0.70，你會怎麼解讀？</p>
+<p>A：這是好現象，代表 OOB 估計大致可信，test 結果不是剛好幸運。</p>
+<p><strong>一句話總結：</strong> OOB ≈ test
+通常代表你的泛化評估比較可靠。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) Train 偏樂觀、OOB 更像
+validation、Test 是最後考試 2) OOB ≈ Test → 估計可信 3)
+差很多要懷疑：test 太小 / 分佈不同 / leakage</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 看到 OOB 跟 test
+不一樣就慌，其實小差距是正常波動。</p>
+<hr />
+<h1
+id="part-10q11---feature-importance重要性-permutation-importance置換重要性-你要會解讀也要會懷疑">Part
+10｜Q11 - Feature importance（重要性）+ permutation
+importance（置換重要性）— 你要會解讀、也要會懷疑</h1>
+<h3
+id="新手白話importance-是模型用什麼線索不是世界真相">新手白話：importance
+是「模型用什麼線索」，不是「世界真相」</h3>
+<ul>
+<li>模型可以把「相關」當作線索，但相關不等於因果。</li>
+</ul>
+<h3 id="什麼時候你會解讀錯最常見-3-種">什麼時候你會“解讀錯”？（最常見 3
+種）</h3>
+<ol type="1">
+<li>把重要性當因果</li>
+<li>忽略特徵相關性（A、B 其實同一件事）</li>
+<li>只看 top1，就說其他都不重要（其實可能是很多小貢獻加總）</li>
+</ol>
+<h3 id="你怎麼用這個結果來幫助學習">你怎麼用這個結果來幫助學習？</h3>
+<ul>
+<li>把前 5–10 名特徵當作「你回頭要查清楚意義」的清單</li>
+<li>用它來設計下一步：你要收集更可靠的特徵？或做更好的資料清理？</li>
+</ul>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q11（解釋重要性、並做 permutation
+importance）</strong>。</p>
+</blockquote>
+<h2 id="一句話先講完-5">10.1 一句話先講完</h2>
+<p><strong>一句話總結：</strong> feature importance（feature importance:
+how much a feature helps the
+model）告訴你模型「常用哪些特徵來做判斷」；permutation
+importance（permutation importance: shuffle one feature and see
+performance
+drop）更像是在問「如果把某特徵的資訊打亂，模型會變爛多少？」</p>
+<h2 id="先講一個超重要觀念新手最常誤會">10.2
+先講一個超重要觀念（新手最常誤會）</h2>
+<ul>
+<li><strong>重要性 ≠ 因果（importance ≠ causality）</strong>
+<ul>
+<li>重要性高不代表它「造成」心臟病，只代表模型用它來預測很有幫助。</li>
+</ul></li>
+<li><strong>root（根節點）不一定是最重要特徵</strong>
+<ul>
+<li>root 只是一棵樹的一個早期決策</li>
+<li>重要性是整座森林「累積」的貢獻</li>
+</ul></li>
+</ul>
+<h2 id="兩種常見重要性你要知道差別">10.3
+兩種常見重要性：你要知道差別</h2>
+<h3 id="a-impurity-based-importance樹模型內建的重要性">(A)
+impurity-based importance（樹模型內建的重要性）</h3>
+<ul>
+<li>直覺：看這個特徵在分裂時，讓資料變「更乾淨」的貢獻（impurity
+decrease）。</li>
+<li>優點：快、內建</li>
+<li>缺點：對某些型態的特徵可能偏好（例如可分裂點很多的連續特徵）</li>
+</ul>
+<h3 id="b-permutation-importance置換重要性">(B) permutation
+importance（置換重要性）</h3>
+<ul>
+<li>直覺：把某特徵的值打亂 → 模型如果變爛很多 → 表示它很重要</li>
+<li>優點：比較直觀、比較像「拿走資訊」的實驗</li>
+<li>缺點：特徵高度相關時（correlated
+features），打亂其中一個可能不會掉很多（因為另一個特徵補上了）</li>
+</ul>
+<h2 id="可直接貼進-colab-的-coderf_final-的兩種重要性">10.4 可直接貼進
+Colab 的 code（rf_final 的兩種重要性）</h2>
+<p><img
+src="/Users/moltbot/Desktop/WK4_RandomForest/diagrams/permutation_importance_explain.png" /></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.inspection <span class="im">import</span> permutation_importance</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> make_scorer, recall_score</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># (1) 內建 importance</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>imp <span class="op">=</span> pd.Series(rf_final.feature_importances_, index<span class="op">=</span>X_train.columns)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>imp <span class="op">=</span> imp.sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Top features (impurity-based):&#39;</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(imp.head(<span class="dv">15</span>))</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>))</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>imp.head(<span class="dv">15</span>).sort_values().plot(kind<span class="op">=</span><span class="st">&#39;barh&#39;</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Feature importance (impurity-based)&#39;</span>)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;importance&#39;</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># (2) permutation importance：用 test set 更合理</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>scorer <span class="op">=</span> make_scorer(recall_score)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>perm <span class="op">=</span> permutation_importance(</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    rf_final,</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    X_test,</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    y_test,</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    n_repeats<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    scoring<span class="op">=</span>scorer,</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>perm_imp <span class="op">=</span> pd.Series(perm.importances_mean, index<span class="op">=</span>X_test.columns).sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Top features (permutation importance, by recall drop):&#39;</span>)</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(perm_imp.head(<span class="dv">15</span>))</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>))</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>perm_imp.head(<span class="dv">15</span>).sort_values().plot(kind<span class="op">=</span><span class="st">&#39;barh&#39;</span>)</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Permutation importance (by recall)&#39;</span>)</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;mean importance&#39;</span>)</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h2 id="常見踩雷">10.5 常見踩雷</h2>
+<ol type="1">
+<li><strong>拿 importance 去做因果解釋</strong></li>
+<li><strong>只看一種 importance 就下結論</strong></li>
+<li><strong>特徵高度相關時，permutation importance
+會“分散功勞”</strong></li>
+</ol>
+<h2 id="小練習含解答-7">10.6 小練習（含解答）</h2>
+<p>Q：如果 A、B 兩個特徵高度相關（幾乎代表同一件事），為什麼 permutation
+importance 可能顯示兩者都不高？</p>
+<p>A：因為你打亂 A 時，B 還能補上資訊；打亂 B 時，A
+還能補上資訊，所以單獨打亂一個掉分不大。</p>
+<p><strong>一句話總結：</strong>
+重要性是「模型怎麼用資料」，不是「世界的因果」。</p>
+<p><strong>你要背的 3 個重點：</strong> 1) importance ≠ causality 2)
+impurity-based vs permutation importance 的差別 3) correlated features
+會影響解讀</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 把“重要”誤解成“造成”。</p>
+<hr />
+<h1
+id="part-11q12---把-rf_final-的結果整理成一頁總表你交作業複習用">Part
+11｜Q12 - 把 rf_final 的結果整理成「一頁總表」（你交作業/複習用）</h1>
+<blockquote>
+<p>這一段對齊老師
+Colab：<strong>Q12（把你算過的指標整理、報告化）</strong>。</p>
+</blockquote>
+<p><strong>一句話總結：</strong>
+你要能用一頁把模型說清楚：參數、train/OOB/test recall、test confusion
+matrix、以及最重要特徵。</p>
+<h3 id="建議你輸出的-5-行可直接貼-colab">建議你輸出的 5 行（可直接貼
+Colab）</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;params:&#39;</span>, rf_final.get_params())</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Train recall:&#39;</span>, train_recall)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;OOB recall:  &#39;</span>, oob_recall)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Test recall: &#39;</span>, test_recall)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;OOB score (accuracy):&#39;</span>, rf_final.oob_score_)</span></code></pre></div>
+<p>再加上： - test confusion matrix 圖 - permutation importance 前 10
+名</p>
+<hr />
+<h1 id="part-12q13---你要會回答這個模型可靠嗎限制與改進">Part 12｜Q13 -
+你要會回答「這個模型可靠嗎？」（限制與改進）</h1>
+<blockquote>
+<p>這一段對齊老師 Colab：<strong>Q13（模型限制/如何改進）</strong>。</p>
+</blockquote>
+<p><strong>一句話總結：</strong> 可靠 = 不只在 train 好看，而是 OOB/test
+也穩；改進方向通常是：資料處理、調參、以及評估方式。</p>
+<p>你可以從 4 個角度講： 1) 資料量與不平衡（imbalanced data） 2)
+過擬合/欠擬合（max_depth、min_samples_leaf） 3) 評估指標是否合理（recall
+vs precision） 4) 分佈是否一致（distribution shift）</p>
+<hr />
+<h1 id="part-13q14---考點清單exam-checklist可直接背版本">Part 13｜Q14 -
+考點清單（Exam checklist｜可直接背版本）</h1>
+<blockquote>
+<p>這區是「懶人背誦版」：每題都給你一句話答案 +
+必備關鍵字（中英對照）。</p>
+</blockquote>
+<h2 id="用白話說出-rf-的兩個-randombootstrap-max_features">1) 用白話說出
+RF 的兩個 random（bootstrap + max_features）</h2>
+<p><strong>答案（背這句）：</strong> - Random Forest
+的「random」主要來自兩件事： 1) <strong>Bootstrap
+rows</strong>：每棵樹用「有放回抽樣」抽出不同訓練資料（bagging） 2)
+<strong>Feature subsampling (<code>max_features</code>)</strong>：每次
+split 只看一部分特徵，讓樹彼此更不一樣（diversity）</p>
+<p><strong>關鍵字：</strong> bootstrap / bagging / max_features /
+diversity / variance reduction</p>
+<hr />
+<h2 id="解釋-oob-是什麼為什麼像-validation">2) 解釋 OOB 是什麼、為什麼像
+validation</h2>
+<p><strong>答案（背這句）：</strong> - <strong>OOB (Out-of-Bag)</strong>
+= 對某棵樹來說「沒被 bootstrap 抽到的樣本」。 - 因為這些 OOB
+樣本「那棵樹沒看過」，所以把它拿來評估就像一個
+<strong>validation-like</strong> 的泛化估計；通常比 training
+分數低、更接近 test。</p>
+<p><strong>關鍵字：</strong> OOB / unseen samples / validation-like /
+generalization</p>
+<hr />
+<h2 id="看懂-confusion-matrix並算出-recall">3) 看懂 confusion
+matrix，並算出 recall</h2>
+<p><strong>答案（背這句）：</strong> - confusion matrix： - True 1 &amp;
+Predict 1 = <strong>TP</strong> - True 1 &amp; Predict 0 =
+<strong>FN</strong>（漏診，醫療常最痛） - <strong>Recall (TPR)</strong>
+= <strong>TP / (TP + FN)</strong></p>
+<p><strong>關鍵字：</strong> confusion matrix / TP FN FP TN / recall /
+TPR / sensitivity</p>
+<hr />
+<h2 id="用-validation_curve-解釋-n_estimators-增加時的變化與-gap">4) 用
+validation_curve 解釋 n_estimators 增加時的變化與 gap</h2>
+<p><strong>答案（背這句）：</strong> - <code>n_estimators</code>
+增加（樹更多）通常會讓模型 <strong>更穩</strong>： - training recall
+可能小幅上升或趨於平穩 - CV recall 通常上升後趨於平台（plateau） -
+<strong>gap（train − CV）</strong>
+常見會變小或趨穩：因為投票平均掉單棵樹的高變異（variance）。</p>
+<p><strong>關鍵字：</strong> validation curve / n_estimators / plateau /
+gap / variance</p>
+<hr />
+<h2 id="用-heatmap-選一組穩定區參數">5) 用 heatmap
+選一組「穩定區」參數</h2>
+<p><strong>答案（背這句）：</strong> - 看 heatmap
+先找「大片顏色接近且偏高」的區域（stable region），不要只挑單一尖峰。 -
+在穩定區裡： - 選較小 <code>max_depth</code> 往往更可解釋、較不 overfit
+- 選足夠的 <code>n_estimators</code> 讓表現進入
+plateau（再加樹收益很小）</p>
+<p><strong>關鍵字：</strong> heatmap / stable region / max_depth /
+n_estimators / overfitting</p>
+<hr />
+<h2
+id="解釋-feature-importance-與-permutation-importance且知道重要性因果">6)
+解釋 feature importance 與 permutation
+importance，且知道重要性≠因果</h2>
+<p><strong>答案（背這句）：</strong> - <strong>Feature
+importance（impurity-based）</strong>：看某特徵在訓練中帶來多少 impurity
+reduction（常偏好高基數/連續特徵）。 - <strong>Permutation
+importance</strong>：把某特徵打亂（shuffle），看模型表現掉多少；比較像「模型依賴度」的測試。
+- 但不管哪種 importance：<strong>重要性 ≠ 因果（importance ≠
+causality）</strong>，只能說模型用它，不能說它造成結果。</p>
+<p><strong>關鍵字：</strong> impurity-based importance / permutation
+importance / shuffle / model reliance / importance≠causality</p>
+<h1
+id="下一步我會補上的內容你確認方向後我就狂補">下一步我會補上的內容（你確認方向後我就狂補）</h1>
+<p>下面這些章節我會以同樣模板寫到「30–40 頁完整版」：</p>
+<ul>
+<li>Part 3｜OOB（out-of-bag: validation-like check）怎麼算、為什麼通常比
+training 低</li>
+<li>Part 4｜validation_curve（validation curve: performance vs
+hyperparameter）怎麼看 gap、怎麼選 n_estimators</li>
+<li>Part 5｜Confusion matrix + recall（confusion matrix:
+TP/FP/FN/TN）怎麼讀、怎麼避免把 precision/recall 搞混</li>
+<li>Part 6｜Heatmap 調參（n_estimators × max_depth）怎麼取捨（準確率 vs
+穩定 vs 速度）</li>
+<li>Part 7｜Feature importance vs permutation importance（permutation
+importance: shuffle feature, see performance
+drop）怎麼解讀、哪些解讀是錯的</li>
+</ul>
+</body>
+</html>

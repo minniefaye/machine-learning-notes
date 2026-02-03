@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machine Learning Notes</title>
+
+<style>
+  :root{ --bg:#0b1020; --text:#e5e7eb; --link:#7dd3fc; --border:#23304a; --accent:#38bdf8; }
+  html,body{background:var(--bg); color:var(--text); margin:0; font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;}
+  .wrap{max-width:980px; margin:0 auto; padding:28px 18px;}
+  h1{font-size:26px; margin:0 0 14px; }
+  .search{display:flex; gap:10px; align-items:center; margin:0 0 18px;}
+  input{flex:1; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--text); outline:none;}
+  .card{background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; padding:14px 14px; margin:14px 0;}
+  h2{font-size:16px; margin:0 0 10px; border-left:4px solid var(--accent); padding-left:10px;}
+  ul{margin:0; padding-left:18px;}
+  li{margin:8px 0;}
+  a{color:var(--link); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .hidden{display:none;}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<h1>Machine Learning Notes</h1>
+<div class="search"><input id="q" type="text" placeholder="Search..."></div>
+<div class="card" data-section="1"><h2>Foundations</h2><ul>
+<li class="item"><a href="week1-ml-framing-data-教學_完整版.html">Framing Questions &amp; Data for ML</a></li>
+</ul></div>
+<div class="card" data-section="1"><h2>Regression</h2><ul>
+<li class="item"><a href="week3-regression-metrics-教學_完整版.html">Evaluating Regression Model Performance</a></li>
+<li class="item"><a href="week2-linear-regression-教學_完整版.html">Linear Regression Fit &amp; Regularization</a></li>
+</ul></div>
+<div class="card" data-section="1"><h2>Classification</h2><ul>
+<li class="item"><a href="week3-classification-metrics-教學_完整版.html">Evaluating Classification Models</a></li>
+<li class="item"><a href="week2-logistic-regression-教學_完整版.html">Logistic Regression：Classification &amp; Distribution Shift</a></li>
+</ul></div>
+<div class="card" data-section="1"><h2>Trees &amp; Ensembles</h2><ul>
+<li class="item"><a href="week4-decision tree-教學_完整版.html">Decision Tree</a></li>
+<li class="item"><a href="week4-random forest-教學_完整版.html">Random Forest</a></li>
+</ul></div>
+<div class="card" data-section="1"><h2>Tools</h2><ul>
+<li class="item"><a href="week2-dill-serialization-教學_完整版.html">Data Serialization with Dill</a></li>
+</ul></div>
+
+<script>
+const q = document.getElementById('q');
+function norm(s){ return (s||'').toLowerCase(); }
+function filter(){
+  const term = norm(q.value).trim();
+  const items = Array.from(document.querySelectorAll('.item'));
+  items.forEach(li=>{
+    const txt = norm(li.innerText);
+    li.classList.toggle('hidden', term && !txt.includes(term));
+  });
+  document.querySelectorAll('[data-section="1"]').forEach(sec=>{
+    const anyVisible = Array.from(sec.querySelectorAll('.item')).some(li=>!li.classList.contains('hidden'));
+    sec.classList.toggle('hidden', !anyVisible);
+  });
+}
+q.addEventListener('input', filter);
+</script>
+
+</div></body></html>
