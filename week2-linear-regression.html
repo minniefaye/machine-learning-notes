@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-03" />
+  <title>WK2｜Linear Regression Fit &amp; Regularization</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK2｜Linear Regression Fit &amp; Regularization</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-03</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#開場你要先記住的一句話"
+id="toc-開場你要先記住的一句話">開場：你要先記住的一句話</a>
+<ul>
+<li><a href="#關鍵字keywords最精簡解說版"
+id="toc-關鍵字keywords最精簡解說版">關鍵字（Keywords，最精簡解說版）</a></li>
+</ul></li>
+<li><a href="#延伸資源--快速了解內容"
+id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#workflow-地圖看圖就懂" id="toc-workflow-地圖看圖就懂">0)
+Workflow 地圖（看圖就懂）</a></li>
+<li><a href="#關鍵字keywords" id="toc-關鍵字keywords">1)
+關鍵字（Keywords）</a></li>
+<li><a href="#核心觀念與公式從你的-wk2-cheatsheet-整合"
+id="toc-核心觀念與公式從你的-wk2-cheatsheet-整合">2)
+核心觀念與公式（從你的 WK2 cheatsheet 整合）</a>
+<ul>
+<li><a href="#linear-regression-在做什麼"
+id="toc-linear-regression-在做什麼">2.1 Linear Regression
+在做什麼？</a></li>
+<li><a href="#必背公式表exam-must-know"
+id="toc-必背公式表exam-must-know">2.2 必背公式表（Exam
+must-know）</a></li>
+<li><a href="#residual-vs-error考試必考重要區分"
+id="toc-residual-vs-error考試必考重要區分">2.3 Residual vs
+Error（考試必考｜重要區分）</a>
+<ul>
+<li><a href="#residual殘差" id="toc-residual殘差">1)
+Residual（殘差）</a></li>
+<li><a href="#error誤差" id="toc-error誤差">2) Error（誤差）</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#模型直覺intuition" id="toc-模型直覺intuition">3)
+模型直覺（Intuition）</a></li>
+<li><a href="#q-題教學a-模式整合-colab-知識點"
+id="toc-q-題教學a-模式整合-colab-知識點">3) Q 題教學（A 模式｜整合 Colab
+知識點）</a>
+<ul>
+<li><a href="#q1---何時做-imputation補值才不會-data-leakage"
+id="toc-q1---何時做-imputation補值才不會-data-leakage">Q1 - 何時做
+imputation（補值）才不會 data leakage？</a></li>
+<li><a href="#q2---建立-features-labelsxy"
+id="toc-q2---建立-features-labelsxy">Q2 - 建立 features /
+labels（X/y）</a></li>
+<li><a href="#q3---traintest-split30-test-rs42"
+id="toc-q3---traintest-split30-test-rs42">Q3 - train/test split（30%
+test, RS=42）</a></li>
+<li><a href="#q4---訓練第一個線性回歸fit"
+id="toc-q4---訓練第一個線性回歸fit">Q4 -
+訓練第一個線性回歸（fit）</a></li>
+<li><a href="#q5---標準化係數coef-std讓大小可比較"
+id="toc-q5---標準化係數coef-std讓大小可比較">Q5 - 標準化係數（coef ×
+std）讓大小可比較</a></li>
+<li><a href="#q6---最大影響-feature-方向正負"
+id="toc-q6---最大影響-feature-方向正負">Q6 - 最大影響 feature +
+方向（正/負）</a></li>
+<li><a href="#q7---residual-與-sse-的關係"
+id="toc-q7---residual-與-sse-的關係">Q7 - residual 與 SSE
+的關係</a></li>
+<li><a href="#q8---計算-traintest-residuals"
+id="toc-q8---計算-traintest-residuals">Q8 - 計算 train/test
+residuals</a></li>
+<li><a href="#q9---baseline猜平均traintest-mse"
+id="toc-q9---baseline猜平均traintest-mse">Q9 -
+baseline（猜平均）train/test MSE</a></li>
+<li><a href="#q10---模型-fit-合理嗎用-mse-true-vs-predicted-圖"
+id="toc-q10---模型-fit-合理嗎用-mse-true-vs-predicted-圖">Q10 - 模型 fit
+合理嗎？（用 MSE + true vs predicted 圖）</a></li>
+<li><a href="#q11---產生-traintest-predictions依-notebook-要求命名"
+id="toc-q11---產生-traintest-predictions依-notebook-要求命名">Q11 - 產生
+train/test predictions（依 notebook 要求命名）</a></li>
+<li><a href="#q12---one-feature-model雖然贏-baseline為何仍-underfit"
+id="toc-q12---one-feature-model雖然贏-baseline為何仍-underfit">Q12 -
+one-feature model：雖然贏 baseline，為何仍 underfit？</a></li>
+<li><a href="#q13---overfitting-的證據是什麼"
+id="toc-q13---overfitting-的證據是什麼">Q13 - overfitting
+的證據是什麼？</a></li>
+<li><a href="#q14---unregularized-vs-regularizedgap-與-test-mse-怎麼變"
+id="toc-q14---unregularized-vs-regularizedgap-與-test-mse-怎麼變">Q14 -
+unregularized vs regularized：gap 與 test MSE 怎麼變？</a></li>
+<li><a href="#q15---coef-dataframelinear-vs-ridge"
+id="toc-q15---coef-dataframelinear-vs-ridge">Q15 - coef
+dataframe：Linear vs Ridge</a></li>
+<li><a href="#q16---loop-測-alphatraintest-mse0.01100"
+id="toc-q16---loop-測-alphatraintest-mse0.01100">Q16 - loop 測
+alpha：train/test MSE（0.01→100）</a></li>
+<li><a href="#q17---alpha-會怎麼影響-fit-與-generalization"
+id="toc-q17---alpha-會怎麼影響-fit-與-generalization">Q17 - alpha ↑
+會怎麼影響 fit 與 generalization？</a></li>
+<li><a href="#q18---lasso-vs-ridge係數用多少traintest-error-有何差異"
+id="toc-q18---lasso-vs-ridge係數用多少traintest-error-有何差異">Q18 -
+Lasso vs Ridge：係數用多少？train/test error 有何差異？</a></li>
+<li><a href="#q19---小樣本-高維-只有少數特徵重要選哪種正則"
+id="toc-q19---小樣本-高維-只有少數特徵重要選哪種正則">Q19 - 小樣本 +
+高維 + 只有少數特徵重要：選哪種正則？</a></li>
+</ul></li>
+<li><a href="#cheatsheet-重點補強只抓-linear-regression-regularization"
+id="toc-cheatsheet-重點補強只抓-linear-regression-regularization">4)
+Cheatsheet 重點補強（只抓 Linear Regression / Regularization）</a>
+<ul>
+<li><a href="#linear-regression-核心定義超短版"
+id="toc-linear-regression-核心定義超短版">4.1 Linear Regression
+核心定義（超短版）</a></li>
+<li><a href="#loss-functionsmse-vs-logloss只記你要用哪個"
+id="toc-loss-functionsmse-vs-logloss只記你要用哪個">4.2 Loss
+Functions：MSE vs LogLoss（只記你要用哪個）</a></li>
+<li><a href="#underfitting-vs-overfitting診斷表"
+id="toc-underfitting-vs-overfitting診斷表">4.3 Underfitting vs
+Overfitting（診斷表）</a></li>
+<li><a href="#biasvariance-tradeoff你要會講的那句"
+id="toc-biasvariance-tradeoff你要會講的那句">4.4 Bias–Variance
+tradeoff（你要會講的那句）</a></li>
+<li><a href="#regularizationridge-vs-lasso考前神器"
+id="toc-regularizationridge-vs-lasso考前神器">4.5 Regularization：Ridge
+vs Lasso（考前神器）</a></li>
+<li><a href="#baseline-model最低門檻"
+id="toc-baseline-model最低門檻">4.6 Baseline model（最低門檻）</a></li>
+<li><a href="#共線性collinearity與-heatmap線回歸係數解讀前必看"
+id="toc-共線性collinearity與-heatmap線回歸係數解讀前必看">4.7
+共線性（collinearity）與 heatmap（線回歸係數解讀前必看）</a></li>
+<li><a href="#scaled-coefficient係數比較的正確方式"
+id="toc-scaled-coefficient係數比較的正確方式">4.8 Scaled
+coefficient（係數比較的正確方式）</a></li>
+<li><a href="#pandas-的-vs-shape-陷阱sklearn-常爆"
+id="toc-pandas-的-vs-shape-陷阱sklearn-常爆">4.9 Pandas 的 [] vs
+[[]]（shape 陷阱，sklearn 常爆）</a></li>
+<li><a href="#常見考試陷阱exam-traps"
+id="toc-常見考試陷阱exam-traps">4.10 常見考試陷阱（Exam traps）</a></li>
+</ul></li>
+<li><a href="#考點清單exam-checklist可直接背版本"
+id="toc-考點清單exam-checklist可直接背版本">5) 考點清單（Exam
+checklist｜可直接背版本）</a></li>
+</ul>
+</nav>
+<h1 id="開場你要先記住的一句話">開場：你要先記住的一句話</h1>
+<p><strong>你要先記住的一句話：</strong><br />
+Linear Regression = 用一組係數（coefficients）做加權和來預測 <span
+class="math inline"><em>ŷ</em></span>，用 SSE/MSE
+把預測誤差壓到最低；Regularization（Ridge/Lasso）是在「不要讓係數亂飆」來提升
+generalization（泛化）。</p>
+<h2
+id="關鍵字keywords最精簡解說版">關鍵字（Keywords，最精簡解說版）</h2>
+<ul>
+<li><strong>feature（特徵）</strong>：input columns, <span
+class="math inline"><em>X</em></span></li>
+<li><strong>target/label（目標）</strong>：<span
+class="math inline"><em>y</em></span></li>
+<li><strong>coefficient（係數）</strong>：<span
+class="math inline"><em>β</em></span>（每個 feature 的權重）</li>
+<li><strong>intercept（截距）</strong>：<span
+class="math inline"><em>β</em><sub>0</sub></span>（不看任何 feature
+時的基準起點）</li>
+<li><strong>y-hat（ŷ，預測值）</strong>：predicted <span
+class="math inline"><em>y</em></span></li>
+<li><strong>residual（殘差）</strong>：<span
+class="math inline"><em>e</em> = <em>y</em> − <em>ŷ</em></span></li>
+<li><strong>SSE/MSE</strong>：sum/mean squared
+error（平方誤差和／平均平方誤差）</li>
+<li><strong>baseline</strong>：mean predictor（永遠猜 <span
+class="math inline">mean(<em>y</em><sub><em>t</em><em>r</em><em>a</em><em>i</em><em>n</em></sub>)</span>）</li>
+<li><strong>generalization（泛化）</strong>：在新資料上也表現好</li>
+<li><strong>Ridge/Lasso</strong>：L2/L1 regularization（正則化）</li>
+<li><strong>alpha（α）</strong>：正則強度（越大→coef 縮得越兇；variance↓
+bias↑）</li>
+</ul>
+<p><strong>你要背的 3 個重點：</strong></p>
+<ol type="1">
+<li>先比 baseline：至少要比「猜平均」好</li>
+<li>係數大小不能直接比（尺度不同）→ 要 standardize</li>
+<li>overfit 看 gap：train 很好、test 很差；regularization 常能把 gap
+拉回來</li>
+</ol>
+<p><strong>最容易錯的 3 個地方：</strong></p>
+<ul>
+<li>忘記把 target 從 features 裡 drop 掉（答案洩漏）</li>
+<li>用 test 的 mean/median 來補值（data leakage）</li>
+<li>用原始 coef 判斷重要性（尺度不同會誤判）</li>
+</ul>
+<hr />
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://gemini.google.com/share/d83b383bdf92" target="_blank" rel="noopener noreferrer">Gemini｜Linear Regression &amp; Regularization（快速複習）</a>
+  </li>
+  <li>
+    <a href="https://youtu.be/G9vhWWvclNE?si=V1ilRb-QohjNLZZD" target="_blank" rel="noopener noreferrer">YouTube｜ 機器學習的秘密語言｜用生活例子一次搞懂統計學（ML × Statistics）</a>
+  </li>
+</ul>
+<hr />
+<h1 id="workflow-地圖看圖就懂">0) Workflow 地圖（看圖就懂）</h1>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:16px 0;">
+<svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .b{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+    .t{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .s{fill:#a7b0c0;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} 
+  </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+    </marker>
+  </defs>
+
+  <rect class="b" x="20"  y="30" width="230" height="70" rx="12"/>
+  <text class="t" x="40" y="60">Define X/y</text>
+  <text class="s" x="40" y="82">features vs target</text>
+
+  <rect class="b" x="270" y="30" width="230" height="70" rx="12"/>
+  <text class="t" x="290" y="60">Split</text>
+  <text class="s" x="290" y="82">train/test (RS=42)</text>
+
+  <rect class="b" x="520" y="30" width="210" height="70" rx="12"/>
+  <text class="t" x="540" y="60">Fit</text>
+  <text class="s" x="540" y="82">LinearRegression</text>
+
+  <rect class="b" x="750" y="30" width="210" height="70" rx="12"/>
+  <text class="t" x="770" y="60">Evaluate</text>
+  <text class="s" x="770" y="82">MSE + plots</text>
+
+  <rect class="b" x="20"  y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="40" y="180">Diagnose</text>
+  <text class="s" x="40" y="202">under/overfit via gap</text>
+
+  <rect class="b" x="340" y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="360" y="180">Regularize</text>
+  <text class="s" x="360" y="202">Ridge/Lasso (alpha)</text>
+
+  <rect class="b" x="660" y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="680" y="180">Choose</text>
+  <text class="s" x="680" y="202">trade-off + report</text>
+
+  <path class="a" d="M250,65 L270,65"/>
+  <path class="a" d="M500,65 L520,65"/>
+  <path class="a" d="M730,65 L750,65"/>
+  <path class="a" d="M855,100 L170,150"/>
+  <path class="a" d="M320,185 L340,185"/>
+  <path class="a" d="M640,185 L660,185"/>
+</svg>
+</div>
+<hr />
+<h1 id="關鍵字keywords">1) 關鍵字（Keywords）</h1>
+<ul>
+<li><strong>feature（特徵）</strong>：input columns, X</li>
+<li><strong>target/label（目標）</strong>：y</li>
+<li><strong>coefficient（係數）</strong>：<span
+class="math inline"><em>β</em></span></li>
+<li><strong>intercept（截距）</strong>：<span
+class="math inline"><em>β</em><sub>0</sub></span></li>
+<li><strong>y-hat（ŷ，預測值）</strong>：predicted y</li>
+<li><strong>residual（殘差）</strong>：<span
+class="math inline"><em>e</em> = <em>y</em> − <em>ŷ</em></span></li>
+<li><strong>SSE/MSE</strong>：sum/mean squared error</li>
+<li><strong>baseline</strong>：mean predictor（永遠猜平均）</li>
+<li><strong>generalization</strong>：在新資料上也表現好</li>
+<li><strong>Ridge/Lasso</strong>：L2/L1 regularization</li>
+<li><strong>alpha</strong>：正則強度</li>
+</ul>
+<hr />
+<h1 id="核心觀念與公式從你的-wk2-cheatsheet-整合">2)
+核心觀念與公式（從你的 WK2 cheatsheet 整合）</h1>
+<h2 id="linear-regression-在做什麼">2.1 Linear Regression
+在做什麼？</h2>
+<p><strong>關鍵字（Keywords）：</strong> - supervised learning -
+continuous outcome - linear combination - loss minimization</p>
+<p><strong>老師提醒（Instructor note）：</strong> - Linear Regression
+預測的是 <strong>連續值（continuous outcome）</strong>。 - 它用 features
+<span class="math inline"><em>X</em></span> 的線性組合去預測 target
+<span class="math inline"><em>y</em></span>。</p>
+<p><strong>直覺（Intuition）：</strong> -
+把它想成「找一條線（或超平面）」，讓整體預測偏差最小。</p>
+<p><strong>看圖就懂（Mental model）：</strong> -
+你在找的是：讓所有點的「垂直距離」（residuals）加總後最小的那條線。</p>
+<hr />
+<h2 id="必背公式表exam-must-know">2.2 必背公式表（Exam must-know）</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Component</th>
+<th>Formula / Notation</th>
+<th>一句話註解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prediction（預測）</td>
+<td><span
+class="math inline"><em>ŷ</em> = <em>β</em><sub>0</sub> + <em>β</em><sub>1</sub><em>x</em><sub>1</sub> + ⋯ + <em>β</em><sub><em>n</em></sub><em>x</em><sub><em>n</em></sub></span></td>
+<td>features 的線性加權和</td>
+</tr>
+<tr>
+<td>Residual（殘差）</td>
+<td><span
+class="math inline"><em>e</em> = <em>y</em> − <em>ŷ</em></span></td>
+<td>真實值 - 預測值</td>
+</tr>
+<tr>
+<td>Loss (SSE)</td>
+<td><span
+class="math inline">∑(<em>y</em> − <em>ŷ</em>)<sup>2</sup></span></td>
+<td>模型在最小化的目標（平方誤差和）</td>
+</tr>
+<tr>
+<td>Metric (MSE)</td>
+<td><span class="math inline">MSE = SSE/<em>n</em></span></td>
+<td>把 SSE 平均化，方便比較</td>
+</tr>
+</tbody>
+</table>
+<p><strong>你要背的 3 個重點：</strong></p>
+<ol type="1">
+<li><span class="math inline"><em>ŷ</em></span> 是 prediction</li>
+<li>residual = <span
+class="math inline"><em>y</em> − <em>ŷ</em></span></li>
+<li>SSE 是 loss；MSE 是 SSE 的平均（metric）</li>
+</ol>
+<p><strong>最容易錯的 1 個地方：</strong> - 把 SSE/MSE 的角色搞混：SSE
+是「目標函數」，MSE 常用來「報告表現」。</p>
+<hr />
+<h2 id="residual-vs-error考試必考重要區分">2.3 Residual vs
+Error（考試必考｜重要區分）</h2>
+<p><strong>老師提醒（TA session focus）：</strong> 這題很可能會考。</p>
+<h3 id="residual殘差">1) Residual（殘差）</h3>
+<ul>
+<li><strong>Definition：</strong> residual
+是你「真的算得出來」的量，因為它用的是你手上有的資料（observed
+y）。</li>
+<li><strong>Formula：</strong> <span
+class="math inline">Residual = <em>y</em> − <em>ŷ</em></span></li>
+</ul>
+<h3 id="error誤差">2) Error（誤差）</h3>
+<ul>
+<li><strong>直覺：</strong> error 是「真實世界的真值（true function /
+true y）和你的預測的差」，但真實世界的 true function 通常你不知道。</li>
+<li>所以：在機器學習實作裡，你常能算的是 residual；error
+是理論上概念。</li>
+</ul>
+<p><strong>一句話總結：</strong> - residual = 你用資料算得到的誤差 -
+error = 你理論上想逼近的真實誤差（通常不可直接觀測）</p>
+<hr />
+<h1 id="模型直覺intuition">3) 模型直覺（Intuition）</h1>
+<p>把線性回歸想成： - 你有一堆化合物描述子（descriptors） -
+每個描述子有一個「加分/扣分」權重（coef） - 全部加總得到預測
+potency（pIC50）</p>
+<blockquote>
+<p>重要：線性回歸不是在「畫線」，而是在「找到一組 <span
+class="math inline"><em>β</em></span> 讓 SSE 最小」。</p>
+</blockquote>
+<hr />
+<h1 id="q-題教學a-模式整合-colab-知識點">3) Q 題教學（A 模式｜整合 Colab
+知識點）</h1>
+<blockquote>
+<p>下面每題都附「你要學什麼」「怎麼想」「可直接貼 Colab
+code」「常見踩雷」「背誦重點」。</p>
+</blockquote>
+<h2 id="q1---何時做-imputation補值才不會-data-leakage">Q1 - 何時做
+imputation（補值）才不會 data leakage？</h2>
+<p><strong>一句話學習目標：</strong> 你能把「正確補值時機」講清楚。</p>
+<p><strong>老師提醒（會扣分）：</strong> 任何用 mean/median
+這種「從資料學出來的統計量」都只能用 train 算。</p>
+<p><strong>參考答案（A 模式｜直接背）：</strong> - <strong>split → fit
+imputer on train → transform train/test</strong>。</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 先補值再 split（偷看 test
+的統計量）。</p>
+<hr />
+<h2 id="q2---建立-features-labelsxy">Q2 - 建立 features /
+labels（X/y）</h2>
+<p><strong>一句話學習目標：</strong> 你能正確切出 X 與
+y，避免把答案放進特徵。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong>（target 欄名依
+notebook 為準）：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># target 以 notebook 的 Cellular_pIC50 為例</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> data.drop(columns<span class="op">=</span>[<span class="st">&#39;Cellular_pIC50&#39;</span>])</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>labels   <span class="op">=</span> data[<span class="st">&#39;Cellular_pIC50&#39;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;X shape:&#39;</span>, features.shape)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;y shape:&#39;</span>, labels.shape)</span></code></pre></div>
+<p><strong>常見踩雷：</strong> - 忘記 drop target →
+模型偷看答案（cheating）。</p>
+<p><strong>一句話總結：</strong> X 是你用來猜的資訊，y
+是答案；答案不能混進去。</p>
+<hr />
+<h2 id="q3---traintest-split30-test-rs42">Q3 - train/test split（30%
+test, RS=42）</h2>
+<p><strong>一句話學習目標：</strong> 你能產生 4 個資料集並可重現。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>features_train, features_test, labels_train, labels_test <span class="op">=</span> train_test_split(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    features, labels,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    test_size<span class="op">=</span><span class="fl">0.30</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(features_train.shape, features_test.shape)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(labels_train.shape, labels_test.shape)</span></code></pre></div>
+<p><strong>你要背的 1 個重點：</strong> random_state 是「可重現」。</p>
+<hr />
+<h2 id="q4---訓練第一個線性回歸fit">Q4 - 訓練第一個線性回歸（fit）</h2>
+<p><strong>一句話學習目標：</strong> 你會 fit model，並產生 train/test
+predictions。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>linreg <span class="op">=</span> LinearRegression()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>linreg.fit(features_train, labels_train)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>train_preds <span class="op">=</span> linreg.predict(features_train)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>test_preds  <span class="op">=</span> linreg.predict(features_test)</span></code></pre></div>
+<p><strong>老師提醒：</strong> 一定要同時做 train/test 預測，才看得出
+overfit。</p>
+<hr />
+<h2 id="q5---標準化係數coef-std讓大小可比較">Q5 - 標準化係數（coef ×
+std）讓大小可比較</h2>
+<p><strong>一句話學習目標：</strong> 你能比較「哪個 feature
+影響最大」。</p>
+<p><strong>直覺：</strong> - coef 本身受單位影響（mm vs g vs 0/1） -
+乘上 std 相當於問：「這個 feature 變動一個常見幅度（1
+std）會讓預測變多少？」</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>raw_coef <span class="op">=</span> linreg.coef_</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>stds <span class="op">=</span> features_train.std().values</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>standardized_coef <span class="op">=</span> raw_coef <span class="op">*</span> stds</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, sc <span class="kw">in</span> <span class="bu">zip</span>(features_train.columns, standardized_coef):</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(name, sc)</span></code></pre></div>
+<p><strong>常見踩雷：</strong> - 用 test 的 std
+來標準化（雖然這題不會直接爆，但習慣上 train-only 更乾淨）。</p>
+<hr />
+<h2 id="q6---最大影響-feature-方向正負">Q6 - 最大影響 feature +
+方向（正/負）</h2>
+<p><strong>一句話學習目標：</strong> 你能把「係數」翻成人話。</p>
+<p><strong>看圖就懂（口訣）：</strong> -
+<code>abs(standardized_coef)</code> 最大 → 影響最大 - sign 決定方向： -
+正：feature ↑ → <span class="math inline"><em>ŷ</em></span> ↑ -
+負：feature ↑ → <span class="math inline"><em>ŷ</em></span> ↓</p>
+<p><strong>參考答案（A 模式｜模板）</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> <span class="bu">int</span>(np.argmax(np.<span class="bu">abs</span>(standardized_coef)))</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;largest feature:&#39;</span>, features_train.columns[idx])</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;standardized coef:&#39;</span>, standardized_coef[idx])</span></code></pre></div>
+<hr />
+<h2 id="q7---residual-與-sse-的關係">Q7 - residual 與 SSE 的關係</h2>
+<p><strong>一句話學習目標：</strong>
+你能把「殘差」跟「loss」接起來。</p>
+<p><strong>答案（可直接背）：</strong> - residual = <span
+class="math inline"><em>y</em> − <em>ŷ</em></span> - SSE = <span
+class="math inline">∑(<em>y</em><sub><em>i</em></sub> − <em>ŷ</em><sub><em>i</em></sub>)<sup>2</sup></span>
+- MSE = SSE/n</p>
+<p><strong>老師提醒：</strong> SSE/MSE 本質就是把 residual
+先平方再加總/平均。</p>
+<hr />
+<h2 id="q8---計算-traintest-residuals">Q8 - 計算 train/test
+residuals</h2>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>train_residuals <span class="op">=</span> labels_train <span class="op">-</span> train_preds</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>test_residuals  <span class="op">=</span> labels_test  <span class="op">-</span> test_preds</span></code></pre></div>
+<hr />
+<h2 id="q9---baseline猜平均traintest-mse">Q9 -
+baseline（猜平均）train/test MSE</h2>
+<p><strong>一句話學習目標：</strong> 你能證明「模型真的比亂猜強」。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>baseline_train <span class="op">=</span> np.full_like(labels_train, labels_train.mean(), dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>baseline_test  <span class="op">=</span> np.full_like(labels_test,  labels_train.mean(), dtype<span class="op">=</span><span class="bu">float</span>)  <span class="co"># 用 train mean</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;baseline train MSE:&#39;</span>, mean_squared_error(labels_train, baseline_train))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;baseline test  MSE:&#39;</span>, mean_squared_error(labels_test, baseline_test))</span></code></pre></div>
+<p><strong>最容易錯的 1 個地方：</strong> baseline_test 用 test
+mean（不乾淨，偏 leakage）。</p>
+<hr />
+<h2 id="q10---模型-fit-合理嗎用-mse-true-vs-predicted-圖">Q10 - 模型 fit
+合理嗎？（用 MSE + true vs predicted 圖）</h2>
+<p><strong>一句話學習目標：</strong> 你能把「數字 + 圖」一起下結論。</p>
+<p><strong>看圖就懂（判讀口訣）：</strong> - 點雲接近對角線 y=x →
+趨勢有抓到 - 系統性偏移：某區域都低估/高估 → 模型假設不足</p>
+<p><strong>參考答案（A 模式｜作業答題模板）</strong> - 若 model
+train/test MSE 都明顯低於 baseline，通常代表有學到訊號。 - 若 train MSE
+很低但 test MSE 高很多（gap 大），代表開始 overfit。</p>
+<hr />
+<h2 id="q11---產生-traintest-predictions依-notebook-要求命名">Q11 - 產生
+train/test predictions（依 notebook 要求命名）</h2>
+<p><strong>一句話學習目標：</strong> 你會正確產生 predict
+變數（避免拿錯資料集）。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>train_preds <span class="op">=</span> linreg.predict(features_train)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>test_preds  <span class="op">=</span> linreg.predict(features_test)</span></code></pre></div>
+<hr />
+<h2 id="q12---one-feature-model雖然贏-baseline為何仍-underfit">Q12 -
+one-feature model：雖然贏 baseline，為何仍 underfit？</h2>
+<p><strong>一句話學習目標：</strong> 你能辨認「特徵不足 → 欠擬合」。</p>
+<p><strong>直覺：</strong> - 只用一個
+feature，模型能抓到一點點趨勢，所以可能贏 baseline -
+但因為資訊太少，train/test 兩邊都不夠好（都高 MSE）</p>
+<p><strong>參考答案（A 模式｜答題句）</strong> - one-feature model 的
+train/test MSE 都比 full model
+高，代表模型太簡單、抓不到足夠訊號（underfitting）。</p>
+<hr />
+<h2 id="q13---overfitting-的證據是什麼">Q13 - overfitting
+的證據是什麼？</h2>
+<p><strong>一句話學習目標：</strong> 你能用「gap」說明 overfit。</p>
+<p><strong>答案（可直接背）：</strong> - train error 很低、test error
+很高（gap 大）就是 overfit。</p>
+<p><strong>常見踩雷：</strong> - 只看 train 說很準（那只是背答案）。</p>
+<hr />
+<h2 id="q14---unregularized-vs-regularizedgap-與-test-mse-怎麼變">Q14 -
+unregularized vs regularized：gap 與 test MSE 怎麼變？</h2>
+<p><strong>一句話學習目標：</strong> 你能判斷 regularization
+是否改善泛化。</p>
+<p><strong>參考答案（A 模式｜判讀模板）</strong> - 若 regularized model
+的 test MSE 下降，且 train-test gap 變小：通常代表 generalization 改善。
+- 若 alpha 太大，train/test 都變差：過度 regularization → underfit。</p>
+<hr />
+<h2 id="q15---coef-dataframelinear-vs-ridge">Q15 - coef
+dataframe：Linear vs Ridge</h2>
+<p><strong>一句話學習目標：</strong> 你能把係數變化「表格化」來說明
+shrinkage。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>coef_df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;Linear_coef&#39;</span>: linreg_small_st.coef_,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;Ridge_coef&#39;</span> : ridge_small_st.coef_</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>}, index<span class="op">=</span>features_train.columns)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>coef_df</span></code></pre></div>
+<hr />
+<h2 id="q16---loop-測-alphatraintest-mse0.01100">Q16 - loop 測
+alpha：train/test MSE（0.01→100）</h2>
+<p><strong>一句話學習目標：</strong> 你能用一個 loop 建立 alpha
+直覺。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>alphas <span class="op">=</span> [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="fl">1.0</span>, <span class="fl">10.0</span>, <span class="fl">100.0</span>]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> []</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a <span class="kw">in</span> alphas:</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    ridge <span class="op">=</span> Ridge(alpha<span class="op">=</span>a)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    ridge.fit(features_train_small_st, labels_train_small)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    tr <span class="op">=</span> ridge.predict(features_train_small_st)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    te <span class="op">=</span> ridge.predict(features_test_st)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    results.append({</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;alpha&#39;</span>: a,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;train_mse&#39;</span>: mean_squared_error(labels_train_small, tr),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;test_mse&#39;</span>: mean_squared_error(labels_test, te)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>ridge_results_df <span class="op">=</span> pd.DataFrame(results)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>ridge_results_df</span></code></pre></div>
+<hr />
+<h2 id="q17---alpha-會怎麼影響-fit-與-generalization">Q17 - alpha ↑
+會怎麼影響 fit 與 generalization？</h2>
+<p><strong>一句話學習目標：</strong> 用一句話說出 bias-variance
+trade-off。</p>
+<p><strong>答案（可直接背）：</strong> - alpha ↑ → 係數更小 → train
+error ↑；test error 常先降（少 overfit）再升（變 underfit）。</p>
+<hr />
+<h2 id="q18---lasso-vs-ridge係數用多少traintest-error-有何差異">Q18 -
+Lasso vs Ridge：係數用多少？train/test error 有何差異？</h2>
+<p><strong>一句話學習目標：</strong> 你知道 L1 會做 feature
+selection。</p>
+<p><strong>答案（可直接背）：</strong> - Ridge：多數係數縮小但不為 0。 -
+Lasso：很多係數變 0，只留下少數特徵（更稀疏）。</p>
+<hr />
+<h2 id="q19---小樣本-高維-只有少數特徵重要選哪種正則">Q19 - 小樣本 +
+高維 + 只有少數特徵重要：選哪種正則？</h2>
+<p><strong>一句話學習目標：</strong> 你能依情境選 Ridge/Lasso。</p>
+<p><strong>參考答案（A 模式｜典型）</strong> - 如果你相信只有少數
+descriptors 真的 relevant：優先試
+<strong>Lasso</strong>（會把不重要的係數壓成 0）。 -
+如果很多特徵高度相關、你不希望硬選一個：Ridge 通常更穩。</p>
+<hr />
+<h1 id="cheatsheet-重點補強只抓-linear-regression-regularization">4)
+Cheatsheet 重點補強（只抓 Linear Regression / Regularization）</h1>
+<blockquote>
+<p>下面這段是我把你 WK2 cheatsheet（Google Docs
+OCR）裡「跟線回歸/正則化最相關」的內容，整理成可以直接貼作業/直接背的版本。</p>
+</blockquote>
+<h2 id="linear-regression-核心定義超短版">4.1 Linear Regression
+核心定義（超短版）</h2>
+<ul>
+<li><strong>Definition：</strong> supervised learning model predicting a
+<strong>continuous outcome</strong>（連續值 target y），用 features X
+的線性組合。</li>
+<li><strong>Goal：</strong> 找到「best fit」= 最小化 loss（這章用
+SSE/MSE）。</li>
+<li><strong>Mental model：</strong> 找一條讓
+residuals（殘差）整體最小的線/平面。</li>
+</ul>
+<h2 id="loss-functionsmse-vs-logloss只記你要用哪個">4.2 Loss
+Functions：MSE vs LogLoss（只記你要用哪個）</h2>
+<ul>
+<li><strong>Linear Regression → MSE/SSE</strong>：在乎「數字差多遠」
+<ul>
+<li>MSE = (1/n) Σ(y-ŷ)²（平方讓大錯更痛、正負不會抵消）</li>
+</ul></li>
+<li>（對照）<strong>Logistic Regression →
+LogLoss</strong>：在乎「機率有多自信、且是否答對」</li>
+</ul>
+<p><strong>考試陷阱（必背）：</strong> - ❌ 不要用 MSE 做 classification
+- ❌ 不要用 LogLoss 做 regression</p>
+<h2 id="underfitting-vs-overfitting診斷表">4.3 Underfitting vs
+Overfitting（診斷表）</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>狀態</th>
+<th>症狀</th>
+<th>直覺</th>
+<th>常見修法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Underfitting（高 bias）</td>
+<td>train 高錯、test 高錯</td>
+<td>模型太簡單，學不夠</td>
+<td>加特徵/提高複雜度</td>
+</tr>
+<tr>
+<td>Overfitting（高 variance）</td>
+<td>train 低錯、test 高錯（gap 大）</td>
+<td>背答案、記噪音</td>
+<td>regularization / 更多資料 / 降複雜度</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一句話口訣：</strong> - Overfitting = practice
+exam（train）爆強，real exam（test）爆爛。</p>
+<h2 id="biasvariance-tradeoff你要會講的那句">4.4 Bias–Variance
+tradeoff（你要會講的那句）</h2>
+<ul>
+<li>model complexity ↑ → bias ↓ 但 variance ↑（更容易 overfit）</li>
+<li>regularization ↑ → variance ↓ 但 bias ↑（可能 underfit）</li>
+<li>目標：最小化 <strong>total error</strong>（不是只追 bias 或
+variance）。</li>
+</ul>
+<h2 id="regularizationridge-vs-lasso考前神器">4.5 Regularization：Ridge
+vs Lasso（考前神器）</h2>
+<p><strong>Ridge (L2)</strong> - 機制：把 coef 往 0
+縮小（shrink），但通常不會變 0 - 適用：features
+高度相關（collinearity）且你想「全部留著但更穩」</p>
+<p><strong>Lasso (L1)</strong> - 機制：把部分 coef 壓成 0（sparsity）→
+feature selection - 適用：高維且你相信只有少數 features 真的有用 -
+注意：相關特徵群（correlated group）時，Lasso 可能「隨機挑代表」→ 0
+不代表不重要</p>
+<p><strong>Alpha（超短記憶）：</strong> - α=0：等於沒正則（OLS） -
+α↑：更強正則 → coef 更小 → variance ↓ 但 bias ↑</p>
+<p><strong>超短口訣：</strong> - OLS = 原始線回歸 - Ridge = OLS +
+係數不要太大（Shrink） - Lasso = OLS + 係數可以變 0（Select）</p>
+<h2 id="baseline-model最低門檻">4.6 Baseline model（最低門檻）</h2>
+<p><strong>定義：</strong> baseline 永遠猜
+<code>mean(y_train)</code>。</p>
+<p><strong>為什麼 test 也要用 train mean？（必考）</strong> - 如果你用
+<code>mean(y_test)</code> 去猜 test，你等於偷看 test 的答案（data
+leakage）。</p>
+<p><strong>背誦模板（可直接貼作業）：</strong> &gt; The linear
+regression model outperforms the baseline model on the test set,
+indicating that the features provide useful predictive information. The
+small gap between training and test error suggests the model generalizes
+reasonably well.</p>
+<h2 id="共線性collinearity與-heatmap線回歸係數解讀前必看">4.7
+共線性（collinearity）與 heatmap（線回歸係數解讀前必看）</h2>
+<ul>
+<li><strong>collinearity：</strong> 兩個 features 高度相關 →
+資訊重疊</li>
+<li>影響：
+<ul>
+<li>prediction MSE 可能仍 OK</li>
+<li>但 <strong>coef 會很不穩</strong>（係數估計高變異）→
+係數不適合當因果/重要性</li>
+</ul></li>
+<li>Ridge 常能讓相關特徵下的係數更穩（把權重「平均分配」）</li>
+</ul>
+<h2 id="scaled-coefficient係數比較的正確方式">4.8 Scaled
+coefficient（係數比較的正確方式）</h2>
+<p><strong>定義（超白話）：</strong> - 某 feature 增加 1 個標準差（1
+SD），ŷ 會變多少（其他不變）。</p>
+<p><strong>為什麼要 scaled？（Unit trap）</strong> - raw coef
+不能直接比：因為不同 feature 單位差太多（例：MW 幾百 vs logD 0–4）。</p>
+<h2 id="pandas-的-vs-shape-陷阱sklearn-常爆">4.9 Pandas 的 [] vs
+[[]]（shape 陷阱，sklearn 常爆）</h2>
+<ul>
+<li><code>df['col']</code> → Series（1D），shape = (n,)</li>
+<li><code>df[['col']]</code> → DataFrame（2D），shape = (n,1)</li>
+</ul>
+<p><strong>口訣：</strong> - sklearn 的 X 要 2D：請用
+<code>[['col']]</code>。</p>
+<h2 id="常見考試陷阱exam-traps">4.10 常見考試陷阱（Exam traps）</h2>
+<ul>
+<li>scaling/impute 在 split 前做 → data leakage</li>
+<li>tuning 用 test set → overfit to test</li>
+<li>係數解讀沒先看共線性 → 亂講重要性/因果</li>
+<li>忘記 baseline → 不知道模型是否真的有學到</li>
+</ul>
+<hr />
+<h1 id="考點清單exam-checklist可直接背版本">5) 考點清單（Exam
+checklist｜可直接背版本）</h1>
+<ol type="1">
+<li><strong>線回歸定義</strong>：predict continuous y，用 X
+的線性組合；用 SSE/MSE 最小化</li>
+<li><strong>必背公式</strong>：ŷ、residual、SSE、MSE</li>
+<li><strong>Residual vs Error</strong>：residual 可算（observed）；error
+理論上的真實誤差（未知）</li>
+<li><strong>Baseline</strong>：永遠猜 mean(y_train)；test 也用 train
+mean（避免 leakage）</li>
+<li><strong>Under/Overfit</strong>：underfit（train/test
+都差）；overfit（gap 大）</li>
+<li><strong>Bias–Variance</strong>：complexity↑ bias↓
+variance↑；regularization↑ variance↓ bias↑</li>
+<li><strong>Ridge vs
+Lasso</strong>：Ridge（L2）縮小但不歸零、穩定相關特徵；Lasso（L1）可歸零做選特徵</li>
+<li><strong>Scaled coef</strong>：coef×std 或標準化後再看；raw coef
+不能直接比（unit trap）</li>
+<li><strong>[] vs [[]]</strong>：X 要 2D，用 <code>[['col']]</code></li>
+<li><strong>三大陷阱</strong>：split 前 scaling/impute、用 test
+調參、係數當因果</li>
+</ol>
+</body>
+</html>

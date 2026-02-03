@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-02" />
+  <title>WK3｜Regression Metrics</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK3｜Regression Metrics</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-02</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#延伸資源--快速了解內容"
+id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#這章你會學到什麼what-youll-get"
+id="toc-這章你會學到什麼what-youll-get">0. 這章你會學到什麼（What you’ll
+get）</a></li>
+<li><a href="#核心概念yŷresidual" id="toc-核心概念yŷresidual">1)
+核心概念：y、ŷ、residual</a></li>
+<li><a href="#三大回歸指標mae-rmse-r²"
+id="toc-三大回歸指標mae-rmse-r²">2) 三大回歸指標（MAE / RMSE / R²）</a>
+<ul>
+<li><a href="#mae平均絕對誤差最直覺" id="toc-mae平均絕對誤差最直覺">2.1
+MAE：平均絕對誤差（最直覺）</a></li>
+<li><a href="#rmse更重視大錯outliers-sensitive"
+id="toc-rmse更重視大錯outliers-sensitive">2.2
+RMSE：更重視大錯（outliers-sensitive）</a></li>
+<li><a href="#r²你有沒有比猜平均更好"
+id="toc-r²你有沒有比猜平均更好">2.3
+R²：你有沒有比「猜平均」更好？</a></li>
+<li><a href="#什麼時候看哪個快速選擇"
+id="toc-什麼時候看哪個快速選擇">2.4
+什麼時候看哪個？（快速選擇）</a></li>
+</ul></li>
+<li><a href="#可直接貼-colab一次算-mae-rmse-r²"
+id="toc-可直接貼-colab一次算-mae-rmse-r²">2.5 可直接貼 Colab：一次算 MAE
+/ RMSE / R²</a></li>
+<li><a href="#baseline-check永遠猜平均"
+id="toc-baseline-check永遠猜平均">2.6 Baseline
+check（永遠猜平均）</a></li>
+<li><a href="#讀分數mae-vs-rmse-差很大代表什麼"
+id="toc-讀分數mae-vs-rmse-差很大代表什麼">2.7 讀分數：MAE vs RMSE
+差很大代表什麼？</a></li>
+<li><a href="#dataset-a線性資料線性模型會很舒服"
+id="toc-dataset-a線性資料線性模型會很舒服">3) Dataset
+A：線性資料（線性模型會很舒服）</a>
+<ul>
+<li><a href="#step-a1traintest-split"
+id="toc-step-a1traintest-split">Step A1：train/test split</a>
+<ul>
+<li><a href="#q1---做出可重現的-traintest-split30-test-rs42"
+id="toc-q1---做出可重現的-traintest-split30-test-rs42">Q1 - 做出可重現的
+train/test split（30% test, RS=42）</a></li>
+</ul></li>
+<li><a href="#step-a2fit-linear-regression-predict"
+id="toc-step-a2fit-linear-regression-predict">Step A2：fit linear
+regression + predict</a>
+<ul>
+<li><a href="#q2---訓練線性回歸並產生-test-predictions"
+id="toc-q2---訓練線性回歸並產生-test-predictions">Q2 -
+訓練線性回歸並產生 test predictions</a></li>
+</ul></li>
+<li><a href="#step-a3寫一個-evaluate_regressionmae-rmse-r²"
+id="toc-step-a3寫一個-evaluate_regressionmae-rmse-r²">Step A3：寫一個
+evaluate_regression（MAE / RMSE / R²）</a>
+<ul>
+<li><a href="#q3---寫出-evaluate_regression印-maermser²-到小數-2-位"
+id="toc-q3---寫出-evaluate_regression印-maermser²-到小數-2-位">Q3 - 寫出
+evaluate_regression（印 MAE/RMSE/R² 到小數 2 位）</a></li>
+</ul></li>
+<li><a href="#step-a4解讀-metrics把分數講成人話"
+id="toc-step-a4解讀-metrics把分數講成人話">Step A4：解讀
+metrics（把分數講成人話）</a>
+<ul>
+<li><a href="#q4---用-maermser²-判讀模型表現逐一解釋"
+id="toc-q4---用-maermser²-判讀模型表現逐一解釋">Q4 - 用 MAE/RMSE/R²
+判讀模型表現（逐一解釋）</a></li>
+</ul></li>
+<li><a href="#step-a5用-target-的標準差幫-rmse-找尺度感"
+id="toc-step-a5用-target-的標準差幫-rmse-找尺度感">Step A5：用 target
+的標準差幫 RMSE 找尺度感</a>
+<ul>
+<li><a href="#q5---比較-test-y-的-std-與-rmse判斷誤差相對大小"
+id="toc-q5---比較-test-y-的-std-與-rmse判斷誤差相對大小">Q5 - 比較 test
+y 的 std 與 RMSE（判斷誤差相對大小）</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#validation-mae-learning-curve看-generalization"
+id="toc-validation-mae-learning-curve看-generalization">4) Validation
+MAE / Learning curve（看 generalization）</a>
+<ul>
+<li><a href="#step-b1validation-mae-vs-test-mae"
+id="toc-step-b1validation-mae-vs-test-mae">Step B1：validation MAE vs
+test MAE</a>
+<ul>
+<li><a href="#q6---為什麼-validation-mae-跟-test-mae-不會完全一樣"
+id="toc-q6---為什麼-validation-mae-跟-test-mae-不會完全一樣">Q6 - 為什麼
+validation MAE 跟 test MAE 不會完全一樣？</a></li>
+</ul></li>
+<li><a href="#step-b2mae-learning-curve"
+id="toc-step-b2mae-learning-curve">Step B2：MAE learning curve</a>
+<ul>
+<li><a href="#q7---畫-mae-learning-curvestrain-vs-validation"
+id="toc-q7---畫-mae-learning-curvestrain-vs-validation">Q7 - 畫 MAE
+learning curves（train vs validation）</a></li>
+<li><a href="#q8---解釋-train-mae-與-validation-mae-的-gap"
+id="toc-q8---解釋-train-mae-與-validation-mae-的-gap">Q8 - 解釋 train
+MAE 與 validation MAE 的 gap</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#dataset-b非線性資料線性模型會開始露餡"
+id="toc-dataset-b非線性資料線性模型會開始露餡">5) Dataset
+B：非線性資料（線性模型會開始露餡）</a>
+<ul>
+<li><a href="#step-c1fit-linear-regression-on-dataset-b-evaluate"
+id="toc-step-c1fit-linear-regression-on-dataset-b-evaluate">Step C1：fit
+linear regression on Dataset B + evaluate</a>
+<ul>
+<li><a href="#q9---dataset-bsplit-fit-predict-compute-metrics"
+id="toc-q9---dataset-bsplit-fit-predict-compute-metrics">Q9 - Dataset
+B：split / fit / predict / compute metrics</a></li>
+<li><a href="#q10---dataset-b線性回歸夠用嗎哪個-metric-最支持你的結論"
+id="toc-q10---dataset-b線性回歸夠用嗎哪個-metric-最支持你的結論">Q10 -
+Dataset B：線性回歸夠用嗎？哪個 metric 最支持你的結論？</a></li>
+</ul></li>
+<li><a href="#step-c2residual-plot殘差圖"
+id="toc-step-c2residual-plot殘差圖">Step C2：Residual plot（殘差圖）</a>
+<ul>
+<li><a href="#q11---residuals-vs-y_pred畫水平線-y0-並觀察"
+id="toc-q11---residuals-vs-y_pred畫水平線-y0-並觀察">Q11 - Residuals vs
+y_pred（畫水平線 y=0 並觀察）</a></li>
+<li><a href="#q12---解釋-residual-plot線性模型適合嗎"
+id="toc-q12---解釋-residual-plot線性模型適合嗎">Q12 - 解釋 residual
+plot：線性模型適合嗎？</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#回到-notebook-2a-模型pic50用真實例子練解讀"
+id="toc-回到-notebook-2a-模型pic50用真實例子練解讀">6) 回到 Notebook 2a
+模型（pIC50）：用真實例子練解讀</a>
+<ul>
+<li><a href="#step-d1載入你存的-dill-bundle"
+id="toc-step-d1載入你存的-dill-bundle">Step D1：載入你存的 dill
+bundle</a>
+<ul>
+<li><a href="#q14---載入-saved-model-bundledill"
+id="toc-q14---載入-saved-model-bundledill">Q14 - 載入 saved model
+bundle（dill）</a></li>
+</ul></li>
+<li><a href="#step-d2在-test-set-上計算-maermser²-並解讀"
+id="toc-step-d2在-test-set-上計算-maermser²-並解讀">Step D2：在 test set
+上計算 MAE/RMSE/R² 並解讀</a>
+<ul>
+<li><a
+href="#q15---用-evaluate_regression-評估-2a-test-set並用-pic50-單位解釋"
+id="toc-q15---用-evaluate_regression-評估-2a-test-set並用-pic50-單位解釋">Q15
+- 用 evaluate_regression 評估 2a test set，並用 pIC50 單位解釋</a></li>
+</ul></li>
+<li><a href="#step-d3cross-validated-mae在-training-set-上"
+id="toc-step-d3cross-validated-mae在-training-set-上">Step
+D3：Cross-validated MAE（在 training set 上）</a>
+<ul>
+<li><a href="#q16---5-fold-cv-maestd-很大代表什麼"
+id="toc-q16---5-fold-cv-maestd-很大代表什麼">Q16 - 5-fold CV MAE：std
+很大代表什麼？</a></li>
+</ul></li>
+<li><a href="#step-d4residuals-vs-predicted-pic50"
+id="toc-step-d4residuals-vs-predicted-pic50">Step D4：Residuals vs
+predicted pIC50</a>
+<ul>
+<li><a href="#q17---殘差圖看出什麼-pattern代表什麼"
+id="toc-q17---殘差圖看出什麼-pattern代表什麼">Q17 - 殘差圖：看出什麼
+pattern？代表什麼？</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#考點清單exam-checklist可直接背版本"
+id="toc-考點清單exam-checklist可直接背版本">7) 考點清單（Exam
+checklist｜可直接背版本）</a>
+<ul>
+<li><a href="#mae-rmse-r²-各代表什麼" id="toc-mae-rmse-r²-各代表什麼">1)
+MAE / RMSE / R² 各代表什麼？</a></li>
+<li><a href="#為什麼要拿-rmse-跟-y-的-std-比"
+id="toc-為什麼要拿-rmse-跟-y-的-std-比">2) 為什麼要拿 RMSE 跟 y 的 std
+比？</a></li>
+<li><a href="#train-vs-validation-gap-怎麼判讀"
+id="toc-train-vs-validation-gap-怎麼判讀">3) train vs validation gap
+怎麼判讀？</a></li>
+<li><a href="#residual-plot-看到-pattern-代表什麼"
+id="toc-residual-plot-看到-pattern-代表什麼">4) residual plot 看到
+pattern 代表什麼？</a></li>
+<li><a href="#cv-mae-的-std-很大代表什麼"
+id="toc-cv-mae-的-std-很大代表什麼">5) CV MAE 的 std
+很大代表什麼？</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://gemini.google.com/share/a950452071ad" target="_blank" rel="noopener noreferrer">Gemini｜Performance metrics for Regression and Classification（快速複習）</a>
+  </li>
+  <li>
+    <a href="https://youtu.be/TZuM0Ilg070?si=X99ifL497OEK6M9e" target="_blank" rel="noopener noreferrer">YouTube｜ 機器學習其實不難｜教你怎麼判斷模型值不值得相信（給完全零基礎的人）</a>
+  </li>
+</ul>
+<hr />
+<h1 id="這章你會學到什麼what-youll-get">0. 這章你會學到什麼（What you’ll
+get）</h1>
+<p>這章是 <strong>回歸（Regression）模型評估</strong>
+的「真正入門」：你不是只會算分數，而是會把分數講成人話、知道什麼時候可信、什麼時候該懷疑。</p>
+<p>你會學到三個核心指標（metrics）與兩個診斷工具（diagnostics）：</p>
+<ul>
+<li><strong>MAE</strong>（Mean Absolute Error）</li>
+<li><strong>RMSE</strong>（Root Mean Squared Error）</li>
+<li><strong>R²</strong>（Coefficient of Determination）</li>
+<li><strong>Learning curve</strong>（看資料量 vs 表現，判斷
+generalization）</li>
+<li><strong>Residual plot</strong>（殘差圖：看模型哪裡沒抓到）</li>
+</ul>
+<p><strong>Key takeaways｜本章一句話：</strong> -
+回歸評估的核心不是「分數越高越好」，而是：</p>
+<ol type="1">
+<li><strong>誤差大小用 MAE/RMSE 講清楚（in units）</strong></li>
+<li><strong>用 R² 做 baseline check（是否比猜平均好）</strong></li>
+<li><strong>用 learning curve / residuals
+找出模型假設的破口</strong></li>
+</ol>
+<hr />
+<h1 id="核心概念yŷresidual">1) 核心概念：y、ŷ、residual</h1>
+<p><strong>What｜核心概念（Concept）</strong></p>
+<ul>
+<li><strong>y</strong>：真實值（true target）</li>
+<li><strong>ŷ（y-hat）</strong>：模型預測（predicted target）</li>
+<li><strong>residual = y − ŷ</strong>：殘差（prediction error）</li>
+</ul>
+<blockquote>
+<p>直覺： - 你每預測一筆，都會有「差多少」。 - metric
+就是在把一堆「差多少」濃縮成一個數字。</p>
+</blockquote>
+<hr />
+<h1 id="三大回歸指標mae-rmse-r²">2) 三大回歸指標（MAE / RMSE / R²）</h1>
+<h2 id="mae平均絕對誤差最直覺">2.1 MAE：平均絕對誤差（最直覺）</h2>
+<p><strong>Why｜為什麼要看</strong> - 因為 MAE
+最像你腦中想的「平均差多少」。</p>
+<p><strong>What｜定義</strong></p>
+<p><span class="math display">\[
+\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}\lvert y_i - \hat{y}_i \rvert
+\]</span></p>
+<p><strong>How｜怎麼解讀（人話）</strong> - MAE =
+平均每筆預測「差」多少（同單位）。</p>
+<p><strong>Pitfalls｜常見坑</strong> - 只報 MAE 不報
+RMSE：你可能忽略「少數大錯」的存在。</p>
+<hr />
+<h2 id="rmse更重視大錯outliers-sensitive">2.2
+RMSE：更重視大錯（outliers-sensitive）</h2>
+<p><strong>What｜定義</strong></p>
+<p><span class="math display">\[
+\mathrm{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
+\]</span></p>
+<p><strong>How｜怎麼解讀（人話）</strong> - RMSE
+也在原單位，但它會「放大大錯」： - 你有少數幾筆很離譜 → RMSE 會比 MAE
+拉高更多。</p>
+<p><strong>Pitfalls</strong> - RMSE &gt; MAE
+幾乎是常態；差距越大，代表「大錯」越多或越嚴重。</p>
+<hr />
+<h2 id="r²你有沒有比猜平均更好">2.3 R²：你有沒有比「猜平均」更好？</h2>
+<p><strong>Why</strong> - 有些 dataset 本來就很難預測；R²
+幫你回答：你到底有沒有學到訊號（signal）。</p>
+<p><strong>What</strong> <span class="math display">\[
+R^2 = 1 - \frac{\mathrm{SSE}}{\mathrm{SST}}
+\]</span></p>
+<ul>
+<li>SSE：你的模型誤差平方和</li>
+<li>SST：永遠猜平均（baseline mean predictor） 的誤差平方和</li>
+</ul>
+<p><strong>How（背誦版）</strong> - R² = 1：完美 - R² =
+0：跟「猜平均」一樣 - R² &lt; 0：比猜平均還爛（你真的要檢討）</p>
+<p><strong>Pitfalls</strong> - R² 不告訴你「錯多少」，它只告訴你「相對
+baseline 好多少」。</p>
+<hr />
+<h2 id="什麼時候看哪個快速選擇">2.4 什麼時候看哪個？（快速選擇）</h2>
+<ul>
+<li><strong>MAE</strong>：你想用「同單位」回答
+<em>平均差多少</em>（最直覺）</li>
+<li><strong>RMSE</strong>：你在乎
+<em>少數大錯</em>（outliers）會不會很嚴重</li>
+<li><strong>R²</strong>：你想做 <em>baseline
+check</em>（有沒有比猜平均好）</li>
+</ul>
+<p><strong>一句話總結：</strong> - MAE 看平均距離；RMSE 看大錯；R²
+看有沒有學到訊號。</p>
+<h1 id="可直接貼-colab一次算-mae-rmse-r²">2.5 可直接貼 Colab：一次算 MAE
+/ RMSE / R²</h1>
+<p><strong>老師提醒：</strong> - 評估一定要用 <strong>test
+set</strong>（generalization），不要只看 train。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_absolute_error, mean_squared_error, r2_score</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># y_pred 由你的模型 predict 產生</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> model.predict(X_test)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>mae <span class="op">=</span> mean_absolute_error(y_test, y_pred)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>rmse <span class="op">=</span> np.sqrt(mean_squared_error(y_test, y_pred))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>r2 <span class="op">=</span> r2_score(y_test, y_pred)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;MAE :&#39;</span>, <span class="bu">round</span>(mae, <span class="dv">3</span>))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;RMSE:&#39;</span>, <span class="bu">round</span>(rmse, <span class="dv">3</span>))</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;R^2 :&#39;</span>, <span class="bu">round</span>(r2, <span class="dv">3</span>))</span></code></pre></div>
+<p><strong>常見踩雷：</strong> - 把 <code>mean_squared_error</code> 當
+RMSE（少了 sqrt）。</p>
+<hr />
+<h1 id="baseline-check永遠猜平均">2.6 Baseline check（永遠猜平均）</h1>
+<p><strong>直覺：</strong> - baseline = 永遠猜
+<code>y_train.mean()</code>。</p>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error, mean_absolute_error</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>baseline_pred <span class="op">=</span> np.full(shape<span class="op">=</span><span class="bu">len</span>(y_test), fill_value<span class="op">=</span>y_train.mean())</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Baseline MAE :&#39;</span>, <span class="bu">round</span>(mean_absolute_error(y_test, baseline_pred), <span class="dv">3</span>))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Baseline RMSE:&#39;</span>, <span class="bu">round</span>(np.sqrt(mean_squared_error(y_test, baseline_pred)), <span class="dv">3</span>))</span></code></pre></div>
+<p><strong>一句話總結：</strong> - 你的模型至少要打敗
+baseline，不然就是沒學到。</p>
+<hr />
+<h1 id="讀分數mae-vs-rmse-差很大代表什麼">2.7 讀分數：MAE vs RMSE
+差很大代表什麼？</h1>
+<p><strong>老師提醒：</strong> - <code>RMSE</code> 對大錯更敏感。</p>
+<p><strong>直覺：</strong> - 如果 RMSE 明顯大於
+MAE，通常表示：你有一些樣本錯得特別離譜（outlier /
+misspecification）。</p>
+<p><strong>小練習（Quick check）：</strong> - 找出 residual 最大的前 5
+筆，看看是哪種樣本。</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>residual <span class="op">=</span> y_test <span class="op">-</span> y_pred</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> np.argsort(np.<span class="bu">abs</span>(residual))[::<span class="op">-</span><span class="dv">1</span>][:<span class="dv">5</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;top residual idx:&#39;</span>, idx)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;residuals:&#39;</span>, residual.iloc[idx].values <span class="cf">if</span> <span class="bu">hasattr</span>(residual,<span class="st">&#39;iloc&#39;</span>) <span class="cf">else</span> residual[idx])</span></code></pre></div>
+<hr />
+<h1 id="dataset-a線性資料線性模型會很舒服">3) Dataset
+A：線性資料（線性模型會很舒服）</h1>
+<p>這段對齊 Notebook：先用一個「很線性」的模擬資料，讓你觀察 metrics
+行為。</p>
+<h2 id="step-a1traintest-split">Step A1：train/test split</h2>
+<p><strong>Why｜Purpose</strong> - 你要評估
+generalization（泛化），就必須留出 test set。</p>
+<p><strong>How｜code</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    X, y,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    test_size<span class="op">=</span><span class="fl">0.30</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h3 id="q1---做出可重現的-traintest-split30-test-rs42">Q1 - 做出可重現的
+train/test split（30% test, RS=42）</h3>
+<p><strong>Learning objective</strong>：會切資料、會固定 random
+seed（reproducibility）。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.30</span>, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><strong>Common mistakes</strong> - 忘記
+<code>random_state</code>：每次結果不同，分數會飄。</p>
+<hr />
+<h2 id="step-a2fit-linear-regression-predict">Step A2：fit linear
+regression + predict</h2>
+<p><strong>Why</strong> - 先建立一個 baseline model（這裡就是
+LinearRegression）。</p>
+<p><strong>How</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>modelA <span class="op">=</span> LinearRegression()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>modelA.fit(X_train, y_train)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>pred_A_test <span class="op">=</span> modelA.predict(X_test)</span></code></pre></div>
+<h3 id="q2---訓練線性回歸並產生-test-predictions">Q2 -
+訓練線性回歸並產生 test predictions</h3>
+<p><strong>Learning objective</strong>：會 fit + predict，並知道
+<code>pred</code> 是用來算 metrics 的。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>modelA <span class="op">=</span> LinearRegression()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>modelA.fit(X_train, y_train)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>pred_A_test <span class="op">=</span> modelA.predict(X_test)</span></code></pre></div>
+<p><strong>Common mistakes</strong> - 把 <code>predict(X_train)</code>
+當成 test 來報：那是 training performance。</p>
+<hr />
+<h2 id="step-a3寫一個-evaluate_regressionmae-rmse-r²">Step A3：寫一個
+evaluate_regression（MAE / RMSE / R²）</h2>
+<p><strong>Why</strong> - 你會一直重複算
+MAE/RMSE/R²，所以寫成函式最乾淨。</p>
+<p><strong>How</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_absolute_error, mean_squared_error, r2_score</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evaluate_regression(y_true, y_pred):</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    mae  <span class="op">=</span> mean_absolute_error(y_true, y_pred)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    rmse <span class="op">=</span> mean_squared_error(y_true, y_pred, squared<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    r2   <span class="op">=</span> r2_score(y_true, y_pred)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;MAE:  </span><span class="sc">{</span>mae<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;RMSE: </span><span class="sc">{</span>rmse<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;R^2:  </span><span class="sc">{</span>r2<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<h3 id="q3---寫出-evaluate_regression印-maermser²-到小數-2-位">Q3 - 寫出
+evaluate_regression（印 MAE/RMSE/R² 到小數 2 位）</h3>
+<p><strong>Learning objective</strong>：會把三個 metrics
+打包成可重用工具。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>如上。</li>
+</ul>
+<p><strong>Common mistakes</strong> - RMSE 忘了開根號（用 MSE
+直接報）。</p>
+<hr />
+<h2 id="step-a4解讀-metrics把分數講成人話">Step A4：解讀
+metrics（把分數講成人話）</h2>
+<h3 id="q4---用-maermser²-判讀模型表現逐一解釋">Q4 - 用 MAE/RMSE/R²
+判讀模型表現（逐一解釋）</h3>
+<p><strong>Learning
+objective</strong>：能把數字翻譯成「平均錯多少」與「是否有學到訊號」。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>MAE：平均每筆預測距離真值約 <strong>MAE</strong> 單位。</li>
+<li>RMSE：也在同單位，但更懲罰大錯；若 RMSE 明顯大於
+MAE，代表少數大錯存在。</li>
+<li>R²：接近 1 表示很好；接近 0 表示跟猜平均差不多；若 &lt;0 表示比
+baseline 更差。</li>
+</ul>
+<p><strong>Common mistakes</strong> -
+只寫「越小越好」但不說單位/代表意義。</p>
+<hr />
+<h2 id="step-a5用-target-的標準差幫-rmse-找尺度感">Step A5：用 target
+的標準差幫 RMSE 找尺度感</h2>
+<h3 id="q5---比較-test-y-的-std-與-rmse判斷誤差相對大小">Q5 - 比較 test
+y 的 std 與 RMSE（判斷誤差相對大小）</h3>
+<p><strong>Learning objective</strong>：建立 error scale 的直覺（RMSE
+相對於 y 的波動大不大）。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>std_y <span class="op">=</span> np.std(y_test)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;test y std:&quot;</span>, std_y)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;RMSE:&quot;</span>, rmse)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 解讀：</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># - 若 RMSE 明顯小於 std(y_test)：模型捕捉到一些訊號</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># - 若 RMSE 接近/大於 std：模型可能沒學到太多（或 noise 很大）</span></span></code></pre></div>
+<hr />
+<h1 id="validation-mae-learning-curve看-generalization">4) Validation
+MAE / Learning curve（看 generalization）</h1>
+<h2 id="step-b1validation-mae-vs-test-mae">Step B1：validation MAE vs
+test MAE</h2>
+<h3 id="q6---為什麼-validation-mae-跟-test-mae-不會完全一樣">Q6 - 為什麼
+validation MAE 跟 test MAE 不會完全一樣？</h3>
+<p><strong>Learning objective</strong>：理解「抽樣差異（sampling
+variation）」與「validation 是平均」。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>不會完全一樣，因為：
+<ol type="1">
+<li>validation（例如 CV）通常是多個 fold 的平均 → 更穩</li>
+<li>test set 只有一次切分 → 受抽樣影響更大</li>
+<li>兩者用到的資料切法不同 → 分數自然會差</li>
+</ol></li>
+</ul>
+<hr />
+<h2 id="step-b2mae-learning-curve">Step B2：MAE learning curve</h2>
+<h3 id="q7---畫-mae-learning-curvestrain-vs-validation">Q7 - 畫 MAE
+learning curves（train vs validation）</h3>
+<p><strong>Learning objective</strong>：用 learning curve
+看「資料量增加時」模型是否還會變好。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>用 <code>learning_curve</code> 或你課堂的方式：
+<ul>
+<li>x 軸：train sizes</li>
+<li>y 軸：MAE（train / validation）</li>
+</ul></li>
+</ul>
+<p><strong>你要觀察什麼？</strong> - train MAE 通常較低 - validation MAE
+較高 - gap（差距）告訴你 generalization 狀態</p>
+<hr />
+<h3 id="q8---解釋-train-mae-與-validation-mae-的-gap">Q8 - 解釋 train
+MAE 與 validation MAE 的 gap</h3>
+<p><strong>Learning objective</strong>：用 gap 判斷是否 overfit /
+underfit。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>gap 大：train 好、val 差 → <strong>overfitting</strong> 或模型對
+data 很敏感。</li>
+<li>gap 小但兩者都高：train/val 都不行 → <strong>underfitting</strong>
+或特徵不足。</li>
+<li>隨資料增加 gap 變小：通常代表泛化變穩。</li>
+</ul>
+<hr />
+<h1 id="dataset-b非線性資料線性模型會開始露餡">5) Dataset
+B：非線性資料（線性模型會開始露餡）</h1>
+<h2 id="step-c1fit-linear-regression-on-dataset-b-evaluate">Step C1：fit
+linear regression on Dataset B + evaluate</h2>
+<h3 id="q9---dataset-bsplit-fit-predict-compute-metrics">Q9 - Dataset
+B：split / fit / predict / compute metrics</h3>
+<p><strong>Learning objective</strong>：同一套評估流程能套到不同
+data；並用 metrics 看「模型假設是否適合」。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(XB, yB, test_size<span class="op">=</span><span class="fl">0.3</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>modelB <span class="op">=</span> LinearRegression().fit(X_train, y_train)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>pred_B_test <span class="op">=</span> modelB.predict(X_test)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>evaluate_regression(y_test, pred_B_test)</span></code></pre></div>
+<hr />
+<h3 id="q10---dataset-b線性回歸夠用嗎哪個-metric-最支持你的結論">Q10 -
+Dataset B：線性回歸夠用嗎？哪個 metric 最支持你的結論？</h3>
+<p><strong>Learning objective</strong>：能用「數字 + 直覺」判斷 model
+adequacy。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>若 MAE/RMSE 很大且 R² 低（接近 0 或負）：線性回歸不夠。</li>
+<li>最直接的通常是 MAE/RMSE（因為同單位），R² 用來確認是否比 baseline
+有進步。</li>
+</ul>
+<hr />
+<h2 id="step-c2residual-plot殘差圖">Step C2：Residual
+plot（殘差圖）</h2>
+<p><strong>What｜你要會看的是 pattern</strong> - 理想：殘差像雜訊，圍繞
+0 隨機散開 - 不理想：殘差呈 U 型/曲線/漏斗 →
+模型漏掉結構或變異不均（heteroscedasticity）</p>
+<h3 id="q11---residuals-vs-y_pred畫水平線-y0-並觀察">Q11 - Residuals vs
+y_pred（畫水平線 y=0 並觀察）</h3>
+<p><strong>Learning objective</strong>：用 residual plot
+判斷「線性假設是否破功」。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>residuals <span class="op">=</span> y_test <span class="op">-</span> pred_B_test</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>plt.scatter(pred_B_test, residuals)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>plt.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">&#39;red&#39;</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;Predicted y&#39;</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;Residual (y - yhat)&#39;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<hr />
+<h3 id="q12---解釋-residual-plot線性模型適合嗎">Q12 - 解釋 residual
+plot：線性模型適合嗎？</h3>
+<p><strong>Learning objective</strong>：用圖說話（不是只背指標）。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>如果殘差呈現曲線或系統性 pattern：代表線性模型沒捕捉到非線性結構 →
+不適合。</li>
+<li>如果殘差漏斗狀：代表誤差變異隨 y_pred 改變（heteroscedasticity）→
+需要轉換/不同模型。</li>
+</ul>
+<hr />
+<h1 id="回到-notebook-2a-模型pic50用真實例子練解讀">6) 回到 Notebook 2a
+模型（pIC50）：用真實例子練解讀</h1>
+<h2 id="step-d1載入你存的-dill-bundle">Step D1：載入你存的 dill
+bundle</h2>
+<blockquote>
+<p>Notebook 原本在 Colab 會 mount drive；這裡我們保留原
+code，讓你照著跑。</p>
+</blockquote>
+<h3 id="q14---載入-saved-model-bundledill">Q14 - 載入 saved model
+bundle（dill）</h3>
+<p><strong>Learning objective</strong>：把「訓練好的 model + data
+split」載回來做評估。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>重點是：bundle 裡要有
+<ul>
+<li><code>model</code></li>
+<li><code>train_data/train_labels</code></li>
+<li><code>test_data/test_labels</code></li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="step-d2在-test-set-上計算-maermser²-並解讀">Step D2：在 test set
+上計算 MAE/RMSE/R² 並解讀</h2>
+<h3
+id="q15---用-evaluate_regression-評估-2a-test-set並用-pic50-單位解釋">Q15
+- 用 evaluate_regression 評估 2a test set，並用 pIC50 單位解釋</h3>
+<p><strong>Learning objective</strong>：把 MAE/RMSE
+翻成「典型誤差大小」，不要只報數字。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>MAE = 平均每筆 pIC50 預測誤差約 MAE 單位。</li>
+<li>RMSE 稍大 → 代表有少數較大的錯。</li>
+<li>R² = baseline check（是否比猜平均好）。</li>
+</ul>
+<hr />
+<h2 id="step-d3cross-validated-mae在-training-set-上">Step
+D3：Cross-validated MAE（在 training set 上）</h2>
+<h3 id="q16---5-fold-cv-maestd-很大代表什麼">Q16 - 5-fold CV MAE：std
+很大代表什麼？</h3>
+<p><strong>Learning objective</strong>：用 CV 的「平均 ±
+標準差」談穩定性。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>std 大表示：不同 fold 表現差異大 →
+模型對資料切分敏感、泛化不穩。</li>
+<li>常見原因：資料量小、資料分佈不均、特徵不足或噪音大。</li>
+</ul>
+<hr />
+<h2 id="step-d4residuals-vs-predicted-pic50">Step D4：Residuals vs
+predicted pIC50</h2>
+<h3 id="q17---殘差圖看出什麼-pattern代表什麼">Q17 - 殘差圖：看出什麼
+pattern？代表什麼？</h3>
+<p><strong>Learning
+objective</strong>：用殘差圖判斷線性模型的限制（例如非線性、異方差）。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>如果殘差在某些 y_pred 區域系統性偏正/偏負：代表模型在那區域有
+bias。</li>
+<li>如果殘差呈曲線：代表缺少非線性。</li>
+<li>如果殘差呈漏斗：代表變異不均（heteroscedasticity）。</li>
+</ul>
+<hr />
+<h1 id="考點清單exam-checklist可直接背版本">7) 考點清單（Exam
+checklist｜可直接背版本）</h1>
+<blockquote>
+<p>這區是「懶人背誦版」：每題都給你一句話答案 +
+必備關鍵字（中英對照）。</p>
+</blockquote>
+<h2 id="mae-rmse-r²-各代表什麼">1) MAE / RMSE / R² 各代表什麼？</h2>
+<ul>
+<li><strong>MAE</strong>：平均差多少（same unit）。</li>
+<li><strong>RMSE</strong>：更懲罰大錯（outlier-sensitive）。</li>
+<li><strong>R²</strong>：比猜平均好多少（baseline check）。</li>
+</ul>
+<h2 id="為什麼要拿-rmse-跟-y-的-std-比">2) 為什麼要拿 RMSE 跟 y 的 std
+比？</h2>
+<ul>
+<li>幫你建立尺度感：RMSE 相對於資料本身波動大不大。</li>
+</ul>
+<h2 id="train-vs-validation-gap-怎麼判讀">3) train vs validation gap
+怎麼判讀？</h2>
+<ul>
+<li>gap 大：overfit；gap 小但都高：underfit。</li>
+</ul>
+<h2 id="residual-plot-看到-pattern-代表什麼">4) residual plot 看到
+pattern 代表什麼？</h2>
+<ul>
+<li>曲線：缺非線性；漏斗：heteroscedasticity；隨機：模型假設較合理。</li>
+</ul>
+<h2 id="cv-mae-的-std-很大代表什麼">5) CV MAE 的 std 很大代表什麼？</h2>
+<ul>
+<li>模型不穩、對切分敏感（data sensitive）。</li>
+</ul>
+<hr />
+</body>
+</html>

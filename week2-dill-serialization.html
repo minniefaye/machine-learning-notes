@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-03" />
+  <title>WK2｜Data Serialization with dill（save/load bundle）</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK2｜Data Serialization with dill（save/load
+bundle）</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-03</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#開場你要先記住的一句話"
+id="toc-開場你要先記住的一句話">開場：你要先記住的一句話</a></li>
+<li><a href="#關鍵字keywords後面一小句就懂"
+id="toc-關鍵字keywords後面一小句就懂">關鍵字（Keywords，後面一小句就懂）</a></li>
+<li><a href="#延伸資源--快速了解內容"
+id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#可直接貼進-colab-的-code示範版"
+id="toc-可直接貼進-colab-的-code示範版">可直接貼進 Colab 的
+code（示範版）</a>
+<ul>
+<li><a href="#安裝與匯入" id="toc-安裝與匯入">安裝與匯入</a></li>
+<li><a href="#存dump-bundle推薦" id="toc-存dump-bundle推薦">存：dump
+bundle（推薦）</a></li>
+<li><a href="#載load-bundle" id="toc-載load-bundle">載：load
+bundle</a></li>
+</ul></li>
+<li><a href="#常見踩雷common-pitfalls"
+id="toc-常見踩雷common-pitfalls">常見踩雷（Common pitfalls）</a></li>
+<li><a href="#小練習quick-check含簡單解法-code"
+id="toc-小練習quick-check含簡單解法-code">小練習（Quick
+check｜含簡單解法 code）</a>
+<ul>
+<li><a href="#你能存一個-model-並載回來-type-還是一樣嗎"
+id="toc-你能存一個-model-並載回來-type-還是一樣嗎">1) 你能存一個 model
+並載回來 <code>type()</code> 還是一樣嗎？</a></li>
+<li><a href="#你能從-bundle-裡拿出-x_test跑一次-model.predictx_test-嗎"
+id="toc-你能從-bundle-裡拿出-x_test跑一次-model.predictx_test-嗎">2)
+你能從 bundle 裡拿出 X_test，跑一次 <code>model.predict(X_test)</code>
+嗎？</a></li>
+</ul></li>
+<li><a href="#考點清單exam-checklist可直接背版本"
+id="toc-考點清單exam-checklist可直接背版本">考點清單（Exam
+checklist｜可直接背版本）</a></li>
+</ul>
+</nav>
+<h1 id="開場你要先記住的一句話">開場：你要先記住的一句話</h1>
+<p><strong>一句話總結：</strong> Serialization 就是把 Python
+物件（model/data/scaler）存成檔案；用 <code>dill</code>
+你可以把「模型＋必要資料」打包成 bundle，之後載回來立刻評估/推論。</p>
+<p><strong>你要背的 3 個重點：</strong></p>
+<ol type="1">
+<li>盡量存 <strong>bundle</strong>（model + test set + feature_names +
+scaler + notes）</li>
+<li>版本要記：python/sklearn/numpy（不然很容易 load 爆）</li>
+<li>不要 load 來路不明的 dill（安全性）</li>
+</ol>
+<hr />
+<h1
+id="關鍵字keywords後面一小句就懂">關鍵字（Keywords，後面一小句就懂）</h1>
+<ul>
+<li><strong>serialization / deserialization</strong>：把 Python
+物件「存成檔」/「從檔案還原」</li>
+<li><strong>dill</strong>：比 pickle 更能存各種 Python
+物件的序列化工具</li>
+<li><strong>bundle</strong>：把「model +
+必要資料/設定」打包成一包，方便重現結果</li>
+<li><strong>version compatibility</strong>：不同 python/sklearn/numpy
+版本，載入可能直接爆</li>
+<li><strong>security</strong>：載入 dill =
+可能執行任意程式碼；不明來源不要開</li>
+</ul>
+<hr />
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://youtu.be/Iz9K2reDlGs?si=33I3E4Pjyk_5k54L" target="_blank" rel="noopener noreferrer">YouTube｜ 用 Dill 存檔：程式碼的『遊戲存檔』｜為什麼 checkpoint 能救你一命？（Python / ML 教學）</a>
+  </li>
+</ul>
+<hr />
+<h1 id="可直接貼進-colab-的-code示範版">可直接貼進 Colab 的
+code（示範版）</h1>
+<h2 id="安裝與匯入">安裝與匯入</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip <span class="op">-</span>q install dill</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dill</span></code></pre></div>
+<h2 id="存dump-bundle推薦">存：dump bundle（推薦）</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>bundle <span class="op">=</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;model&quot;</span>: model,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;data&quot;</span>: {<span class="st">&quot;test_data&quot;</span>: X_test, <span class="st">&quot;test_labels&quot;</span>: y_test},</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;feature_names&quot;</span>: <span class="bu">list</span>(X_test.columns) <span class="cf">if</span> <span class="bu">hasattr</span>(X_test,<span class="st">&#39;columns&#39;</span>) <span class="cf">else</span> <span class="va">None</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;scaler&quot;</span>: scaler <span class="cf">if</span> <span class="st">&#39;scaler&#39;</span> <span class="kw">in</span> <span class="bu">globals</span>() <span class="cf">else</span> <span class="va">None</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;notes&quot;</span>: {<span class="st">&quot;comment&quot;</span>: <span class="st">&quot;wk2 module2c&quot;</span>}</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;bundle.dill&#39;</span>,<span class="st">&#39;wb&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    dill.dump(bundle, f)</span></code></pre></div>
+<h2 id="載load-bundle">載：load bundle</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;bundle.dill&#39;</span>,<span class="st">&#39;rb&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> dill.load(f)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> b[<span class="st">&#39;model&#39;</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>X_test <span class="op">=</span> b[<span class="st">&#39;data&#39;</span>][<span class="st">&#39;test_data&#39;</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>y_test <span class="op">=</span> b[<span class="st">&#39;data&#39;</span>][<span class="st">&#39;test_labels&#39;</span>]</span></code></pre></div>
+<hr />
+<h1 id="常見踩雷common-pitfalls">常見踩雷（Common pitfalls）</h1>
+<ol type="1">
+<li><strong>版本不相容</strong>：sklearn/numpy 版本不同 → load
+可能報錯</li>
+<li><strong>檔案太大</strong>：不要把整個 raw dataset 都塞進去</li>
+<li><strong>安全性</strong>：不要 load 不明來源 dill（可能執行惡意
+code）</li>
+</ol>
+<hr />
+<h1 id="小練習quick-check含簡單解法-code">小練習（Quick
+check｜含簡單解法 code）</h1>
+<h2 id="你能存一個-model-並載回來-type-還是一樣嗎">1) 你能存一個 model
+並載回來 <code>type()</code> 還是一樣嗎？</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dill</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 假設你已經有 model</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;model_only.dill&#39;</span>, <span class="st">&#39;wb&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    dill.dump(model, f)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;model_only.dill&#39;</span>, <span class="st">&#39;rb&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    model2 <span class="op">=</span> dill.load(f)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;before:&#39;</span>, <span class="bu">type</span>(model))</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;after :&#39;</span>, <span class="bu">type</span>(model2))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;same type?&#39;</span>, <span class="bu">type</span>(model) <span class="op">==</span> <span class="bu">type</span>(model2))</span></code></pre></div>
+<h2 id="你能從-bundle-裡拿出-x_test跑一次-model.predictx_test-嗎">2)
+你能從 bundle 裡拿出 X_test，跑一次 <code>model.predict(X_test)</code>
+嗎？</h2>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dill</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;bundle.dill&#39;</span>,<span class="st">&#39;rb&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> dill.load(f)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> b[<span class="st">&#39;model&#39;</span>]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>X_test2 <span class="op">=</span> b[<span class="st">&#39;data&#39;</span>][<span class="st">&#39;test_data&#39;</span>]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> model2.predict(X_test2)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pred[:<span class="dv">10</span>])</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;n_preds:&#39;</span>, <span class="bu">len</span>(pred))</span></code></pre></div>
+<hr />
+<h1 id="考點清單exam-checklist可直接背版本">考點清單（Exam
+checklist｜可直接背版本）</h1>
+<ul>
+<li>serialization：object → file</li>
+<li>deserialization：file → object</li>
+<li>prefer bundle：避免缺 scaler/欄位順序/測試資料</li>
+<li>notes 要記版本：python/sklearn/numpy</li>
+</ul>
+</body>
+</html>

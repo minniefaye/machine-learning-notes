@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-03" />
+  <title>WK2｜Logistic Regression：Classification &amp; Distribution Shift</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK2｜Logistic Regression：Classification &amp;
+Distribution Shift</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-03</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#開場你要先記住的一句話"
+id="toc-開場你要先記住的一句話">開場：你要先記住的一句話</a></li>
+<li><a href="#延伸資源--快速了解內容"
+id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#workflow-地圖看圖就懂" id="toc-workflow-地圖看圖就懂">0)
+Workflow 地圖（看圖就懂）</a></li>
+<li><a href="#關鍵字keywords最精簡解說版"
+id="toc-關鍵字keywords最精簡解說版">關鍵字（Keywords，最精簡解說版）</a></li>
+<li><a href="#核心觀念整合-cheatsheet-colab-必懂點"
+id="toc-核心觀念整合-cheatsheet-colab-必懂點">1) 核心觀念（整合
+cheatsheet + Colab 必懂點）</a>
+<ul>
+<li><a href="#linear-vs-logistic考試最愛比"
+id="toc-linear-vs-logistic考試最愛比">1.1 Linear vs
+Logistic（考試最愛比）</a></li>
+<li><a href="#predict-vs-predict_proba考試寫作業必會"
+id="toc-predict-vs-predict_proba考試寫作業必會">1.2
+<code>predict()</code> vs
+<code>predict_proba()</code>（考試/寫作業必會）</a></li>
+<li><a href="#threshold-怎麼影響-precisionrecall直覺版"
+id="toc-threshold-怎麼影響-precisionrecall直覺版">1.3 Threshold 怎麼影響
+Precision/Recall？（直覺版）</a></li>
+<li><a href="#logloss它最討厭你自信但錯"
+id="toc-logloss它最討厭你自信但錯">1.4
+LogLoss（它最討厭你自信但錯）</a></li>
+<li><a href="#gray-area0.450.55-的尷尬地帶"
+id="toc-gray-area0.450.55-的尷尬地帶">1.5 Gray Area（0.45–0.55
+的尷尬地帶）</a></li>
+<li><a href="#分類-workflow避免-data-leakage-的黃金順序"
+id="toc-分類-workflow避免-data-leakage-的黃金順序">1.6 分類
+workflow（避免 data leakage 的黃金順序）</a></li>
+<li><a href="#stratifylabels分類-split-的關鍵"
+id="toc-stratifylabels分類-split-的關鍵">1.7
+<code>stratify=labels</code>（分類 split 的關鍵）</a></li>
+<li><a href="#係數解讀先標準化再談重要性"
+id="toc-係數解讀先標準化再談重要性">1.8
+係數解讀（先標準化，再談重要性）</a></li>
+<li><a href="#convergencewarning你不是做錯是迭代不夠尺度太亂"
+id="toc-convergencewarning你不是做錯是迭代不夠尺度太亂">1.9
+ConvergenceWarning（你不是做錯，是迭代不夠/尺度太亂）</a></li>
+</ul></li>
+<li><a href="#q-題教學a-模式rf-模組化講義密度每題更短但更密"
+id="toc-q-題教學a-模式rf-模組化講義密度每題更短但更密">2) Q 題教學（A
+模式｜RF 模組化講義密度｜每題更短但更密）</a>
+<ul>
+<li><a href="#q1---讀入資料確認你手上有什麼dataset1"
+id="toc-q1---讀入資料確認你手上有什麼dataset1">Q1 -
+讀入資料：確認你手上有什麼（dataset1）</a></li>
+<li><a href="#q2---定義-x-y先切乾淨避免答案洩漏"
+id="toc-q2---定義-x-y先切乾淨避免答案洩漏">Q2 - 定義 X /
+y：先切乾淨（避免答案洩漏）</a></li>
+<li><a href="#q3---traintest-split分類要記得-stratify"
+id="toc-q3---traintest-split分類要記得-stratify">Q3 - Train/Test
+split：分類要記得 stratify</a></li>
+<li><a
+href="#q4---訓練-logistic-regressionmax_iter-需要時standardscaler"
+id="toc-q4---訓練-logistic-regressionmax_iter-需要時standardscaler">Q4 -
+訓練 Logistic Regression：max_iter +（需要時）StandardScaler</a></li>
+<li><a href="#q5---predict_proba-才是本體probability-threshold-class"
+id="toc-q5---predict_proba-才是本體probability-threshold-class">Q5 -
+<code>predict_proba</code> 才是本體：probability → threshold →
+class</a></li>
+<li><a href="#q6---confusion-matrix-precisionrecallf1cheatsheet-必背"
+id="toc-q6---confusion-matrix-precisionrecallf1cheatsheet-必背">Q6 -
+Confusion matrix + Precision/Recall/F1（cheatsheet 必背）</a></li>
+<li><a href="#q7---threshold-調整tradeoffprecision-recall"
+id="toc-q7---threshold-調整tradeoffprecision-recall">Q7 - Threshold
+調整：tradeoff（precision↑ recall↓）</a></li>
+<li><a href="#q8---logloss-interpretation它在罰自信但錯"
+id="toc-q8---logloss-interpretation它在罰自信但錯">Q8 - LogLoss
+interpretation：它在罰「自信但錯」</a></li>
+<li><a href="#q9---dataset2先看分佈再決定-cutoff重新標記-label"
+id="toc-q9---dataset2先看分佈再決定-cutoff重新標記-label">Q9 -
+dataset2：先看分佈，再決定 cutoff（重新標記 label）</a></li>
+<li><a href="#q10---分佈漂移distribution-shift判斷流程-對策"
+id="toc-q10---分佈漂移distribution-shift判斷流程-對策">Q10 -
+分佈漂移（distribution shift）判斷流程 + 對策</a></li>
+<li><a href="#q11---dataset2-上評估同一套指標再跑一次可比較但要有前提"
+id="toc-q11---dataset2-上評估同一套指標再跑一次可比較但要有前提">Q11 -
+dataset2 上評估：同一套指標再跑一次（可比較但要有前提）</a></li>
+<li><a href="#q12---係數變化為什麼-dataset2-retrain-後-coef-會變"
+id="toc-q12---係數變化為什麼-dataset2-retrain-後-coef-會變">Q12 -
+係數變化：為什麼 dataset2 retrain 後 coef 會變？</a></li>
+<li><a href="#q13---sanity-check不要盲信模型用人話檢查"
+id="toc-q13---sanity-check不要盲信模型用人話檢查">Q13 - sanity
+check：不要盲信模型（用人話檢查）</a></li>
+</ul></li>
+<li><a href="#考點清單exam-checklist可直接背版本"
+id="toc-考點清單exam-checklist可直接背版本">考點清單（Exam
+checklist｜可直接背版本）</a></li>
+</ul>
+</nav>
+<h1 id="開場你要先記住的一句話">開場：你要先記住的一句話</h1>
+<p><strong>一句話總結：</strong> Logistic Regression
+的重點不是預測連續值，而是輸出 <strong>P(y=1|x)</strong>（機率），再用
+threshold（門檻）把它變成 0/1；而模型最常「突然失靈」的原因是
+<strong>distribution shift（資料分佈變了）</strong>。</p>
+<p><strong>你要背的 3 個重點：</strong></p>
+<ol type="1">
+<li><code>predict_proba</code> 才是核心（拿機率），<code>predict</code>
+只是 threshold 後的 0/1</li>
+<li>threshold ↑ → precision ↑、recall ↓（更保守判 1）</li>
+<li>dataset1 訓練拿去 dataset2 表現差，常是 distribution
+shift，不是你「突然變笨」</li>
+</ol>
+<hr />
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://gemini.google.com/share/1933a6760338" target="_blank" rel="noopener noreferrer">Gemini｜Logistic Regression（快速複習）</a>
+  </li>
+  <li>
+    <a href="https://youtu.be/3PDABf3mnnM?si=B6uBT5MEV_41p53p" target="_blank" rel="noopener noreferrer">YouTube｜ 給新手的機器學習｜認識你的第一個機器學習模型：分類與 Logistic Regression（一次就懂）</a>
+  </li>
+</ul>
+<hr />
+<h1 id="workflow-地圖看圖就懂">0) Workflow 地圖（看圖就懂）</h1>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:16px 0;">
+<svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .b{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+    .t{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .s{fill:#a7b0c0;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} 
+  </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+    </marker>
+  </defs>
+
+  <rect class="b" x="20"  y="30" width="230" height="70" rx="12"/>
+  <text class="t" x="40" y="60">Load data</text>
+  <text class="s" x="40" y="82">CSV → dataframe</text>
+
+  <rect class="b" x="270" y="30" width="250" height="70" rx="12"/>
+  <text class="t" x="290" y="60">Make label</text>
+  <text class="s" x="290" y="82">pIC50 → potency (0/1)</text>
+
+  <rect class="b" x="540" y="30" width="200" height="70" rx="12"/>
+  <text class="t" x="560" y="60">Split</text>
+  <text class="s" x="560" y="82">train/test (RS=42)</text>
+
+  <rect class="b" x="760" y="30" width="200" height="70" rx="12"/>
+  <text class="t" x="780" y="60">Train</text>
+  <text class="s" x="780" y="82">LogReg fit</text>
+
+  <rect class="b" x="20"  y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="40" y="180">Predict &amp; explain</text>
+  <text class="s" x="40" y="202">prob → threshold → class</text>
+
+  <rect class="b" x="340" y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="360" y="180">Distribution shift</text>
+  <text class="s" x="360" y="202">Dataset2 分佈改變</text>
+
+  <rect class="b" x="660" y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="680" y="180">Re-train &amp; compare</text>
+  <text class="s" x="680" y="202">coef change + lesson</text>
+
+  <path class="a" d="M250,65 L270,65"/>
+  <path class="a" d="M520,65 L540,65"/>
+  <path class="a" d="M740,65 L760,65"/>
+  <path class="a" d="M860,100 L170,150"/>
+  <path class="a" d="M320,185 L340,185"/>
+  <path class="a" d="M640,185 L660,185"/>
+</svg>
+</div>
+<hr />
+<h1
+id="關鍵字keywords最精簡解說版">關鍵字（Keywords，最精簡解說版）</h1>
+<ul>
+<li><strong>Logistic
+Regression（邏輯斯迴歸）</strong>：其實是分類模型；輸出 <span
+class="math inline"><em>P</em>(<em>y</em> = 1 ∣ <em>x</em>)</span>
+再切成 0/1</li>
+<li><strong>probability（機率） /
+<code>predict_proba</code></strong>：回傳每筆資料屬於 0/1 的機率 <span
+class="math inline">[<em>P</em>(0), <em>P</em>(1)]</span>，是這章的「本體輸出」</li>
+<li><strong>threshold（門檻）</strong>：把機率切成 class 的規則（預設
+0.5，但可依任務調整）</li>
+<li><strong>precision / recall</strong>：分類的兩個核心 tradeoff
+指標（precision 怕誤判 FP；recall 怕漏掉 FN）</li>
+<li><strong>distribution shift（分佈漂移）</strong>：train/test 或
+dataset1/dataset2 的資料分佈改變，模型會突然不準</li>
+</ul>
+<hr />
+<h1 id="核心觀念整合-cheatsheet-colab-必懂點">1) 核心觀念（整合
+cheatsheet + Colab 必懂點）</h1>
+<h2 id="linear-vs-logistic考試最愛比">1.1 Linear vs
+Logistic（考試最愛比）</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Linear Regression</th>
+<th>Logistic Regression</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Output</td>
+<td>continuous number</td>
+<td>probability → binary (0/1)</td>
+</tr>
+<tr>
+<td>問題</td>
+<td>How much?（多少）</td>
+<td>Yes or No?（是不是）</td>
+</tr>
+<tr>
+<td>形狀</td>
+<td>straight line</td>
+<td>S-curve（sigmoid）</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>MSE/SSE</td>
+<td>LogLoss（cross-entropy）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>陷阱：</strong> Logistic Regression 雖然叫 regression，但它是
+<strong>classification model</strong>。</p>
+<hr />
+<h2 id="predict-vs-predict_proba考試寫作業必會">1.2
+<code>predict()</code> vs
+<code>predict_proba()</code>（考試/寫作業必會）</h2>
+<ul>
+<li><code>predict_proba(X)</code> → shape (N,2)，回傳 <span
+class="math inline">[<em>P</em>(0), <em>P</em>(1)]</span>（模型真正的輸出）</li>
+<li><code>predict(X)</code> → shape (N,)，其實是把 <span
+class="math inline"><em>P</em>(1)</span> 跟 threshold 比：<span
+class="math inline"><em>P</em>(1) ≥ <em>t</em> ⇒ 1</span>，否則 0</li>
+</ul>
+<p><strong>一句話：</strong> probability 才是「信心」，class
+只是「切一刀」的結果。</p>
+<hr />
+<h2 id="threshold-怎麼影響-precisionrecall直覺版">1.3 Threshold 怎麼影響
+Precision/Recall？（直覺版）</h2>
+<ul>
+<li>threshold ↑（更嚴格才判 1）→ <strong>precision ↑</strong>（少亂判
+1）、<strong>recall ↓</strong>（更容易漏掉真的 1）</li>
+<li>threshold ↓（更容易判 1）→ <strong>recall
+↑</strong>、<strong>precision ↓</strong></li>
+</ul>
+<hr />
+<h2 id="logloss它最討厭你自信但錯">1.4
+LogLoss（它最討厭你自信但錯）</h2>
+<p><strong>LogLoss 的精神：</strong> - 你猜 0.98 但真實是 0 →
+會被狠狠懲罰 - 你猜 0.55 但真實是 0 → 懲罰相對小</p>
+<p><strong>一句話總結：</strong> LogLoss
+在衡量「你給的機率有沒有校準（calibration）」。</p>
+<hr />
+<h2 id="gray-area0.450.55-的尷尬地帶">1.5 Gray Area（0.45–0.55
+的尷尬地帶）</h2>
+<ul>
+<li><p>機率靠近 0.5：模型其實很猶豫，<strong>最容易錯</strong></p></li>
+<li><p>實務處理：別硬切；可以要求複測、加資料、或把這些樣本標成「需要人工審」</p></li>
+</ul>
+<hr />
+<h2 id="分類-workflow避免-data-leakage-的黃金順序">1.6 分類
+workflow（避免 data leakage 的黃金順序）</h2>
+<ol type="1">
+<li>Define：先確認 <span
+class="math inline"><em>X</em></span>（features）與 <span
+class="math inline"><em>y</em></span>（labels）</li>
+<li>Split：train/test</li>
+<li>Preprocess：<strong>只在 train fit</strong> scaler/imputer，然後
+transform train+test</li>
+<li>Fit：LogisticRegression</li>
+<li>Evaluate：用 confusion matrix / precision / recall / F1（accuracy
+不夠）</li>
+</ol>
+<p><strong>最常見的 leakage：</strong> - 忘記把 target（例如
+<code>Cellular_pIC50</code> 或你做出來的 <code>potency</code>）從
+features 裡 drop 掉 - 用 test 的統計量（mean/median）補值或標準化</p>
+<hr />
+<h2 id="stratifylabels分類-split-的關鍵">1.7
+<code>stratify=labels</code>（分類 split 的關鍵）</h2>
+<p>分類很常 label 不平衡，split 時要：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    X, y,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    test_size<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    stratify<span class="op">=</span>y</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><strong>意義：</strong> 讓 train/test 裡 0/1
+比例一致，不然你可能會抽到「train 幾乎全 0」的怪 split。</p>
+<hr />
+<h2 id="係數解讀先標準化再談重要性">1.8
+係數解讀（先標準化，再談重要性）</h2>
+<ul>
+<li>Logistic coef 的直覺：feature 增加 1 單位，會推動 log-odds → 影響
+<span class="math inline"><em>P</em>(1)</span></li>
+<li>但不同 feature 尺度差很多時：raw coef 不能直接比</li>
+</ul>
+<p><strong>公平比較（cheatsheet 的方法）：</strong> - 用
+<code>standardize</code>（或用 <span
+class="math inline">coef × std</span> 做尺度校正）再排序重要性</p>
+<hr />
+<h2 id="convergencewarning你不是做錯是迭代不夠尺度太亂">1.9
+ConvergenceWarning（你不是做錯，是迭代不夠/尺度太亂）</h2>
+<ul>
+<li>出現 <code>ConvergenceWarning</code>：通常代表最佳化沒收斂</li>
+<li>常見解法：
+<ul>
+<li><code>max_iter</code> 加大</li>
+<li>或先對 features 做 <code>StandardScaler</code></li>
+</ul></li>
+</ul>
+<hr />
+<h1 id="q-題教學a-模式rf-模組化講義密度每題更短但更密">2) Q 題教學（A
+模式｜RF 模組化講義密度｜每題更短但更密）</h1>
+<hr />
+<h2 id="q1---讀入資料確認你手上有什麼dataset1">Q1 -
+讀入資料：確認你手上有什麼（dataset1）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>CSV</li>
+<li>dataframe</li>
+<li>label</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>一開始先做 <em>sanity check</em>：欄位名、缺值、label 0/1
+比例。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你不是在「跑模型」；你是在「確保資料沒有先把你騙了」。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>讀到的其實是 dataset2/錯檔</li>
+<li>label 還沒做出來（或做錯）就開始 split</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>你覺得 label 1（high
+potency）大概佔多少比例才算合理？（不用很準，先有直覺）</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>先看資料，再談模型。</li>
+</ul>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1) <code>.head()</code>
+看欄位 2) <code>value_counts(normalize=True)</code> 看 class
+imbalance</p>
+<p><strong>最容易錯的 1 個地方：</strong></p>
+<ul>
+<li>還沒 drop target 就把它塞進 X（data leakage）</li>
+</ul>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(<span class="st">&#39;pIC50_simData1.csv&#39;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data.shape)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data.head())</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># label 分佈（0/1 比例）</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data[<span class="st">&#39;potency&#39;</span>].value_counts())</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data[<span class="st">&#39;potency&#39;</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span></code></pre></div>
+<hr />
+<h2 id="q2---定義-x-y先切乾淨避免答案洩漏">Q2 - 定義 X /
+y：先切乾淨（避免答案洩漏）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>feature matrix X</li>
+<li>label y</li>
+<li>data leakage</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>任何「直接包含答案」或「被你用來做 label 的欄位」都必須從 X
+移除。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你不 drop，模型就像偷看解答：train/test
+會看起來很神，但上線會死。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li><code>Cellular_pIC50</code> 用來做 potency，結果沒 drop 掉</li>
+<li>把 <code>potency</code> 本身留在 features</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>你能說出「為什麼這叫 leakage」嗎？一句話。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>做分類前，先把答案從 X 拿掉。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li><code>X = data.drop(columns=[target_col])</code></li>
+</ul>
+<p><strong>最容易錯：</strong></p>
+<ul>
+<li>drop 錯欄位名（拼字/大小寫）</li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> data.drop(columns<span class="op">=</span>[<span class="st">&#39;potency&#39;</span>])</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> data[<span class="st">&#39;potency&#39;</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(X.shape, y.shape)</span></code></pre></div>
+<hr />
+<h2 id="q3---traintest-split分類要記得-stratify">Q3 - Train/Test
+split：分類要記得 stratify</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>train_test_split</li>
+<li>stratify</li>
+<li>class imbalance</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>classification 通常要 <code>stratify=y</code>，讓 train/test 的 0/1
+比例一致。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你不 stratify，就可能抽到「train 幾乎全是 0」，模型會學歪。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>忘記 stratify</li>
+<li>random_state 不固定 → 結果每次都不一樣、難 debug</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>print 一下 train/test 的 label 比例，看是不是差不多。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>分類 split：要公平，就 stratify。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li><code>stratify=y</code></li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    X, y,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    test_size<span class="op">=</span><span class="fl">0.30</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    stratify<span class="op">=</span>y</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(y_train.value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(y_test.value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span></code></pre></div>
+<hr />
+<h2 id="q4---訓練-logistic-regressionmax_iter-需要時standardscaler">Q4 -
+訓練 Logistic Regression：max_iter +（需要時）StandardScaler</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>LogisticRegression</li>
+<li>ConvergenceWarning</li>
+<li>StandardScaler</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>出現
+<code>ConvergenceWarning</code>：通常不是你做錯，是<strong>迭代不夠</strong>或<strong>尺度太亂</strong>。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>logistic regression 在「找一組係數」讓 LogLoss
+最小；這是迭代最佳化問題。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>忘記設定 <code>max_iter</code></li>
+<li>features 尺度差太大導致難收斂</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>先不 scaler 跑一次，看到 warning 再加
+scaler（你就會記住原因）。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>logistic regression = 用最佳化把 LogLoss 壓下來。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li><code>LogisticRegression(max_iter=1000)</code></li>
+</ul>
+<p><strong>可直接貼 Colab code（建議版：pipeline）:</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>clf <span class="op">=</span> Pipeline([</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">&#39;scaler&#39;</span>, StandardScaler()),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">&#39;lr&#39;</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>clf.fit(X_train, y_train)</span></code></pre></div>
+<hr />
+<h2 id="q5---predict_proba-才是本體probability-threshold-class">Q5 -
+<code>predict_proba</code> 才是本體：probability → threshold →
+class</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>predict_proba</li>
+<li>threshold</li>
+<li>calibration</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li><code>predict_proba</code> 回傳的是 <span
+class="math inline">[<em>P</em>(0), <em>P</em>(1)]</span>，這才是模型真正的輸出。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li><code>predict()</code> 只是「切一刀」：<span
+class="math inline"><em>P</em>(1) ≥ <em>t</em> ⇒ 1</span>。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>只看 <code>predict()</code>，忽略模型的信心（confidence）</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>找出機率最接近 0.5 的那幾筆，看它們最容易錯。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>機率是答案，class 是剪裁。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li><code>proba = clf.predict_proba(X)[:,1]</code></li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>proba_test <span class="op">=</span> clf.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>threshold <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>pred_test <span class="op">=</span> (proba_test <span class="op">&gt;=</span> threshold).astype(<span class="bu">int</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Gray area：最猶豫的點</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> np.argsort(np.<span class="bu">abs</span>(proba_test <span class="op">-</span> <span class="fl">0.5</span>))[:<span class="dv">10</span>]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(proba_test[idx])</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(y_test.iloc[idx].values)</span></code></pre></div>
+<hr />
+<h2 id="q6---confusion-matrix-precisionrecallf1cheatsheet-必背">Q6 -
+Confusion matrix + Precision/Recall/F1（cheatsheet 必背）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>TP / TN / FP / FN</li>
+<li>precision</li>
+<li>recall</li>
+<li>F1</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>precision 怕 FP（誤判）</li>
+<li>recall 怕 FN（漏掉）</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>precision：我說「是 1」時有多準？</li>
+<li>recall：真的 1 我抓回來多少？</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>把 precision/recall 記反</li>
+<li>只看 accuracy（資料不平衡時會騙人）</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>如果「漏掉很貴」→ 你會優先提高 precision 還是
+recall？（答案：recall）</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>分類評估靠 confusion matrix，不靠距離誤差。</li>
+</ul>
+<p><strong>背誦重點（必背公式）：</strong></p>
+<ul>
+<li>Precision = TP/(TP+FP)</li>
+<li>Recall = TP/(TP+FN)</li>
+<li>F1 = 2PR/(P+R)</li>
+</ul>
+<p><strong>看圖就懂（confusion matrix 口訣）：</strong></p>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:12px 0;">
+<pre style="margin:0; white-space:pre-wrap; color:#e5e7eb; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;">Confusion Matrix
+
+            Pred 0      Pred 1
+Actual 0       TN         FP   (FP=誤判)
+Actual 1       FN         TP   (FN=漏掉)
+
+Precision: 我說 1 的裡面，多少是真的 1？
+Recall:    真的 1 的裡面，我抓回來多少？</pre>
+</div>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix, precision_score, recall_score, f1_score</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_test, pred_test)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cm)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;precision&#39;</span>, precision_score(y_test, pred_test))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;recall   &#39;</span>, recall_score(y_test, pred_test))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;f1       &#39;</span>, f1_score(y_test, pred_test))</span></code></pre></div>
+<hr />
+<h2 id="q7---threshold-調整tradeoffprecision-recall">Q7 - Threshold
+調整：tradeoff（precision↑ recall↓）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>threshold tuning</li>
+<li>tradeoff</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>threshold ↑（更保守判 1）→ precision ↑、recall ↓</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你把門檻拉高，就只在「非常像 1」時才判 1。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>直接用 0.5 當真理</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>你試 0.3、0.5、0.7，各印一次 precision/recall/F1，看變化。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>threshold 是「策略」，不是模型固定輸出。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li>threshold ↑：precision ↑、recall ↓</li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.7</span>]:</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> (proba_test <span class="op">&gt;=</span> t).astype(<span class="bu">int</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> precision_score(y_test, pred)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> recall_score(y_test, pred)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> f1_score(y_test, pred)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(t, <span class="st">&#39;P&#39;</span>, <span class="bu">round</span>(p,<span class="dv">3</span>), <span class="st">&#39;R&#39;</span>, <span class="bu">round</span>(r,<span class="dv">3</span>), <span class="st">&#39;F1&#39;</span>, <span class="bu">round</span>(f,<span class="dv">3</span>))</span></code></pre></div>
+<hr />
+<h2 id="q8---logloss-interpretation它在罰自信但錯">Q8 - LogLoss
+interpretation：它在罰「自信但錯」</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>log loss</li>
+<li>calibration</li>
+<li>confident wrong</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>LogLoss 不是在乎你猜對幾個；它在乎你「機率有沒有講得合理」。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你說 0.99 結果錯 → 你會被懲罰到爆。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>只看 accuracy，不看 log loss</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>比較兩個模型：accuracy 差不多，但 log loss
+差很多（代表誰更校準）。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>log loss 低 = 機率更可信。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<p>-「很自信但錯」會有巨大 loss。</p>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> log_loss</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;log loss:&#39;</span>, log_loss(y_test, proba_test))</span></code></pre></div>
+<hr />
+<h2 id="q9---dataset2先看分佈再決定-cutoff重新標記-label">Q9 -
+dataset2：先看分佈，再決定 cutoff（重新標記 label）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>histogram</li>
+<li>cutoff</li>
+<li>binning</li>
+<li>label definition</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>dataset2 的分佈可能跟 dataset1 不同；cutoff 不一定沿用。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你在「定義什麼叫 1」。定義變了，模型自然會看起來怪。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>cutoff 亂選（沒看圖）</li>
+<li>binning 後忘記 drop 原始 <code>Cellular_pIC50</code>（超級
+leakage）</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>你選的 cutoff 會讓 1 的比例大概多少？是不是極端不平衡？</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>先把 label 定義清楚，才有公平比較。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li>cutoff = label 規則；規則不同，結果不能硬比。</li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>new_data <span class="op">=</span> pd.read_csv(<span class="st">&#39;pIC50_simData2.csv&#39;</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>sns.histplot(new_data, x<span class="op">=</span><span class="st">&#39;Cellular_pIC50&#39;</span>, bins<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>cutoff <span class="op">=</span> <span class="fl">6.5</span>  <span class="co"># 例：你從圖上選</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>new_data[<span class="st">&#39;potency&#39;</span>] <span class="op">=</span> (new_data[<span class="st">&#39;Cellular_pIC50&#39;</span>] <span class="op">&gt;=</span> cutoff).astype(<span class="bu">int</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(new_data[<span class="st">&#39;potency&#39;</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> new_data.drop(columns<span class="op">=</span>[<span class="st">&#39;potency&#39;</span>, <span class="st">&#39;Cellular_pIC50&#39;</span>])  <span class="co"># 重要：drop 掉用來做 label 的原始欄</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>y2 <span class="op">=</span> new_data[<span class="st">&#39;potency&#39;</span>]</span></code></pre></div>
+<hr />
+<h2 id="q10---分佈漂移distribution-shift判斷流程-對策">Q10 -
+分佈漂移（distribution shift）判斷流程 + 對策</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>distribution shift</li>
+<li>dataset shift</li>
+<li>retrain</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>dataset1 訓練拿去 dataset2
+崩掉，常不是你「突然變笨」，而是<strong>分佈變了</strong>。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>模型學的是 <span
+class="math inline"><em>P</em>(<em>y</em> ∣ <em>x</em>)</span>（在你訓練的世界）。世界變了，它就不認得了。</li>
+</ul>
+<p><strong>看圖就懂（判斷流程）：</strong></p>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:12px 0;">
+<pre style="margin:0; white-space:pre-wrap; color:#e5e7eb; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;">Distribution shift 判斷流程（背這張）
+
+(1) 先確定沒有 leakage / preprocessing bug
+    - target 有沒有 drop？scaler 有沒有只 fit 在 train？
+
+(2) 看 X 的分佈有沒有變（dataset1 vs dataset2）
+    - histogram / summary stats / feature ranges
+
+(3) 看 y 的定義有沒有變（cutoff 變了？label 比例變了？）
+
+(4) 對策（由輕到重）
+    A. 調 threshold（策略層）
+    B. 用 dataset2 重新訓練/微調（模型層）
+    C. 重新定義 label（資料層）
+    D. 收集更多符合部署分佈的資料（根本解）</pre>
+</div>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>把「分佈漂移」誤判成「模型一定要更複雜」</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>你能指出：你遇到的問題更像 (2) feature shift 還是 (3) label
+shift？</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>dataset2 表現差：先排除 bug，再懷疑 shift。</li>
+</ul>
+<p><strong>背誦重點（你要背 3 個）：</strong> 1) 先查 leakage 2)
+再查分佈（X、y） 3) 最後才決定要不要 retrain/調 threshold</p>
+<hr />
+<h2 id="q11---dataset2-上評估同一套指標再跑一次可比較但要有前提">Q11 -
+dataset2 上評估：同一套指標再跑一次（可比較但要有前提）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>consistent evaluation</li>
+<li>apples-to-apples</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>你可以比較「同一個資料分佈內」的模型；但跨分佈比較要很小心。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>dataset1 的 90 分不等於 dataset2 的 90 分，因為考卷不一樣。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>用 dataset2 的結果回頭說 dataset1 模型爛（不公平）</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>在 dataset2 上先用 dataset1 訓練的模型跑一次，再用 retrain
+後的模型跑一次。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>比較要有前提：同分佈才公平。</li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>X2_train, X2_test, y2_train, y2_test <span class="op">=</span> train_test_split(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    X2, y2, test_size<span class="op">=</span><span class="fl">0.3</span>, random_state<span class="op">=</span><span class="dv">42</span>, stratify<span class="op">=</span>y2</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>clf2 <span class="op">=</span> Pipeline([</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">&#39;scaler&#39;</span>, StandardScaler()),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">&#39;lr&#39;</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>clf2.fit(X2_train, y2_train)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>proba2 <span class="op">=</span> clf2.predict_proba(X2_test)[:,<span class="dv">1</span>]</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>pred2 <span class="op">=</span> (proba2 <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;P&#39;</span>, precision_score(y2_test, pred2))</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;R&#39;</span>, recall_score(y2_test, pred2))</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;F1&#39;</span>, f1_score(y2_test, pred2))</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;logloss&#39;</span>, log_loss(y2_test, proba2))</span></code></pre></div>
+<hr />
+<h2 id="q12---係數變化為什麼-dataset2-retrain-後-coef-會變">Q12 -
+係數變化：為什麼 dataset2 retrain 後 coef 會變？</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>coefficient shift</li>
+<li>interpretation caution</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>coef
+變化不是「真理改變」，而是「資料分佈改變」或「相關特徵權重重分配」。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>logistic 係數是在推
+log-odds；資料世界不同，最有效的推法也會不同。</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>直接拿 coef 當因果</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>找出 |coef2 - coef1| 最大的兩個
+features，寫一句你猜它代表的分佈差異。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>coef 會漂移；要先標準化再解讀。</li>
+</ul>
+<p><strong>背誦重點：</strong></p>
+<ul>
+<li>先 standardize，再比較係數大小。</li>
+</ul>
+<p><strong>可直接貼 Colab code：</strong></p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 取出 pipeline 裡 logistic 的 coef</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>coef1 <span class="op">=</span> clf.named_steps[<span class="st">&#39;lr&#39;</span>].coef_.ravel()</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>coef2 <span class="op">=</span> clf2.named_steps[<span class="st">&#39;lr&#39;</span>].coef_.ravel()</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>feat <span class="op">=</span> X_train.columns</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> np.argsort(np.<span class="bu">abs</span>(coef2 <span class="op">-</span> coef1))[::<span class="op">-</span><span class="dv">1</span>][:<span class="dv">10</span>]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> idx:</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(feat[i], coef1[i], <span class="st">&#39;-&gt;&#39;</span>, coef2[i], <span class="st">&#39;delta&#39;</span>, coef2[i]<span class="op">-</span>coef1[i])</span></code></pre></div>
+<hr />
+<h2 id="q13---sanity-check不要盲信模型用人話檢查">Q13 - sanity
+check：不要盲信模型（用人話檢查）</h2>
+<p><strong>關鍵字：</strong></p>
+<ul>
+<li>domain intuition</li>
+<li>reasonableness check</li>
+</ul>
+<p><strong>老師提醒：</strong></p>
+<ul>
+<li>最怕的是：模型給你很自信的機率，但你完全不檢查。</li>
+</ul>
+<p><strong>直覺：</strong></p>
+<ul>
+<li>你要能說：「這個 sample 為什麼會是 1？」（看 feature 值/方向）</li>
+</ul>
+<p><strong>常見踩雷：</strong></p>
+<ul>
+<li>只看分數不看特徵</li>
+</ul>
+<p><strong>小練習：</strong></p>
+<ul>
+<li>隨便挑 3 筆：一筆 proba
+高、一筆中、一筆低，寫一句你覺得合理嗎？</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>ML 不是丟進去就信；要用直覺做 QC。</li>
+</ul>
+<hr />
+<h1 id="考點清單exam-checklist可直接背版本">考點清單（Exam
+checklist｜可直接背版本）</h1>
+<ol type="1">
+<li>Logistic Regression 輸出的是 <span
+class="math inline"><em>P</em>(<em>y</em> = 1 ∣ <em>x</em>)</span>，再用
+threshold 變成 0/1。</li>
+<li><code>predict_proba</code> 是本體；<code>predict</code> 是 threshold
+後的 hard decision。</li>
+<li>threshold ↑：precision ↑、recall ↓；threshold ↓：recall ↑、precision
+↓。</li>
+<li>Confusion matrix 四格：TN/FP/FN/TP；
+<ul>
+<li>Precision=TP/(TP+FP)（怕誤判）</li>
+<li>Recall=TP/(TP+FN)（怕漏掉）</li>
+<li>F1=2PR/(P+R)</li>
+</ul></li>
+<li>LogLoss：最討厭「很自信但錯」；log loss
+越低代表機率越可信（校準更好）。</li>
+<li>分類 split：要 <code>stratify=y</code> 保持 0/1 比例一致。</li>
+<li>Data leakage 三大地雷：
+<ul>
+<li>target（或用來做 label 的欄）沒從 features drop</li>
+<li>scaler/imputer 用到 test 的統計量</li>
+<li>用 test 來調 threshold/調參</li>
+</ul></li>
+<li>Distribution shift 判斷流程：先排除 bug/leakage → 再看 X/y
+分佈是否改變 → 再決定調 threshold / retrain / 重定義 cutoff。</li>
+<li>dataset2 retrain 變好 ≠ 跨資料更強：可能只是更適合新分佈。</li>
+</ol>
+</body>
+</html>

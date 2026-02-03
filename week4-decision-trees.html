@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-02" />
+  <title>WK4｜Decision Trees</title>
+  <style>
+
+html {
+color: #1a1a1a;
+background-color: #fdfdfd;
+}
+body {
+margin: 0 auto;
+max-width: 36em;
+padding-left: 50px;
+padding-right: 50px;
+padding-top: 50px;
+padding-bottom: 50px;
+hyphens: auto;
+overflow-wrap: break-word;
+text-rendering: optimizeLegibility;
+font-kerning: normal;
+}
+@media (max-width: 600px) {
+body {
+font-size: 0.9em;
+padding: 12px;
+}
+h1 {
+font-size: 1.8em;
+}
+}
+@media print {
+html {
+background-color: white;
+}
+body {
+background-color: transparent;
+color: black;
+font-size: 12pt;
+}
+p, h2, h3 {
+orphans: 3;
+widows: 3;
+}
+h2, h3, h4 {
+page-break-after: avoid;
+}
+}
+p {
+margin: 1em 0;
+}
+a {
+color: #1a1a1a;
+}
+a:visited {
+color: #1a1a1a;
+}
+img {
+max-width: 100%;
+}
+svg {
+height: auto;
+max-width: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+margin-top: 1.4em;
+}
+h5, h6 {
+font-size: 1em;
+font-style: italic;
+}
+h6 {
+font-weight: normal;
+}
+ol, ul {
+padding-left: 1.7em;
+margin-top: 1em;
+}
+li > ol, li > ul {
+margin-top: 0;
+}
+blockquote {
+margin: 1em 0 1em 1.7em;
+padding-left: 1em;
+border-left: 2px solid #e6e6e6;
+color: #606060;
+}
+code {
+font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+font-size: 85%;
+margin: 0;
+hyphens: manual;
+}
+pre {
+margin: 1em 0;
+overflow: auto;
+}
+pre code {
+padding: 0;
+overflow: visible;
+overflow-wrap: normal;
+}
+.sourceCode {
+background-color: transparent;
+overflow: visible;
+}
+hr {
+border: none;
+border-top: 1px solid #1a1a1a;
+height: 1px;
+margin: 1em 0;
+}
+table {
+margin: 1em 0;
+border-collapse: collapse;
+width: 100%;
+overflow-x: auto;
+display: block;
+font-variant-numeric: lining-nums tabular-nums;
+}
+table caption {
+margin-bottom: 0.75em;
+}
+tbody {
+margin-top: 0.5em;
+border-top: 1px solid #1a1a1a;
+border-bottom: 1px solid #1a1a1a;
+}
+th {
+border-top: 1px solid #1a1a1a;
+padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+padding: 0.125em 0.5em 0.25em 0.5em;
+}
+header {
+margin-bottom: 4em;
+text-align: center;
+}
+#TOC li {
+list-style: none;
+}
+#TOC ul {
+padding-left: 1.3em;
+}
+#TOC > ul {
+padding-left: 0;
+}
+#TOC a:not(:hover) {
+text-decoration: none;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">
+:root{
+--bg:#0b1020;
+--panel:#0f172a;
+--text:#e5e7eb;
+--muted:#a7b0c0;
+--link:#7dd3fc;
+--codebg:#0b1224;
+--border:#23304a;
+--accent:#38bdf8;
+}
+html,body{background:var(--bg); color:var(--text);}
+body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+h2{margin-top: 1.4em;}
+h3{margin-top: 1.2em;}
+a{color:var(--link);}
+a:visited{color:#c4b5fd;}
+blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+pre code{background: transparent; padding: 0;}
+table{border-collapse: collapse; width:100%; margin: 14px 0;}
+th, td{border: 1px solid var(--border); padding: 8px 10px;}
+th{background: rgba(255,255,255,0.06);}
+img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+#TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+#TOC a{color: var(--link);}
+hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+@media (max-width: 520px){
+body{padding: 20px 14px;}
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK4｜Decision Trees</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-02</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#part-0你要先記住的一句話" id="toc-part-0你要先記住的一句話">Part 0｜你要先記住的一句話</a></li>
+<li><a href="#延伸資源--快速了解內容" id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#這章你會學到什麼what-youll-get" id="toc-這章你會學到什麼what-youll-get">0. 這章你會學到什麼（What you’ll
+get）</a></li>
+<li><a href="#一頁流程圖全章地圖" id="toc-一頁流程圖全章地圖">1)
+一頁流程圖（全章地圖）</a></li>
+<li><a href="#part-0.5decision-tree-視覺化工具箱補圖用重點-code" id="toc-part-0.5decision-tree-視覺化工具箱補圖用重點-code">Part
+0.5｜Decision Tree 視覺化工具箱（補圖用｜重點 code）</a>
+<ul>
+<li><a href="#a-一張圖看樹長什麼樣plot_tree" id="toc-a-一張圖看樹長什麼樣plot_tree">(A)
+一張圖看樹長什麼樣（plot_tree）</a></li>
+<li><a href="#b-用文字看規則export_text" id="toc-b-用文字看規則export_text">(B)
+用文字看規則（export_text）</a></li>
+<li><a href="#c-混淆矩陣confusion-matrix" id="toc-c-混淆矩陣confusion-matrix">(C) 混淆矩陣（Confusion
+Matrix）</a></li>
+<li><a href="#d-roc-curve-auc用機率不要只用-hard-predict" id="toc-d-roc-curve-auc用機率不要只用-hard-predict">(D) ROC curve +
+AUC（用機率，不要只用 hard predict）</a></li>
+<li><a href="#e-validation-curve看-max_depth過欠擬合" id="toc-e-validation-curve看-max_depth過欠擬合">(E) Validation curve：看
+<code>max_depth</code>（過/欠擬合）</a></li>
+<li><a href="#f-pruningccp_alpha用成本複雜度剪枝找更穩的樹" id="toc-f-pruningccp_alpha用成本複雜度剪枝找更穩的樹">(F)
+Pruning（ccp_alpha）：用「成本複雜度剪枝」找更穩的樹</a></li>
+<li><a href="#看圖就懂概念小圖不靠外部圖片" id="toc-看圖就懂概念小圖不靠外部圖片">看圖就懂（概念小圖｜不靠外部圖片）</a></li>
+</ul></li>
+<li><a href="#step-by-step-教學with-q" id="toc-step-by-step-教學with-q">2) Step-by-step 教學（with Q）</a>
+<ul>
+<li><a href="#step-1載入資料load-data" id="toc-step-1載入資料load-data">Step 1：載入資料（Load data）</a>
+<ul>
+<li><a href="#q1---用-data.info-快速掌握資料概況rows-missing-dtypes" id="toc-q1---用-data.info-快速掌握資料概況rows-missing-dtypes">Q1 - 用
+data.info() 快速掌握資料概況（rows / missing / dtypes）</a></li>
+</ul></li>
+<li><a href="#step-2理解欄位型別-找出怪符號缺失值detect-weird-missing-tokens" id="toc-step-2理解欄位型別-找出怪符號缺失值detect-weird-missing-tokens">Step
+2：理解欄位型別 &amp; 找出「怪符號缺失值」（Detect weird missing
+tokens）</a>
+<ul>
+<li><a href="#q2---用-uniquevalue_counts-找出非數值與怪符號" id="toc-q2---用-uniquevalue_counts-找出非數值與怪符號">Q2 - 用
+unique/value_counts 找出非數值與怪符號（?）</a></li>
+</ul></li>
+<li><a href="#step-3把-變成-nan再把所有欄位轉成-numeric" id="toc-step-3把-變成-nan再把所有欄位轉成-numeric">Step 3：把
+<code>?</code> 變成 NaN，再把所有欄位轉成 numeric</a>
+<ul>
+<li><a href="#q3---把-nan-並轉成-numeric避免模型報錯" id="toc-q3---把-nan-並轉成-numeric避免模型報錯">Q3 - 把 ?→NaN 並轉成
+numeric（避免模型報錯）</a></li>
+</ul></li>
+<li><a href="#step-4如果要補值imputation正確時機是什麼" id="toc-step-4如果要補值imputation正確時機是什麼">Step
+4：如果要補值（imputation），正確時機是什麼？</a>
+<ul>
+<li><a href="#q4---說明-imputation-正確時機避免-data-leakage" id="toc-q4---說明-imputation-正確時機避免-data-leakage">Q4 - 說明
+imputation 正確時機（避免 data leakage）</a></li>
+</ul></li>
+<li><a href="#step-5把-diag-做成二元分類標籤-ybinary-label" id="toc-step-5把-diag-做成二元分類標籤-ybinary-label">Step 5：把
+<code>Diag</code> 做成二元分類標籤 y（Binary label）</a>
+<ul>
+<li><a href="#q5---diag-二元化diag1-1binary-label" id="toc-q5---diag-二元化diag1-1binary-label">Q5 - Diag 二元化：Diag≥1 →
+1（binary label）</a></li>
+</ul></li>
+<li><a href="#step-6先看類別比例class-balance" id="toc-step-6先看類別比例class-balance">Step 6：先看類別比例（class
+balance）</a>
+<ul>
+<li><a href="#q6---畫-class-balancecounts-proportion" id="toc-q6---畫-class-balancecounts-proportion">Q6 - 畫 class
+balance（counts + proportion）</a></li>
+</ul></li>
+<li><a href="#step-7建立-x-y-traintest-split含-stratify" id="toc-step-7建立-x-y-traintest-split含-stratify">Step 7：建立 X, y +
+train/test split（含 stratify）</a>
+<ul>
+<li><a href="#q7---切分前的必做步驟清理型別缺失值策略" id="toc-q7---切分前的必做步驟清理型別缺失值策略">Q7 -
+切分前的必做步驟：清理/型別/缺失值策略</a></li>
+<li><a href="#q8---正確做-traintest-split30-test-stratify-seed" id="toc-q8---正確做-traintest-split30-test-stratify-seed">Q8 - 正確做
+train/test split（30% test, stratify, seed）</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#決策樹核心概念digest-rebuild" id="toc-決策樹核心概念digest-rebuild">3) 決策樹核心概念（Digest &amp;
+Rebuild）</a>
+<ul>
+<li><a href="#決策樹在做什麼" id="toc-決策樹在做什麼">3.1
+決策樹在做什麼？</a>
+<ul>
+<li><a href="#直覺intuition" id="toc-直覺intuition">直覺（Intuition）</a></li>
+<li><a href="#切得好是什麼意思" id="toc-切得好是什麼意思">「切得好」是什麼意思？</a></li>
+<li><a href="#常用指標gini-impurity" id="toc-常用指標gini-impurity">常用指標：Gini impurity</a></li>
+</ul></li>
+<li><a href="#視覺化一個節點怎麼算混gini-小圖" id="toc-視覺化一個節點怎麼算混gini-小圖">3.2
+視覺化：一個節點怎麼算「混」？（Gini 小圖）</a></li>
+<li><a href="#gini-vs-entropy差在哪你需要的程度" id="toc-gini-vs-entropy差在哪你需要的程度">3.3 Gini vs
+Entropy：差在哪？（你需要的程度）</a>
+<ul>
+<li><a href="#what直覺" id="toc-what直覺">What（直覺）</a></li>
+</ul></li>
+<li><a href="#決策樹怎麼停下來stopping-criteria" id="toc-決策樹怎麼停下來stopping-criteria">3.4
+決策樹怎麼「停下來」？（Stopping criteria）</a>
+<ul>
+<li><a href="#直覺intuition-1" id="toc-直覺intuition-1">直覺（Intuition）</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#實作shallow-vs-deep讀樹-觀察-overfitting" id="toc-實作shallow-vs-deep讀樹-觀察-overfitting">4) 實作：Shallow vs
+Deep（讀樹 + 觀察 overfitting）</a>
+<ul>
+<li><a href="#step-8fit-一棵淺樹max_depth1" id="toc-step-8fit-一棵淺樹max_depth1">Step 8：Fit
+一棵淺樹（max_depth=1）</a>
+<ul>
+<li><a href="#q9---讀-leafsamplesvalue-信心與不確定性" id="toc-q9---讀-leafsamplesvalue-信心與不確定性">Q9 - 讀
+leaf：samples/value → 信心與不確定性</a></li>
+<li><a href="#q10---把-split-翻成一句規則分析臨床風險fpfn" id="toc-q10---把-split-翻成一句規則分析臨床風險fpfn">Q10 - 把 split
+翻成一句規則＋分析臨床風險（FP/FN）</a></li>
+</ul></li>
+<li><a href="#step-9用-cross-validation-評估-shallow-tree不要只看-train" id="toc-step-9用-cross-validation-評估-shallow-tree不要只看-train">Step
+9：用 Cross-Validation 評估 shallow tree（不要只看 train）</a>
+<ul>
+<li><a href="#小教室confusion-matrix-一眼看懂必會" id="toc-小教室confusion-matrix-一眼看懂必會">小教室：Confusion Matrix
+一眼看懂（必會）</a></li>
+<li><a href="#q11---用-cv-評估-shallow-treeaccuracyrecall-cm" id="toc-q11---用-cv-評估-shallow-treeaccuracyrecall-cm">Q11 - 用 CV 評估
+shallow tree（accuracy/recall + CM）</a></li>
+<li><a href="#q12---比較-train-vs-cv-判斷-underfitoverfitshallow" id="toc-q12---比較-train-vs-cv-判斷-underfitoverfitshallow">Q12 - 比較
+train vs CV 判斷 underfit/overfit（shallow）</a></li>
+</ul></li>
+<li><a href="#step-10fit-deep-treemax_depthnone並觀察-overfitting" id="toc-step-10fit-deep-treemax_depthnone並觀察-overfitting">Step
+10：Fit deep tree（max_depth=None）並觀察 overfitting</a>
+<ul>
+<li><a href="#q13---深樹的代價可解釋性下降interpretability-tradeoff" id="toc-q13---深樹的代價可解釋性下降interpretability-tradeoff">Q13 -
+深樹的代價：可解釋性下降（interpretability tradeoff）</a></li>
+<li><a href="#q14---train-vs-cv-落差看-overfittingdeep-tree" id="toc-q14---train-vs-cv-落差看-overfittingdeep-tree">Q14 - train vs CV
+落差看 overfitting（deep tree）</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#threshold-trade-offroc-auc你要真的懂" id="toc-threshold-trade-offroc-auc你要真的懂">5) Threshold
+trade-off：ROC / AUC（你要真的懂）</a>
+<ul>
+<li><a href="#step-11用-cross_val_predict-取-cv-probabilities-畫-roc" id="toc-step-11用-cross_val_predict-取-cv-probabilities-畫-roc">Step
+11：用 cross_val_predict 取 CV probabilities → 畫 ROC</a>
+<ul>
+<li><a href="#q15---用-cv-proba-畫-roc-算-auc兩棵樹比較" id="toc-q15---用-cv-proba-畫-roc-算-auc兩棵樹比較">Q15 - 用 CV proba 畫
+ROC + 算 AUC（兩棵樹比較）</a></li>
+<li><a href="#q16---調-threshold-提高-recalltpr-但-fprtrade-off" id="toc-q16---調-threshold-提高-recalltpr-但-fprtrade-off">Q16 - 調
+threshold 提高 recall：TPR↑ 但 FPR↑（trade-off）</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#用-validation-curve-調-max_depth只用-training-cv" id="toc-用-validation-curve-調-max_depth只用-training-cv">6) 用
+Validation Curve 調 <code>max_depth</code>（只用 training + CV）</a>
+<ul>
+<li><a href="#step-12為什麼-tuning-不能用-test-set" id="toc-step-12為什麼-tuning-不能用-test-set">Step 12：為什麼 tuning
+不能用 test set？</a>
+<ul>
+<li><a href="#q17---為何-tuning-只能用-traintest-只能-final" id="toc-q17---為何-tuning-只能用-traintest-只能-final">Q17 - 為何 tuning
+只能用 train（test 只能 final）</a></li>
+</ul></li>
+<li><a href="#step-13validation-curverecall-vs-max_depth" id="toc-step-13validation-curverecall-vs-max_depth">Step 13：Validation
+curve（recall vs max_depth）</a>
+<ul>
+<li><a href="#q18---讀-validation-curve找平衡深度範圍" id="toc-q18---讀-validation-curve找平衡深度範圍">Q18 - 讀 validation
+curve：找平衡深度範圍</a></li>
+<li><a href="#q19---用最佳-max_depth-訓練-tuned-tree-並畫樹" id="toc-q19---用最佳-max_depth-訓練-tuned-tree-並畫樹">Q19 - 用最佳
+max_depth 訓練 tuned tree 並畫樹</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#最終評估用-test-set-報告final-report" id="toc-最終評估用-test-set-報告final-report">7) 最終評估：用 test set
+報告（Final report）</a>
+<ul>
+<li><a href="#step-14tuned-tree-在-traintest-的-accuracyrecall-confusion-matrix" id="toc-step-14tuned-tree-在-traintest-的-accuracyrecall-confusion-matrix">Step
+14：tuned tree 在 train/test 的 accuracy/recall + confusion matrix</a>
+<ul>
+<li><a href="#q20---final-reporttraintest-accuracyrecall-cm" id="toc-q20---final-reporttraintest-accuracyrecall-cm">Q20 - final
+report：train/test accuracy+recall + CM</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#optionalregression-treesdecisiontreeregressor" id="toc-optionalregression-treesdecisiontreeregressor">8)
+Optional：Regression Trees（DecisionTreeRegressor）</a>
+<ul>
+<li><a href="#step-15把-classification-換成-regressionpredict-cholesterol" id="toc-step-15把-classification-換成-regressionpredict-cholesterol">Step
+15：把 classification 換成 regression（predict Cholesterol）</a>
+<ul>
+<li><a href="#optional-q1---用-meanstd-解讀-maermse-的尺度感" id="toc-optional-q1---用-meanstd-解讀-maermse-的尺度感">Optional Q1 - 用
+mean/std 解讀 MAE/RMSE 的尺度感</a></li>
+<li><a href="#optional-q2---讀回歸樹-leaf預測值代表的病人子群" id="toc-optional-q2---讀回歸樹-leaf預測值代表的病人子群">Optional Q2 -
+讀回歸樹 leaf：預測值＋代表的病人子群</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#全章總整理你要帶走的東西" id="toc-全章總整理你要帶走的東西">9) 全章總整理（你要帶走的東西）</a>
+<ul>
+<li><a href="#超濃縮重點ultra-tldr" id="toc-超濃縮重點ultra-tldr">超濃縮重點（Ultra TL;DR）</a></li>
+<li><a href="#考點清單exam-checklist可直接背版本" id="toc-考點清單exam-checklist可直接背版本">考點清單（Exam
+checklist｜可直接背版本）</a>
+<ul>
+<li><a href="#data.info-在看什麼missing-dtype" id="toc-data.info-在看什麼missing-dtype">1) data.info()
+在看什麼？（missing / dtype）</a></li>
+<li><a href="#為什麼要把-np.nan" id="toc-為什麼要把-np.nan">2)
+為什麼要把 <code>? → np.nan</code>？</a></li>
+<li><a href="#正確-imputation-流程-data-leakage-是什麼" id="toc-正確-imputation-流程-data-leakage-是什麼">3) 正確 imputation
+流程 + data leakage 是什麼？</a></li>
+<li><a href="#把-tree-的第一個-split-翻成一句人話規則" id="toc-把-tree-的第一個-split-翻成一句人話規則">4) 把 tree 的第一個
+split 翻成一句人話規則</a></li>
+<li><a href="#train-vs-cv-判斷-underfit-overfit" id="toc-train-vs-cv-判斷-underfit-overfit">5) train vs CV 判斷 underfit
+/ overfit</a></li>
+<li><a href="#rocfprtpr-與-threshold-trade-off" id="toc-rocfprtpr-與-threshold-trade-off">6) ROC：FPR/TPR 與 threshold
+trade-off</a></li>
+<li><a href="#為什麼-tuning-不能用-test-set" id="toc-為什麼-tuning-不能用-test-set">7) 為什麼 tuning 不能用 test
+set？</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="part-0你要先記住的一句話">Part 0｜你要先記住的一句話</h1>
+<p><strong>一句話總結：</strong> Decision Tree =
+一連串「如果…就…」的切分規則（splits），每次切分都在挑一個 feature +
+threshold，讓資料變得更「純」（impurity↓），最後用葉節點（leaf）做分類。</p>
+<p><strong>你要背的 3 個重點：</strong></p>
+<ol type="1">
+<li>tree 的每個節點都在選「最佳切分」（best split）：用
+impurity（gini/entropy）下降最多來決定</li>
+<li>樹越深越容易 overfit（high variance）：train 很準但 test 可能掉</li>
+<li>調參的核心是控制複雜度：<code>max_depth</code>,
+<code>min_samples_leaf</code>, <code>ccp_alpha</code>（pruning）</li>
+</ol>
+<p><strong>最容易錯的 3 個地方：</strong></p>
+<ul>
+<li>只看 train accuracy 不看 CV/test（以為模型很強，其實 overfit）</li>
+<li>沒固定 random_state 或沒 stratify（結果不穩、難比較）</li>
+<li>把 <code>max_depth</code>
+調到很大以為一定更好（其實只是更會背噪音）</li>
+</ul>
+<hr />
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://gemini.google.com/share/1375677e00d3" target="_blank" rel="noopener noreferrer">Gemini｜Decision Trees（快速複習）</a>
+  </li>
+  <li>
+    <a href="https://youtu.be/87855CulxXQ?si=2ldOussqFRFn-sxo" target="_blank" rel="noopener noreferrer">YouTube｜ 機器學習：Decision Trees 決策樹是怎麼做預測的？</a>
+  </li>
+</ul>
+<hr />
+<h1 id="這章你會學到什麼what-youll-get">0. 這章你會學到什麼（What you’ll
+get）</h1>
+<p>本章用 <strong>Cleveland Heart Disease Dataset</strong>
+帶你完整走一次：</p>
+<ul>
+<li>資料讀取與理解（data inspection）</li>
+<li>缺失值與型別處理（missing values &amp; dtypes）</li>
+<li>目標 y 的二元化（binary label）</li>
+<li>train/test split（含 stratify）</li>
+<li>決策樹（Decision Tree）從「淺樹 shallow」到「深樹 deep」</li>
+<li>用 <strong>Cross-Validation</strong>
+看模型泛化（generalization）</li>
+<li>用 <strong>ROC/AUC</strong> 思考 threshold trade-off</li>
+<li>用 <strong>validation curve</strong> 挑 <code>max_depth</code></li>
+</ul>
+<hr />
+<h1 id="一頁流程圖全章地圖">1) 一頁流程圖（全章地圖）</h1>
+<p>下面這張圖讓你先「看懂整章在做什麼」，再進每個 Step。</p>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:16px 0;">
+<svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+.b{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+.t{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.s{fill:#d7dde8;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.s2{fill:#e5e7eb;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial; font-weight:600;}
+.a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+    </marker>
+  </defs>
+
+  <rect class="b" x="20" y="30" width="170" height="70" rx="12" />
+  <text class="t" x="35" y="60">Load data</text>
+  <text class="s" x="35" y="82">read_csv + names</text>
+
+  <rect class="b" x="220" y="30" width="210" height="70" rx="12" />
+  <text class="t" x="235" y="60">Inspect / Clean</text>
+  <text class="s" x="235" y="82">info(), &#39;?&#39;→NaN, to_numeric</text>
+
+  <rect class="b" x="460" y="30" width="200" height="70" rx="12" />
+  <text class="t" x="475" y="60">Make label y</text>
+  <text class="s" x="475" y="82">Diag≥1 → 1 else 0</text>
+
+  <rect class="b" x="690" y="30" width="270" height="70" rx="12" />
+  <text class="t" x="705" y="60">Split train/test</text>
+  <text class="s" x="705" y="82">stratify + random_state</text>
+
+  <rect class="b" x="20" y="150" width="260" height="70" rx="12" />
+  <text class="t" x="35" y="180">Train trees</text>
+  <text class="s" x="35" y="202">shallow vs deep</text>
+
+  <rect class="b" x="310" y="150" width="300" height="70" rx="12" />
+  <text class="t" x="325" y="180">Evaluate with CV</text>
+  <text class="s" x="325" y="202">accuracy/recall + confusion</text>
+
+  <rect class="b" x="640" y="150" width="320" height="70" rx="12" />
+  <text class="t" x="655" y="180">ROC / AUC &amp; Tuning</text>
+  <text class="s" x="655" y="202">cross_val_predict + validation curve</text>
+
+  <path class="a" d="M190,65 L220,65" />
+  <path class="a" d="M430,65 L460,65" />
+  <path class="a" d="M660,65 L690,65" />
+  <path class="a" d="M825,100 L150,150" />
+  <path class="a" d="M280,185 L310,185" />
+  <path class="a" d="M610,185 L640,185" />
+</svg>
+</div>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>這章不是「只訓練一個模型」，而是練一個完整 ML pipeline。</li>
+<li>最重要的紀律：<strong>test set 只用一次（final
+report）</strong>；tuning 都在 training + CV 做。</li>
+</ul>
+<hr />
+<h1 id="part-0.5decision-tree-視覺化工具箱補圖用重點-code">Part
+0.5｜Decision Tree 視覺化工具箱（補圖用｜重點 code）</h1>
+<blockquote>
+<p>這一段是「你在做作業/寫報告最常需要的圖」，我把最短、最常用的 code
+放這裡。</p>
+</blockquote>
+<h2 id="a-一張圖看樹長什麼樣plot_tree">(A)
+一張圖看樹長什麼樣（plot_tree）</h2>
+<p><strong>老師提醒：</strong> - <code>max_depth</code> 先設小一點（例如
+3），不然圖會爆炸看不懂。</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> plot_tree</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">8</span>))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>plot_tree(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    clf,  <span class="co"># DecisionTreeClassifier</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    feature_names<span class="op">=</span>X.columns,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    class_names<span class="op">=</span>[<span class="st">&#39;0&#39;</span>,<span class="st">&#39;1&#39;</span>],</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    filled<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">10</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:12px 0;">
+  <div style="font-weight:700; color:#e5e7eb; margin-bottom:8px;">看圖就懂｜一棵樹長什麼樣（示意）</div>
+  <svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <style>
+.box{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+.t{fill:#e5e7eb;font: 15px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial; font-weight:700;}
+.s{fill:#d7dde8;font: 12.5px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.a{stroke:#38bdf8;stroke-width:3;}
+</style>
+
+    <rect class="box" x="360" y="20" width="260" height="70" rx="14" />
+    <text class="t" x="385" y="48">node: split rule</text>
+    <text class="s" x="385" y="70">e.g. Cholesterol ≤ 240?</text>
+
+    <rect class="box" x="160" y="150" width="260" height="80" rx="14" />
+    <text class="t" x="185" y="182">leaf</text>
+    <text class="s" x="185" y="205">predict class 0 / prob</text>
+
+    <rect class="box" x="560" y="150" width="260" height="80" rx="14" />
+    <text class="t" x="585" y="182">leaf</text>
+    <text class="s" x="585" y="205">predict class 1 / prob</text>
+
+    <line class="a" x1="470" y1="90" x2="290" y2="150"></line>
+    <line class="a" x1="510" y1="90" x2="690" y2="150"></line>
+
+    <text class="s" x="295" y="135">True (≤)</text>
+    <text class="s" x="650" y="135">False (&gt;)</text>
+  </svg>
+  <div style="color:#a7b0c0; font-size:12.5px; margin-top:6px;">提示：真正的樹圖請用上面的 <code>plot_tree(..., max_depth=3)</code> 先看小樹，再逐步加深。</div>
+</div>
+<h2 id="b-用文字看規則export_text">(B) 用文字看規則（export_text）</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> export_text</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(export_text(clf, feature_names<span class="op">=</span><span class="bu">list</span>(X.columns), max_depth<span class="op">=</span><span class="dv">4</span>))</span></code></pre></div>
+<h2 id="c-混淆矩陣confusion-matrix">(C) 混淆矩陣（Confusion
+Matrix）</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> ConfusionMatrixDisplay</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ConfusionMatrixDisplay.from_predictions(y_test, y_pred)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h2 id="d-roc-curve-auc用機率不要只用-hard-predict">(D) ROC curve +
+AUC（用機率，不要只用 hard predict）</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_curve, roc_auc_score</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>proba <span class="op">=</span> clf.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>fpr, tpr, thr <span class="op">=</span> roc_curve(y_test, proba)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>auc <span class="op">=</span> roc_auc_score(y_test, proba)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="fl">5.5</span>, <span class="fl">5.5</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>plt.plot(fpr, tpr, label<span class="op">=</span><span class="ss">f&#39;AUC=</span><span class="sc">{</span>auc<span class="sc">:.3f}</span><span class="ss">&#39;</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>plt.plot([<span class="dv">0</span>,<span class="dv">1</span>],[<span class="dv">0</span>,<span class="dv">1</span>],<span class="st">&#39;--&#39;</span>,color<span class="op">=</span><span class="st">&#39;gray&#39;</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;FPR&#39;</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;TPR (Recall)&#39;</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;ROC curve&#39;</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<h2 id="e-validation-curve看-max_depth過欠擬合">(E) Validation curve：看
+<code>max_depth</code>（過/欠擬合）</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> validation_curve</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeClassifier</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>param_range <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">21</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>train_scores, val_scores <span class="op">=</span> validation_curve(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    DecisionTreeClassifier(random_state<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    X_train, y_train,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    param_name<span class="op">=</span><span class="st">&#39;max_depth&#39;</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    param_range<span class="op">=</span>param_range,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    scoring<span class="op">=</span><span class="st">&#39;recall&#39;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>train_mean <span class="op">=</span> train_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>val_mean <span class="op">=</span> val_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">4</span>))</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>plt.plot(param_range, train_mean, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>, label<span class="op">=</span><span class="st">&#39;train recall&#39;</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>plt.plot(param_range, val_mean, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>, label<span class="op">=</span><span class="st">&#39;cv recall&#39;</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;max_depth&#39;</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;recall&#39;</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;validation_curve (recall vs max_depth)&#39;</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:12px 0;">
+  <div style="font-weight:700; color:#e5e7eb; margin-bottom:8px;">看圖就懂｜validation curve 怎麼挑 max_depth</div>
+  <svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <style>
+.axis{stroke:#23304a;stroke-width:2;}
+.train{stroke:#22c55e;stroke-width:4;fill:none;}
+.cv{stroke:#f59e0b;stroke-width:4;fill:none;}
+.lab{fill:#d7dde8;font: 14px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.ttl{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;font-weight:700;}
+.hint{fill:#a7b0c0;font: 12.5px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.v{stroke:#38bdf8;stroke-width:3;stroke-dasharray:7 7;}
+</style>
+    <text class="ttl" x="30" y="30">左：underfit（太淺）｜右：overfit（太深）｜中間：CV 表現高且 gap 不誇張</text>
+    <line class="axis" x1="80" y1="210" x2="920" y2="210"></line>
+    <line class="axis" x1="80" y1="70" x2="80" y2="210"></line>
+    <text class="lab" x="82" y="240">max_depth</text>
+    <text class="lab" x="15" y="110" transform="rotate(-90 15,110)">recall</text>
+
+    <path class="train" d="M110,180 C260,150 420,120 580,95 740,80 860,75 910,73" />
+    <path class="cv" d="M110,160 C260,130 420,105 560,98 700,102 820,120 910,145" />
+    <line class="v" x1="600" y1="70" x2="600" y2="210"></line>
+
+    <text class="lab" x="740" y="90" fill="#22c55e">train</text>
+    <text class="lab" x="740" y="120" fill="#f59e0b">cv</text>
+    <text class="hint" x="610" y="205">常見選點：cv near peak + gap 不爆</text>
+  </svg>
+</div>
+<h2 id="f-pruningccp_alpha用成本複雜度剪枝找更穩的樹">(F)
+Pruning（ccp_alpha）：用「成本複雜度剪枝」找更穩的樹</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeClassifier</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> DecisionTreeClassifier(random_state<span class="op">=</span><span class="dv">42</span>).cost_complexity_pruning_path(X_train, y_train)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>alphas <span class="op">=</span> path.ccp_alphas</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 取幾個 alpha 試試（避免全跑很慢）</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>alphas <span class="op">=</span> alphas[::<span class="bu">max</span>(<span class="dv">1</span>, <span class="bu">len</span>(alphas)<span class="op">//</span><span class="dv">30</span>)]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>train_scores, val_scores <span class="op">=</span> validation_curve(</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    DecisionTreeClassifier(random_state<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    X_train, y_train,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    param_name<span class="op">=</span><span class="st">&#39;ccp_alpha&#39;</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    param_range<span class="op">=</span>alphas,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    scoring<span class="op">=</span><span class="st">&#39;recall&#39;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">4</span>))</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>plt.plot(alphas, train_scores.mean(axis<span class="op">=</span><span class="dv">1</span>), label<span class="op">=</span><span class="st">&#39;train&#39;</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>plt.plot(alphas, val_scores.mean(axis<span class="op">=</span><span class="dv">1</span>), label<span class="op">=</span><span class="st">&#39;cv&#39;</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">&#39;log&#39;</span>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;ccp_alpha (log scale)&#39;</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;recall&#39;</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;pruning: recall vs ccp_alpha&#39;</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:12px 0;">
+  <div style="font-weight:700; color:#e5e7eb; margin-bottom:8px;">看圖就懂｜pruning（ccp_alpha）在做什麼？</div>
+  <svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <style>
+.axis{stroke:#23304a;stroke-width:2;}
+.train{stroke:#22c55e;stroke-width:4;fill:none;}
+.cv{stroke:#f59e0b;stroke-width:4;fill:none;}
+.lab{fill:#d7dde8;font: 14px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.ttl{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;font-weight:700;}
+.hint{fill:#a7b0c0;font: 12.5px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+</style>
+    <text class="ttl" x="30" y="30">ccp_alpha ↑ = 剪得更兇（樹更簡單）｜train 會變差；cv 可能先變好再變差</text>
+    <line class="axis" x1="80" y1="210" x2="920" y2="210"></line>
+    <line class="axis" x1="80" y1="70" x2="80" y2="210"></line>
+    <text class="lab" x="82" y="240">ccp_alpha (log scale)</text>
+    <text class="lab" x="15" y="110" transform="rotate(-90 15,110)">recall</text>
+
+    <path class="train" d="M110,90 C260,92 420,100 580,125 740,155 860,175 910,190" />
+    <path class="cv" d="M110,150 C260,120 420,105 560,108 700,122 820,150 910,185" />
+
+    <text class="lab" x="740" y="95" fill="#22c55e">train</text>
+    <text class="lab" x="740" y="130" fill="#f59e0b">cv</text>
+    <text class="hint" x="110" y="205">選點：cv 高 + 不太不穩（避免過度剪枝）</text>
+  </svg>
+</div>
+<hr />
+<h2 id="看圖就懂概念小圖不靠外部圖片">看圖就懂（概念小圖｜不靠外部圖片）</h2>
+<div style="display:grid; grid-template-columns:1fr; gap:14px; margin:16px 0;">
+  <div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px;">
+    <div style="font-weight:700; color:#e5e7eb; margin-bottom:8px;">圖 1｜每次 split 都是在做什麼？（impurity ↓）</div>
+    <svg viewBox="0 0 980 210" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <style>
+.box{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+.t{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.s{fill:#d7dde8;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} </style>
+      <defs>
+        <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+        </marker>
+      </defs>
+      <rect class="box" x="30" y="40" width="280" height="110" rx="14" />
+      <text class="t" x="55" y="78">Parent node</text>
+      <text class="s" x="55" y="104">混在一起 → impurity 高</text>
+      <text class="s" x="55" y="128">挑 feature+threshold</text>
+
+      <rect class="box" x="410" y="25" width="250" height="70" rx="14" />
+      <text class="t" x="430" y="58">Left child</text>
+      <text class="s" x="430" y="80">更純（impurity ↓）</text>
+
+      <rect class="box" x="410" y="115" width="250" height="70" rx="14" />
+      <text class="t" x="430" y="148">Right child</text>
+      <text class="s" x="430" y="170">更純（impurity ↓）</text>
+
+      <rect class="box" x="720" y="65" width="230" height="90" rx="14" />
+      <text class="t" x="740" y="100">Goal</text>
+      <text class="s" x="740" y="124">impurity drop 最大</text>
+
+      <path class="a" d="M310,95 L410,60" />
+      <path class="a" d="M310,95 L410,150" />
+      <path class="a" d="M660,60 L720,105" />
+    </svg>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px;">
+    <div style="font-weight:700; color:#e5e7eb; margin-bottom:8px;">圖 2｜深度越深：train 變好，test 不一定（overfit）</div>
+    <svg viewBox="0 0 980 240" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <style>
+.axis{stroke:#23304a;stroke-width:2;}
+.train{stroke:#22c55e;stroke-width:4;fill:none;}
+.test{stroke:#f59e0b;stroke-width:4;fill:none;}
+.lab{fill:#d7dde8;font: 14px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.ttl{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;font-weight:700;}
+</style>
+      <text class="ttl" x="30" y="30">Depth ↑ → train error ↓；test error 常先↓後↑</text>
+      <line class="axis" x1="80" y1="200" x2="920" y2="200"></line>
+      <line class="axis" x1="80" y1="60" x2="80" y2="200"></line>
+      <text class="lab" x="82" y="220">model complexity (max_depth)</text>
+      <text class="lab" x="15" y="70" transform="rotate(-90 15,70)">error</text>
+      <path class="train" d="M100,165 C260,150 420,120 580,95 730,70 860,55 910,50" />
+      <path class="test" d="M100,140 C260,120 420,95 560,85 700,80 820,95 910,120" />
+      <text class="lab" x="720" y="70" fill="#22c55e">train</text>
+      <text class="lab" x="720" y="110" fill="#f59e0b">test/CV</text>
+    </svg>
+  </div>
+</div>
+<hr />
+<h1 id="step-by-step-教學with-q">2) Step-by-step 教學（with Q）</h1>
+<h2 id="step-1載入資料load-data">Step 1：載入資料（Load data）</h2>
+<p><strong>老師提醒：</strong> -
+原始資料通常沒有欄位名稱（header），你不補上就很難閱讀也容易寫錯欄位。</p>
+<p><strong>關鍵字／概念：</strong> -
+<code>pd.read_csv(..., names=columns)</code>：幫每一欄貼上名稱。</p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 載入資料（Load
+data） 做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split, cross_val_score, validation_curve</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeClassifier, plot_tree</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> (</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    confusion_matrix, ConfusionMatrixDisplay,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    recall_score, precision_score, f1_score,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    classification_report, roc_curve, roc_auc_score,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    accuracy_score</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>columns <span class="op">=</span> [</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Age&quot;</span>,<span class="st">&quot;Sex&quot;</span>,<span class="st">&quot;Chest_pain_type&quot;</span>,<span class="st">&quot;At_rest_bp&quot;</span>,<span class="st">&quot;Cholesterol&quot;</span>,<span class="st">&quot;Fast_blood_sug&quot;</span>,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Rest_ecg&quot;</span>,<span class="st">&quot;Maxhr&quot;</span>,<span class="st">&quot;Exer_angina&quot;</span>,<span class="st">&quot;Oldpeak&quot;</span>,<span class="st">&quot;Slope&quot;</span>,<span class="st">&quot;Ca&quot;</span>,<span class="st">&quot;Thal&quot;</span>,<span class="st">&quot;Diag&quot;</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>url <span class="op">=</span> <span class="st">&quot;https://raw.githubusercontent.com/pleunipennings/CSC508_ML_Biomedicine_Class/refs/heads/main/processed.cleveland.data.txt&quot;</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(url, names<span class="op">=</span>columns)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>data.head()</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> -
+欄位數不一致：<code>columns</code> 長度要跟資料欄數一致。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>先把資料「命名」清楚，後面才不會一路在猜。</li>
+</ul>
+<hr />
+<h3 id="q1---用-data.info-快速掌握資料概況rows-missing-dtypes">Q1 - 用
+data.info() 快速掌握資料概況（rows / missing / dtypes）</h3>
+<p><strong>題目：</strong> Recall the command that allows us to see row
+count, all the column names, missing value counts, and datatypes per
+column. Use it to inspect your data.</p>
+<p><strong>Learning objective：</strong> -
+你要能用一個指令快速掌握資料概況（row count / missing / dtypes）。</p>
+<p><strong>解題思路（How to think）：</strong> - 在 pandas
+裡，要同時看到列數、欄位、缺失值與 dtype，通常靠
+<code>DataFrame.info()</code>。</p>
+<p><strong>參考答案（A 模式）：</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data.info()</span></code></pre></div>
+<p><strong>你應該看到什麼（Expected）：</strong> - 每欄的 Non-Null Count
+- dtype（如果某些欄是 <code>object</code>，通常代表混入字串）</p>
+<p><strong>Common mistakes：</strong> - 只用
+<code>data.head()</code>：只能看前幾列，看不到 missing/dtype 全貌。</p>
+<hr />
+<h2 id="step-2理解欄位型別-找出怪符號缺失值detect-weird-missing-tokens">Step
+2：理解欄位型別 &amp; 找出「怪符號缺失值」（Detect weird missing
+tokens）</h2>
+<p><strong>老師提醒：</strong> - 這份資料的缺失值不是 NaN，而是用
+<code>?</code> 這種 token。 - 只要資料中混進字串，sklearn
+就會在訓練時報錯（cannot convert string to float）。</p>
+<p><strong>關鍵字／概念：</strong> - <code>unique()</code> /
+<code>value_counts()</code>：用來看某欄到底有哪些值。 - 看到
+<code>?</code> 就代表你需要先清理再轉 numeric。</p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 理解欄位型別 &amp;
+找出「怪符號缺失值」（Detect weird missing tokens）
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Ca: </span><span class="sc">{</span>data[<span class="st">&#39;Ca&#39;</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&#39;Ca&#39;</span>].value_counts(dropna<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">Thal: </span><span class="sc">{</span>data[<span class="st">&#39;Thal&#39;</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&#39;Thal&#39;</span>].value_counts(dropna<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 直接
+<code>pd.to_numeric</code> 但忘了處理 <code>?</code>：結果整欄被
+coercion 成 NaN 或 object。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>先用 <code>unique/value_counts</code> 找問題，再修；不要盲轉。</li>
+</ul>
+<hr />
+<h3 id="q2---用-uniquevalue_counts-找出非數值與怪符號">Q2 - 用
+unique/value_counts 找出非數值與怪符號（?）</h3>
+<p><strong>題目：</strong> Hmmm, based on their descriptions, I thought
+all our features were numeric. Investigate the values these columns can
+take to be sure we understand what’s happening.</p>
+<p><strong>Learning objective：</strong> -
+你能用探索（EDA）找出「哪一欄不是 numeric、為什麼」。</p>
+<p><strong>解題思路：</strong> 1) 先針對可疑欄位（這裡是
+<code>Ca</code>、<code>Thal</code>）看 <code>unique()</code> /
+<code>value_counts()</code>。 2) 如果出現 <code>?</code>，就知道這是
+missing token。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data[<span class="st">&#39;Ca&#39;</span>].unique())</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data[<span class="st">&#39;Ca&#39;</span>].value_counts(dropna<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data[<span class="st">&#39;Thal&#39;</span>].unique())</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data[<span class="st">&#39;Thal&#39;</span>].value_counts(dropna<span class="op">=</span><span class="va">False</span>))</span></code></pre></div>
+<p><strong>Common mistakes：</strong> - 只看一眼 <code>info()</code>
+就猜原因：你要用 <code>unique/value_counts</code>「證據化」。</p>
+<hr />
+<h2 id="step-3把-變成-nan再把所有欄位轉成-numeric">Step 3：把
+<code>?</code> 變成 NaN，再把所有欄位轉成 numeric</h2>
+<p><strong>老師提醒：</strong> - 模型需要數值矩陣（numeric matrix）。 -
+把 <code>?</code> → <code>np.nan</code> 後，再 <code>to_numeric</code>
+才能得到乾淨的 dtype。</p>
+<p><strong>關鍵字／概念：</strong> -
+<code>replace(&quot;?&quot;, np.nan)</code>：把特殊 token 變成正式 missing。 -
+<code>pd.to_numeric(errors=&#39;coerce&#39;)</code>：確保轉不動的都變
+NaN（避免殘留字串）。</p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 把 <code>?</code>
+變成 NaN，再把所有欄位轉成 numeric
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&quot;Ca&quot;</span>] <span class="op">=</span> data[<span class="st">&quot;Ca&quot;</span>].replace(<span class="st">&quot;?&quot;</span>, np.nan)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&quot;Thal&quot;</span>] <span class="op">=</span> data[<span class="st">&quot;Thal&quot;</span>].replace(<span class="st">&quot;?&quot;</span>, np.nan)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.<span class="bu">apply</span>(pd.to_numeric, errors<span class="op">=</span><span class="st">&quot;coerce&quot;</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>data.info()</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 轉完發現
+NaN：這是正常訊號，代表你真的有 missing。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>這一步是為了讓資料「可訓練」（trainable）。</li>
+</ul>
+<hr />
+<h3 id="q3---把-nan-並轉成-numeric避免模型報錯">Q3 - 把 ?→NaN 並轉成
+numeric（避免模型報錯）</h3>
+<p><strong>題目：</strong> Write a line of code to replace the odd
+characters you see in the ‘Ca’ and ‘Thal’ columns with
+<code>np.nan</code> and then ensure all columns are numeric. Confirm
+your changes through printing.</p>
+<p><strong>Learning objective：</strong> - 你能完成「missing token 清理
++ dtype 正規化」。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&quot;Ca&quot;</span>] <span class="op">=</span> data[<span class="st">&quot;Ca&quot;</span>].replace(<span class="st">&quot;?&quot;</span>, np.nan)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&quot;Thal&quot;</span>] <span class="op">=</span> data[<span class="st">&quot;Thal&quot;</span>].replace(<span class="st">&quot;?&quot;</span>, np.nan)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.<span class="bu">apply</span>(pd.to_numeric, errors<span class="op">=</span><span class="st">&quot;coerce&quot;</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data.dtypes)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(data.isna().<span class="bu">sum</span>())</span></code></pre></div>
+<p><strong>Common mistakes：</strong> - 忘記
+<code>errors=&#39;coerce&#39;</code>：可能留下 object dtype。</p>
+<hr />
+<h2 id="step-4如果要補值imputation正確時機是什麼">Step
+4：如果要補值（imputation），正確時機是什麼？</h2>
+<p><strong>老師提醒：</strong> - 這是 ML
+最常犯的「偷看測試集」錯誤：data leakage。</p>
+<p><strong>關鍵字／概念：</strong> - 正確順序：<strong>split → fit
+imputer on train → transform train/test</strong>。</p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把
+如果要補值（imputation），正確時機是什麼？
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:12px; margin:14px 0;">
+<svg viewBox="0 0 980 120" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+.b{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+.t{fill:#e5e7eb;font: 14px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+    </marker>
+  </defs>
+  <rect class="b" x="20" y="25" width="210" height="55" rx="12" />
+  <text class="t" x="40" y="58">1) Split train/test</text>
+  <rect class="b" x="270" y="25" width="220" height="55" rx="12" />
+  <text class="t" x="290" y="58">2) Fit imputer on train</text>
+  <rect class="b" x="530" y="25" width="420" height="55" rx="12" />
+  <text class="t" x="550" y="58">3) Transform train + transform test</text>
+  <path class="a" d="M230,52 L270,52" />
+  <path class="a" d="M490,52 L530,52" />
+</svg>
+</div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 先 impute 再
+split：會把 test distribution 透漏進 training。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>任何「用資料學出來的轉換」（imputer、scaler、encoder）都只能用
+training fit。</li>
+</ul>
+<hr />
+<h3 id="q4---說明-imputation-正確時機避免-data-leakage">Q4 - 說明
+imputation 正確時機（避免 data leakage）</h3>
+<p><strong>題目：</strong> Now you should see missing values in those 2
+columns. Here we don’t need to impute (fill) missing values, but IF you
+were going to, explain exactly when in the ML process you would do this
+and why.</p>
+<p><strong>Learning objective：</strong> - 你能用一句話說清楚 data
+leakage 以及正確流程。</p>
+<p><strong>參考答案：</strong> - 我會 <strong>先 train/test
+split</strong>，再只用 <strong>training set</strong> 去 fit
+imputer（例如 median），最後用同一個 imputer 去 transform train 與
+test。 - 原因：避免用 test set
+的統計量（median/mean）影響訓練流程，造成過度樂觀的評估（data
+leakage）。</p>
+<p><strong>Common mistakes：</strong> -
+說「反正是無監督轉換所以沒差」：不對，無監督也會洩漏分佈資訊。</p>
+<hr />
+<h2 id="step-5把-diag-做成二元分類標籤-ybinary-label">Step 5：把
+<code>Diag</code> 做成二元分類標籤 y（Binary label）</h2>
+<p><strong>老師提醒：</strong> - 我們這章要做 binary classification：No
+disease vs Disease。</p>
+<p><strong>關鍵字／概念：</strong> -
+<code>(Diag &gt;= 1).astype(int)</code>：把 1/2/3/4 都視為「有病」。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 把 <code>Diag</code>
+做成二元分類標籤 y（Binary label）
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&quot;Diag&quot;</span>] <span class="op">=</span> (data[<span class="st">&quot;Diag&quot;</span>] <span class="op">&gt;=</span> <span class="dv">1</span>).astype(<span class="bu">int</span>)</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 忘記轉成 int：後面
+<code>value_counts</code> 會顯示 True/False 也可以，但最好一致。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>你現在得到的 y：0/1。</li>
+</ul>
+<hr />
+<h3 id="q5---diag-二元化diag1-1binary-label">Q5 - Diag 二元化：Diag≥1 →
+1（binary label）</h3>
+<p><strong>題目：</strong> Write a line of code to convert Diag into a
+binary label where values &gt;= 1 become 1.</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>data[<span class="st">&quot;Diag&quot;</span>] <span class="op">=</span> (data[<span class="st">&quot;Diag&quot;</span>] <span class="op">&gt;=</span> <span class="dv">1</span>).astype(<span class="bu">int</span>)</span></code></pre></div>
+<hr />
+<h2 id="step-6先看類別比例class-balance">Step 6：先看類別比例（class
+balance）</h2>
+<p><strong>老師提醒：</strong> - 如果類別不平衡（imbalance），accuracy
+可能騙人。</p>
+<p><strong>關鍵字／概念：</strong> -
+<code>value_counts(normalize=True)</code>：直接看到比例。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 先看類別比例（class
+balance） 做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> data[<span class="st">&quot;Diag&quot;</span>].value_counts()</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>props <span class="op">=</span> data[<span class="st">&quot;Diag&quot;</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(counts)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(props)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>))</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>counts.plot(kind<span class="op">=</span><span class="st">&quot;bar&quot;</span>, color<span class="op">=</span><span class="st">&quot;#E17F93&quot;</span>, edgecolor<span class="op">=</span><span class="st">&quot;#733D26&quot;</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&quot;Diag (0-no heart disease; 1-Heart disease)&quot;</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&quot;Count&quot;</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&quot;Target class balance&quot;</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 只看 counts
+不看比例：不同資料量時不容易比較。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>先知道 imbalance，才知道該重視哪個 metric（常見：Recall）。</li>
+</ul>
+<hr />
+<h3 id="q6---畫-class-balancecounts-proportion">Q6 - 畫 class
+balance（counts + proportion）</h3>
+<p><strong>題目：</strong> Create a bar plot of our target class counts
+to visually check class balance. Print class proportion as well.</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> data[<span class="st">&quot;Diag&quot;</span>].value_counts()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>props  <span class="op">=</span> data[<span class="st">&quot;Diag&quot;</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(counts)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(props)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>))</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>counts.plot(kind<span class="op">=</span><span class="st">&quot;bar&quot;</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<p><strong>Common mistakes：</strong> - 忘記
+<code>normalize=True</code>：你只印出數量，沒有比例。</p>
+<hr />
+<h2 id="step-7建立-x-y-traintest-split含-stratify">Step 7：建立 X, y +
+train/test split（含 stratify）</h2>
+<p><strong>老師提醒：</strong> - 我們需要把「評估」留到 test
+set；同時想要 train/test 類別比例一致。</p>
+<p><strong>關鍵字／概念：</strong> -
+<code>X = data.drop(columns=[&#39;Diag&#39;])</code> -
+<code>stratify=y</code>：保留 class proportion</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 建立 X, y +
+train/test split（含 stratify）
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> data.drop(columns<span class="op">=</span>[<span class="st">&quot;Diag&quot;</span>])</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> data[<span class="st">&quot;Diag&quot;</span>]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    X, y,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    test_size<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    stratify<span class="op">=</span>y</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Train class balance:</span><span class="ch">\n</span><span class="st">&quot;</span>, y_train.value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Test class balance:</span><span class="ch">\n</span><span class="st">&quot;</span>, y_test.value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 忘記
+<code>random_state</code>：每次結果不同，不利寫報告與 debug。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>你現在有 4 個資料集：X_train/X_test/y_train/y_test。</li>
+</ul>
+<hr />
+<h3 id="q7---切分前的必做步驟清理型別缺失值策略">Q7 -
+切分前的必做步驟：清理/型別/缺失值策略</h3>
+<p><strong>題目：</strong> Before moving on, pause. Identify the major
+step we have NOT yet done before we move on to train-test splitting.
+Complete it before moving on.</p>
+<p><strong>Learning objective：</strong> -
+你能辨認「切資料前」必做的清理工作。</p>
+<p><strong>參考答案（解釋）：</strong> - 在 split
+前，我們必須先把資料處理成「可訓練的 numeric 形式」，也就是： - 把
+<code>?</code> 轉成 <code>np.nan</code> - 把所有欄位轉 numeric dtype
+-（如果需要）決定缺失值策略（drop 或 impute；若 impute 要在 split 後
+fit）</p>
+<hr />
+<h3 id="q8---正確做-traintest-split30-test-stratify-seed">Q8 - 正確做
+train/test split（30% test, stratify, seed）</h3>
+<p><strong>題目：</strong> Separate out your 4 key datasets as the
+familiar variables: X_train, X_test, y_train, y_test. Use a 30% test set
+and set your random state at 42 for consistency.</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.3</span>, random_state<span class="op">=</span><span class="dv">42</span>, stratify<span class="op">=</span>y</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<hr />
+<h1 id="決策樹核心概念digest-rebuild">3) 決策樹核心概念（Digest &amp;
+Rebuild）</h1>
+<h2 id="決策樹在做什麼">3.1 決策樹在做什麼？</h2>
+<h3 id="直覺intuition">直覺（Intuition）</h3>
+<p>決策樹就是在學一堆規則：</p>
+<ul>
+<li>if <code>feature &lt;= threshold</code> → 走左邊</li>
+<li>else → 走右邊</li>
+</ul>
+<p>最後走到 leaf（葉節點）就做預測。</p>
+<h3 id="切得好是什麼意思">「切得好」是什麼意思？</h3>
+<ul>
+<li>切完以後，左右兩群的 label 更「純」（pure）</li>
+<li>對分類來說，純 = 幾乎都同一類</li>
+</ul>
+<h3 id="常用指標gini-impurity">常用指標：Gini impurity</h3>
+<ul>
+<li>直覺：如果一個節點裡 class 混得很平均，gini
+高；如果幾乎都同一類，gini 低。</li>
+</ul>
+<blockquote>
+<p>簡單記： - 混 → impurity 高 - 純 → impurity 低</p>
+</blockquote>
+<hr />
+<h2 id="視覺化一個節點怎麼算混gini-小圖">3.2
+視覺化：一個節點怎麼算「混」？（Gini 小圖）</h2>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:12px; margin:14px 0;">
+<svg viewBox="0 0 980 170" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+.txt{fill:#e5e7eb;font: 14px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.mut{fill:#d7dde8;font: 12px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+.box{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+</style>
+
+  <rect class="box" x="20" y="25" width="300" height="120" rx="12" />
+  <text class="txt" x="40" y="55">Case A：很混（50/50）</text>
+  <rect x="40" y="75" width="120" height="20" fill="#E17F93" />
+  <rect x="160" y="75" width="120" height="20" fill="#38bdf8" />
+  <text class="mut" x="40" y="120">gini = 1 - (0.5² + 0.5²) = 0.5</text>
+
+  <rect class="box" x="350" y="25" width="300" height="120" rx="12" />
+  <text class="txt" x="370" y="55">Case B：偏純（90/10）</text>
+  <rect x="370" y="75" width="216" height="20" fill="#E17F93" />
+  <rect x="586" y="75" width="24" height="20" fill="#38bdf8" />
+  <text class="mut" x="370" y="120">gini = 1 - (0.9² + 0.1²) = 0.18</text>
+
+  <rect class="box" x="680" y="25" width="280" height="120" rx="12" />
+  <text class="txt" x="700" y="55">Case C：很純（100/0）</text>
+  <rect x="700" y="75" width="240" height="20" fill="#E17F93" />
+  <text class="mut" x="700" y="120">gini = 1 - (1.0² + 0.0²) = 0</text>
+</svg>
+</div>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>gini 越小越純。</li>
+<li>決策樹在每次 split 都想讓 impurity 下降最多。</li>
+</ul>
+<hr />
+<h2 id="gini-vs-entropy差在哪你需要的程度">3.3 Gini vs
+Entropy：差在哪？（你需要的程度）</h2>
+<p><strong>老師提醒：</strong> 你在 sklearn 可能會看到
+<code>criterion=&quot;gini&quot;</code> 或 <code>criterion=&quot;entropy&quot;</code>。</p>
+<h3 id="what直覺">What（直覺）</h3>
+<ul>
+<li><strong>Gini impurity</strong>：計算快、常用預設（default）</li>
+<li><strong>Entropy (Information
+Gain)</strong>：資訊理論角度，概念上更「資訊」導向</li>
+</ul>
+<blockquote>
+<p>實務上兩者常得到相近的 split；你更需要會的是： 1)
+<strong>它們都在追求「切完更純」</strong> 2) <strong>樹越深越容易
+overfit</strong></p>
+</blockquote>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 以為換 entropy
+就一定比較好：不一定，差異通常小，且還是會 overfit。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>先把「流程與評估」做好，<code>criterion</code> 不是最先要調的。</li>
+</ul>
+<hr />
+<h2 id="決策樹怎麼停下來stopping-criteria">3.4
+決策樹怎麼「停下來」？（Stopping criteria）</h2>
+<p><strong>老師提醒：</strong>
+很多人以為樹會一直長到完美，但其實樹需要停，不然會把噪音也當規則。</p>
+<p><strong>關鍵字／概念：</strong> 常見停止條件（hyperparameters）： -
+<code>max_depth</code>：最大深度（最常用） -
+<code>min_samples_split</code>：要切分前，節點至少要有幾筆樣本 -
+<code>min_samples_leaf</code>：葉節點至少要有幾筆樣本（避免超小葉子）</p>
+<h3 id="直覺intuition-1">直覺（Intuition）</h3>
+<ul>
+<li>想像你在做「規則」：如果你允許規則寫到超細，就會變成背答案（memorization）。</li>
+<li><code>min_samples_leaf</code>
+就像規定：<strong>每條規則至少要能解釋一群人</strong>，不能只解釋 1
+個特例。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>這章把重點放在 <code>max_depth</code>（最直覺也最常用）。</li>
+</ul>
+<hr />
+<h1 id="實作shallow-vs-deep讀樹-觀察-overfitting">4) 實作：Shallow vs
+Deep（讀樹 + 觀察 overfitting）</h1>
+<h2 id="step-8fit-一棵淺樹max_depth1">Step 8：Fit
+一棵淺樹（max_depth=1）</h2>
+<p><strong>老師提醒：</strong> - 淺樹可解釋（interpretable）。 -
+<code>max_depth=1</code> 等於只問一個 yes/no 問題。</p>
+<p><strong>關鍵字／概念：</strong> - 你要學會讀：feature / threshold /
+samples / value / class。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 Fit
+一棵淺樹（max_depth=1） 做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>clf_shallow <span class="op">=</span> DecisionTreeClassifier(max_depth<span class="op">=</span><span class="dv">1</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>clf_shallow.fit(X_train, y_train)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>plot_tree(</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    clf_shallow,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    feature_names<span class="op">=</span>X_train.columns,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    class_names<span class="op">=</span>[<span class="st">&#39;No heart disease&#39;</span>, <span class="st">&#39;Heart disease&#39;</span>],</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    filled<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    rounded<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">10</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Shallow decision tree (max_depth=1)&#39;</span>)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 你看到的
+<code>gini</code> 是這個 node 的混雜度，不是整體模型分數。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li><code>max_depth=1</code> 很像在學一個簡單臨床規則（single
+rule）。</li>
+</ul>
+<hr />
+<h3 id="q9---讀-leafsamplesvalue-信心與不確定性">Q9 - 讀
+leaf：samples/value → 信心與不確定性</h3>
+<p><strong>題目：</strong> Pick one leaf node. How many training samples
+reach it, what class does it predict, and what does that imply about
+uncertainty or confidence in that prediction?</p>
+<p><strong>Learning objective：</strong> - 你能從 leaf node 的
+<code>samples</code> / <code>value</code> 讀出「信心」與「風險」。</p>
+<p><strong>參考答案（怎麼答）：</strong> - 你選一個 leaf：看它的
+<code>samples = N</code>。 - 看 <code>value = [n0, n1]</code>： - 如果
+n0/n1 很偏（例如 45 vs
+2），代表在訓練資料中這條路徑很一致，預測相對有把握。 - 如果很接近（例如
+12 vs 10），代表 leaf 仍然混雜，不確定性較高。</p>
+<p><strong>Common mistakes：</strong> - 只看 <code>class</code> 不看
+<code>value</code>：你會忽略 leaf 裡其實很混。</p>
+<hr />
+<h3 id="q10---把-split-翻成一句規則分析臨床風險fpfn">Q10 - 把 split
+翻成一句規則＋分析臨床風險（FP/FN）</h3>
+<p><strong>題目：</strong> This tree has only one level, so it is
+effectively making a decision based on a single threshold on a single
+feature. What simple rule about patients is this tree learning and how,
+if used clinically as a single test, could this affect patients?</p>
+<p><strong>Learning objective：</strong> - 你能把 tree 的第一個 split
+翻譯成自然語言規則，並思考臨床後果（false positives/false
+negatives）。</p>
+<p><strong>參考答案（模板）：</strong> - 規則是：如果 <strong>(Feature X
+≤ threshold t)</strong> → 預測 A；否則 → 預測 B。 - 臨床影響： -
+如果拿它當唯一檢查： - 會把某些人誤判有病（FP）→ 不必要檢查/焦慮 -
+或漏掉某些病人（FN）→ 更嚴重（missed cases）</p>
+<hr />
+<h2 id="step-9用-cross-validation-評估-shallow-tree不要只看-train">Step
+9：用 Cross-Validation 評估 shallow tree（不要只看 train）</h2>
+<p><strong>老師提醒：</strong> - 決策樹很容易記住訓練資料；只看 train
+會過度樂觀。</p>
+<p><strong>關鍵字／概念：</strong> - <code>cross_val_score</code>：在
+training set 上做 k-fold CV。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 用 Cross-Validation
+評估 shallow tree（不要只看 train）
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pred_train_shallow <span class="op">=</span> clf_shallow.predict(X_train)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>acc_scores <span class="op">=</span> cross_val_score(clf_shallow, X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">&quot;accuracy&quot;</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>rec_scores <span class="op">=</span> cross_val_score(clf_shallow, X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">&quot;recall&quot;</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Mean CV accuracy:&quot;</span>, acc_scores.mean())</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Mean CV recall:&quot;</span>, rec_scores.mean())</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>cm_train <span class="op">=</span> confusion_matrix(y_train, pred_train_shallow)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Confusion matrix (train):</span><span class="ch">\n</span><span class="st">&quot;</span>, cm_train)</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 指標挑錯：醫療常重視
+Recall（漏診 FN 的代價更高）。</p>
+<h3 id="小教室confusion-matrix-一眼看懂必會">小教室：Confusion Matrix
+一眼看懂（必會）</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Predict 0</th>
+<th>Predict 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>True 0</strong></td>
+<td>TN</td>
+<td>FP</td>
+</tr>
+<tr>
+<td><strong>True 1</strong></td>
+<td>FN</td>
+<td>TP</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Recall (TPR)</strong> = TP / (TP + FN)
+<ul>
+<li>直覺：真正有病的人（True 1）裡，你抓到多少（抓到 = TP）。</li>
+</ul></li>
+<li>如果你很怕漏診（FN 很痛），你就會更在意 recall。</li>
+</ul>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>CV 是你比較不同模型/參數的主要依據。</li>
+<li>Confusion matrix 能讓你把錯誤「分類」：到底是 FP 多還是 FN 多。</li>
+</ul>
+<hr />
+<h3 id="q11---用-cv-評估-shallow-treeaccuracyrecall-cm">Q11 - 用 CV 評估
+shallow tree（accuracy/recall + CM）</h3>
+<p><strong>題目：</strong> Predict for your training data. Then use
+5-fold cross-validation with <code>cross_val_score</code> on the
+training data to estimate accuracy and recall more robustly. Finally,
+print the confusion matrix for the training predictions.</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>pred_train <span class="op">=</span> clf_shallow.predict(X_train)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>acc_scores <span class="op">=</span> cross_val_score(clf_shallow, X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">&#39;accuracy&#39;</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>rec_scores <span class="op">=</span> cross_val_score(clf_shallow, X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">&#39;recall&#39;</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(acc_scores, acc_scores.mean())</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(rec_scores, rec_scores.mean())</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>cm <span class="op">=</span> confusion_matrix(y_train, pred_train)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cm)</span></code></pre></div>
+<p><strong>Common mistakes：</strong> - 只跑一次
+<code>cross_val_score</code>：你拿不到兩種 scoring。</p>
+<hr />
+<h3 id="q12---比較-train-vs-cv-判斷-underfitoverfitshallow">Q12 - 比較
+train vs CV 判斷 underfit/overfit（shallow）</h3>
+<p><strong>題目：</strong> What do you notice about train versus
+cross-validated performance here? What does it suggest about the fit of
+your shallow tree?</p>
+<p><strong>參考答案（你要寫的觀察句）：</strong> - 若 train 和 CV
+都不高：代表模型太簡單，可能 <strong>underfitting</strong>。 - 若 train
+高但 CV 低：代表已經開始 <strong>overfitting</strong>。</p>
+<hr />
+<h2 id="step-10fit-deep-treemax_depthnone並觀察-overfitting">Step
+10：Fit deep tree（max_depth=None）並觀察 overfitting</h2>
+<p><strong>老師提醒：</strong> - 深樹能把 training set 切得很純，所以
+train 表現通常更好，但泛化可能更差。</p>
+<p><strong>關鍵字／概念：</strong> -
+<code>max_depth=None</code>：樹可以長到很深。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 Fit deep
+tree（max_depth=None）並觀察 overfitting
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>clf_deep <span class="op">=</span> DecisionTreeClassifier(max_depth<span class="op">=</span><span class="va">None</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>clf_deep.fit(X_train, y_train)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>plot_tree(</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    clf_deep,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    feature_names<span class="op">=</span>X_train.columns,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    class_names<span class="op">=</span>[<span class="st">&#39;No heart disease&#39;</span>, <span class="st">&#39;Heart disease&#39;</span>],</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    filled<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    rounded<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Deep decision tree (top 2 levels only)&#39;</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> -
+直接畫整棵樹：圖會巨大到不可讀。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>深樹是 overfitting 的最佳示範。</li>
+</ul>
+<hr />
+<h3 id="q13---深樹的代價可解釋性下降interpretability-tradeoff">Q13 -
+深樹的代價：可解釋性下降（interpretability tradeoff）</h3>
+<p><strong>題目：</strong> What is one interpretability tradeoff you
+notice when the tree becomes deeper?</p>
+<p><strong>參考答案：</strong> - 樹越深，規則越多越複雜： -
+可解釋性（interpretability）下降 - 很難用人話總結 -
+也更難在臨床/決策上被信任</p>
+<hr />
+<h3 id="q14---train-vs-cv-落差看-overfittingdeep-tree">Q14 - train vs CV
+落差看 overfitting（deep tree）</h3>
+<p><strong>題目：</strong> What do you notice about train versus
+cross-validated performance here? What does it suggest about the fit of
+your deep tree?</p>
+<p><strong>參考答案：</strong> - 常見情況是 train 很好、CV 變差：典型
+<strong>overfitting</strong>。</p>
+<hr />
+<h1 id="threshold-trade-offroc-auc你要真的懂">5) Threshold
+trade-off：ROC / AUC（你要真的懂）</h1>
+<h2 id="step-11用-cross_val_predict-取-cv-probabilities-畫-roc">Step
+11：用 cross_val_predict 取 CV probabilities → 畫 ROC</h2>
+<p><strong>老師提醒：</strong> - <code>predict()</code> 只給 0/1。 - ROC
+要的是「機率」或 score，因為 ROC 在比較不同 threshold。</p>
+<p><strong>關鍵字／概念：</strong> - <code>predict_proba</code>：輸出
+<code>[P(class0), P(class1)]</code> - ROC： - x 軸 FPR（false positive
+rate） - y 軸 TPR（true positive rate = recall）</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 用 cross_val_predict
+取 CV probabilities → 畫 ROC 做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_predict</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_curve, roc_auc_score</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>proba_shallow_cv <span class="op">=</span> cross_val_predict(</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    DecisionTreeClassifier(max_depth<span class="op">=</span><span class="dv">1</span>, random_state<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, method<span class="op">=</span><span class="st">&quot;predict_proba&quot;</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>)[:, <span class="dv">1</span>]</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>proba_deep_cv <span class="op">=</span> cross_val_predict(</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    DecisionTreeClassifier(max_depth<span class="op">=</span><span class="va">None</span>, random_state<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    X_train, y_train, cv<span class="op">=</span><span class="dv">5</span>, method<span class="op">=</span><span class="st">&quot;predict_proba&quot;</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>)[:, <span class="dv">1</span>]</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>fpr_s, tpr_s, _ <span class="op">=</span> roc_curve(y_train, proba_shallow_cv)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>fpr_d, tpr_d, _ <span class="op">=</span> roc_curve(y_train, proba_deep_cv)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>auc_s <span class="op">=</span> roc_auc_score(y_train, proba_shallow_cv)</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>auc_d <span class="op">=</span> roc_auc_score(y_train, proba_deep_cv)</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>plt.plot(fpr_s, tpr_s, label<span class="op">=</span><span class="ss">f&quot;Shallow (AUC=</span><span class="sc">{</span>auc_s<span class="sc">:.3f}</span><span class="ss">)&quot;</span>)</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>plt.plot(fpr_d, tpr_d, label<span class="op">=</span><span class="ss">f&quot;Deep (AUC=</span><span class="sc">{</span>auc_d<span class="sc">:.3f}</span><span class="ss">)&quot;</span>)</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>plt.plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>], <span class="st">&#39;--&#39;</span>, color<span class="op">=</span><span class="st">&#39;gray&#39;</span>, label<span class="op">=</span><span class="st">&#39;Random&#39;</span>)</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&quot;False Positive Rate (FPR)&quot;</span>)</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&quot;True Positive Rate (TPR = Recall)&quot;</span>)</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&quot;ROC (5-fold CV probabilities on training data)&quot;</span>)</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>plt.legend(loc<span class="op">=</span><span class="st">&quot;lower right&quot;</span>)</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 用 test set 來畫
+ROC、再拿來挑 threshold：那會污染 test。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>ROC 是在看「你想要更高 recall，要付出多少 FPR」。</li>
+</ul>
+<hr />
+<h3 id="q15---用-cv-proba-畫-roc-算-auc兩棵樹比較">Q15 - 用 CV proba 畫
+ROC + 算 AUC（兩棵樹比較）</h3>
+<p><strong>題目：</strong> Below, estimate predicted probabilities for
+your shallow and deep trees using cross-validation on the training data.
+Store the probabilities of the positive class only. Next, use
+<code>roc_curve</code> and <code>roc_auc_score</code> to plot ROC curves
+for the two models.</p>
+<p><strong>參考答案：</strong> - 就是上面的
+<code>cross_val_predict(..., method=&#39;predict_proba&#39;)[:,1]</code> +
+<code>roc_curve</code> + <code>roc_auc_score</code>。</p>
+<hr />
+<h3 id="q16---調-threshold-提高-recalltpr-但-fprtrade-off">Q16 - 調
+threshold 提高 recall：TPR↑ 但 FPR↑（trade-off）</h3>
+<p><strong>題目：</strong> If our goal were to prioritize higher recall
+in order to reduce the risk of missed heart disease cases, in which
+direction would we shift the classification threshold? Using the ROC
+curve, explain what this change corresponds to visually and what
+trade-off we would be accepting.</p>
+<p><strong>參考答案：</strong> - 為了提高 recall（TPR），你要把
+threshold <strong>往下降</strong>（更容易判陽性）。 - ROC
+圖上對應：往「更高的 TPR」移動，通常也會往右（FPR 變高）。 -
+Trade-off：漏診（FN）變少，但誤報（FP）變多。</p>
+<hr />
+<h1 id="用-validation-curve-調-max_depth只用-training-cv">6) 用
+Validation Curve 調 <code>max_depth</code>（只用 training + CV）</h1>
+<h2 id="step-12為什麼-tuning-不能用-test-set">Step 12：為什麼 tuning
+不能用 test set？</h2>
+<p><strong>老師提醒：</strong> - test set 是最後一次「公正考試」。</p>
+<p><strong>關鍵字／概念：</strong> - tuning =
+你在「選模型/選參數」，這是訓練流程的一部分。</p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 為什麼 tuning 不能用
+test set？ 做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>test set 只用一次：final evaluation。</li>
+</ul>
+<hr />
+<h3 id="q17---為何-tuning-只能用-traintest-只能-final">Q17 - 為何 tuning
+只能用 train（test 只能 final）</h3>
+<p><strong>題目：</strong> Why do we tune <code>max_depth</code> using
+only the training set rather than using the test set?</p>
+<p><strong>參考答案：</strong> - 因為用 test set 來挑
+<code>max_depth</code> 等於把 test 的資訊用來做決策，造成 data leakage。
+- 會讓你最後報告的 test performance 偏樂觀，不再代表真正泛化能力。</p>
+<hr />
+<h2 id="step-13validation-curverecall-vs-max_depth">Step 13：Validation
+curve（recall vs max_depth）</h2>
+<p><strong>老師提醒：</strong> - 你要在 underfit 與 overfit
+之間找平衡。</p>
+<p><strong>關鍵字／概念：</strong> - validation curve： - train score
+隨深度上升通常變好 - CV score 會在某個深度後開始下降（overfit 訊號）</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 Validation
+curve（recall vs max_depth） 做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>depths <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">16</span>))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>train_scores, cv_scores <span class="op">=</span> validation_curve(</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    DecisionTreeClassifier(random_state<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    X_train, y_train,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    param_name<span class="op">=</span><span class="st">&quot;max_depth&quot;</span>,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    param_range<span class="op">=</span>depths,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    scoring<span class="op">=</span><span class="st">&quot;recall&quot;</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    cv<span class="op">=</span><span class="dv">5</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>train_recalls <span class="op">=</span> train_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>cv_mean_recalls <span class="op">=</span> cv_scores.mean(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>cv_std_recalls  <span class="op">=</span> cv_scores.std(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">5</span>))</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>plt.plot(depths, train_recalls, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>, label<span class="op">=</span><span class="st">&#39;Train recall&#39;</span>)</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>plt.plot(depths, cv_mean_recalls, marker<span class="op">=</span><span class="st">&#39;o&#39;</span>, label<span class="op">=</span><span class="st">&#39;CV mean recall&#39;</span>)</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>plt.fill_between(</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    depths,</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    cv_mean_recalls <span class="op">-</span> cv_std_recalls,</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    cv_mean_recalls <span class="op">+</span> cv_std_recalls,</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.2</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&quot;max_depth&quot;</span>)</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&quot;Recall&quot;</span>)</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&quot;Validation curve (5-fold CV recall)&quot;</span>)</span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>best_depth <span class="op">=</span> depths[<span class="bu">int</span>(np.argmax(cv_mean_recalls))]</span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Best max_depth by mean CV recall:&quot;</span>, best_depth)</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 你用 accuracy 當
+scoring：在醫療情境常不是你真正想優化的。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>你要用 CV 的曲線挑參數，而不是憑感覺。</li>
+</ul>
+<hr />
+<h3 id="q18---讀-validation-curve找平衡深度範圍">Q18 - 讀 validation
+curve：找平衡深度範圍</h3>
+<p><strong>題目：</strong> Looking at the validation curve, identify a
+depth or depth range that seems to balance underfitting and
+overfitting.</p>
+<p><strong>參考答案（怎麼答）：</strong> - 看 CV mean recall
+的高點附近，但也要注意 standard deviation。 - 若 CV recall 在某段深度
+plateau（差不多），通常選較小深度會更穩、更可解釋。</p>
+<hr />
+<h3 id="q19---用最佳-max_depth-訓練-tuned-tree-並畫樹">Q19 - 用最佳
+max_depth 訓練 tuned tree 並畫樹</h3>
+<p><strong>題目：</strong> Create and train a decision tree classifier
+model using the best depth from CV. Print your tree with
+<code>plot_tree</code>.</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>clf_tuned <span class="op">=</span> DecisionTreeClassifier(max_depth<span class="op">=</span>best_depth, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>clf_tuned.fit(X_train, y_train)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">10</span>))</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>plot_tree(</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    clf_tuned,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    feature_names<span class="op">=</span>X_train.columns,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    class_names<span class="op">=</span>[<span class="st">&quot;No heart disease&quot;</span>, <span class="st">&quot;Heart disease&quot;</span>],</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    filled<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    rounded<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<hr />
+<h1 id="最終評估用-test-set-報告final-report">7) 最終評估：用 test set
+報告（Final report）</h1>
+<h2 id="step-14tuned-tree-在-traintest-的-accuracyrecall-confusion-matrix">Step
+14：tuned tree 在 train/test 的 accuracy/recall + confusion matrix</h2>
+<p><strong>老師提醒：</strong> - 你要確認模型不是「只記住 train」。</p>
+<p><strong>關鍵字／概念：</strong> - confusion matrix
+可以讓你看到錯誤類型（FP/FN）。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 tuned tree 在
+train/test 的 accuracy/recall + confusion matrix
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>clf_tuned <span class="op">=</span> DecisionTreeClassifier(max_depth<span class="op">=</span>best_depth, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>clf_tuned.fit(X_train, y_train)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>pred_train <span class="op">=</span> clf_tuned.predict(X_train)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>pred_test  <span class="op">=</span> clf_tuned.predict(X_test)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Train accuracy: </span><span class="sc">{</span>accuracy_score(y_train, pred_train)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Train recall:   </span><span class="sc">{</span>recall_score(y_train, pred_train)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Test accuracy:  </span><span class="sc">{</span>accuracy_score(y_test, pred_test)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Test recall:    </span><span class="sc">{</span>recall_score(y_test, pred_test)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>cm_test  <span class="op">=</span> confusion_matrix(y_test, pred_test)</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>ConfusionMatrixDisplay(cm_test, display_labels<span class="op">=</span>[<span class="st">&quot;No heart disease&quot;</span>,<span class="st">&quot;Heart disease&quot;</span>]).plot(cmap<span class="op">=</span><span class="st">&quot;Blues&quot;</span>)</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f&quot;Tuned tree confusion matrix (Test) max_depth=</span><span class="sc">{</span>best_depth<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">Classification report (TEST):&quot;</span>)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(classification_report(y_test, pred_test, target_names<span class="op">=</span>[<span class="st">&quot;No heart disease&quot;</span>, <span class="st">&quot;Heart disease&quot;</span>]))</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 只報
+accuracy：會掩蓋 FN（漏診）的風險。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>你的 final answer 要以 test set 為主，並搭配 confusion matrix
+解釋錯誤。</li>
+</ul>
+<hr />
+<h3 id="q20---final-reporttraintest-accuracyrecall-cm">Q20 - final
+report：train/test accuracy+recall + CM</h3>
+<p><strong>題目：</strong> Predict for your test and training data and
+print your accuracy and recall for your test AND train data. Print a
+confusion matrix as well to inspect where your test errors fall.</p>
+<p><strong>參考答案：</strong> - 就是上面 Step 14 的程式碼。</p>
+<hr />
+<h1 id="optionalregression-treesdecisiontreeregressor">8)
+Optional：Regression Trees（DecisionTreeRegressor）</h1>
+<h2 id="step-15把-classification-換成-regressionpredict-cholesterol">Step
+15：把 classification 換成 regression（predict Cholesterol）</h2>
+<p><strong>老師提醒：</strong> - 分類樹預測
+class；回歸樹預測連續值。</p>
+<p><strong>關鍵字／概念：</strong> - Regression tree leaf
+會輸出一個數值（通常是 leaf 裡 target 的平均）。</p>
+<p><strong>步驟：</strong></p>
+<p><strong>直覺：</strong> - 把這個 Step 想成：先把 把 classification
+換成 regression（predict Cholesterol）
+做到『可被模型吃』，後面才談模型表現。</p>
+<p><strong>小練習（Quick check）：</strong> -
+你能用一句話說：這一步如果做錯，後面會怎麼爆嗎？</p>
+<p><strong>背誦重點（你要背 2 個）：</strong> 1.
+先讓資料/標籤定義清楚，再談模型 2. 任何會學到統計量/超參的事，都要在
+train/CV 內完成</p>
+<p><strong>最容易錯的 1 個地方：</strong> - 做完就往下跑，但沒有做
+sanity check（導致後面 debug 變地獄）</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeRegressor</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_absolute_error, root_mean_squared_error</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>reg_data <span class="op">=</span> data.dropna(subset<span class="op">=</span>[<span class="st">&quot;Cholesterol&quot;</span>]).dropna()</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>Xr <span class="op">=</span> reg_data.drop(columns<span class="op">=</span>[<span class="st">&quot;Cholesterol&quot;</span>, <span class="st">&quot;Diag&quot;</span>])</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>yr <span class="op">=</span> reg_data[<span class="st">&quot;Cholesterol&quot;</span>]</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>Xr_train, Xr_test, yr_train, yr_test <span class="op">=</span> train_test_split(</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    Xr, yr, test_size<span class="op">=</span><span class="fl">0.25</span>, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>reg_tree <span class="op">=</span> DecisionTreeRegressor(max_depth<span class="op">=</span><span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>reg_tree.fit(Xr_train, yr_train)</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>pred_tr <span class="op">=</span> reg_tree.predict(Xr_train)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>pred_te <span class="op">=</span> reg_tree.predict(Xr_test)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Train MAE:  </span><span class="sc">{</span>mean_absolute_error(yr_train, pred_tr)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Test  MAE:  </span><span class="sc">{</span>mean_absolute_error(yr_test, pred_te)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Train RMSE: </span><span class="sc">{</span>root_mean_squared_error(yr_train, pred_tr)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Test  RMSE: </span><span class="sc">{</span>root_mean_squared_error(yr_test, pred_te)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Train target mean:&quot;</span>, np.mean(yr_train))</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;Train target std :&quot;</span>, np.std(yr_train))</span></code></pre></div>
+<p><strong>常見踩雷（Common pitfalls）：</strong> - 先 dropna 再 split
+沒問題；但你要確定不是偷偷把 test 的統計量帶進 train。</p>
+<p><strong>一句話總結：</strong></p>
+<ul>
+<li>MAE/RMSE 要搭配 target 的 mean/std 來解讀。</li>
+</ul>
+<hr />
+<h3 id="optional-q1---用-meanstd-解讀-maermse-的尺度感">Optional Q1 - 用
+mean/std 解讀 MAE/RMSE 的尺度感</h3>
+<p><strong>題目：</strong> What 2 summary statistics of the training
+target could you compute to put the MAE and RMSE into context?</p>
+<p><strong>參考答案：</strong> - training target 的
+<strong>mean</strong> 與 <strong>std（standard deviation）</strong>。 -
+直覺：MAE/RMSE 如果比 std 小很多，通常代表誤差相對可接受（但仍要看
+domain）。</p>
+<hr />
+<h3 id="optional-q2---讀回歸樹-leaf預測值代表的病人子群">Optional Q2 -
+讀回歸樹 leaf：預測值＋代表的病人子群</h3>
+<p><strong>題目：</strong> Pick one leaf. What continuous value is the
+tree predicting there, and what subset of patients does that leaf
+represent?</p>
+<p><strong>參考答案（怎麼答）：</strong> - leaf 預測的值 = 該 leaf
+節點內 training targets 的平均值（或 sklearn 的 leaf value）。 - subset
+= 走到該 leaf 的病人（符合一路 split 條件的那群）。</p>
+<hr />
+<h1 id="全章總整理你要帶走的東西">9) 全章總整理（你要帶走的東西）</h1>
+<h2 id="超濃縮重點ultra-tldr">超濃縮重點（Ultra TL;DR）</h2>
+<ul>
+<li>Decision Tree = 一連串 if-then 規則；每次 split 讓節點更「純」（gini
+↓）。</li>
+<li>深度越深越容易 overfit：train 高、CV 低。</li>
+<li>調參（tuning）只用 training + CV；test set 留到最後。</li>
+<li>醫療常重視 Recall：提高 recall 通常要接受更多 false positives。</li>
+</ul>
+<h2 id="考點清單exam-checklist可直接背版本">考點清單（Exam
+checklist｜可直接背版本）</h2>
+<blockquote>
+<p>這區是「懶人背誦版」：每題都給你一句話答案 +
+必備關鍵字（中英對照）。</p>
+</blockquote>
+<h3 id="data.info-在看什麼missing-dtype">1) data.info()
+在看什麼？（missing / dtype）</h3>
+<ul>
+<li><code>data.info()</code> 一次看到：<strong>row count</strong>、各欄
+<strong>Non-Null Count（missing）</strong>、各欄
+<strong>dtype</strong>。</li>
+<li>如果理論上是數字卻出現 <code>object</code>，常代表混入字串（例如
+<code>?</code>）。</li>
+</ul>
+<h3 id="為什麼要把-np.nan">2) 為什麼要把 <code>? → np.nan</code>？</h3>
+<ul>
+<li><code>?</code> 是人為的 missing
+token，不是模型能用的缺失值格式。</li>
+<li>不先處理會讓欄位變
+<code>object</code>，訓練時常報錯（<code>could not convert string to float</code>）。</li>
+</ul>
+<h3 id="正確-imputation-流程-data-leakage-是什麼">3) 正確 imputation
+流程 + data leakage 是什麼？</h3>
+<ul>
+<li>正確順序：<strong>split train/test → fit imputer on train →
+transform train + test</strong>。</li>
+<li><strong>Data leakage</strong>：把 test 的資訊（即使是 mean/median
+這種無監督統計量）偷看進訓練流程，造成 test 分數灌水。</li>
+</ul>
+<h3 id="把-tree-的第一個-split-翻成一句人話規則">4) 把 tree 的第一個
+split 翻成一句人話規則</h3>
+<ul>
+<li>根節點：<code>Feature_X &lt;= t</code></li>
+<li>翻譯：<strong>「如果 Feature_X ≤ t，就預測 A；否則預測
+B」</strong>（A/B 看左右分支的 class）。</li>
+</ul>
+<h3 id="train-vs-cv-判斷-underfit-overfit">5) train vs CV 判斷 underfit
+/ overfit</h3>
+<ul>
+<li><strong>Underfitting（欠擬合）</strong>：train 低、CV 也低。</li>
+<li><strong>Overfitting（過擬合）</strong>：train 高、CV 明顯較低（gap
+大）。</li>
+</ul>
+<h3 id="rocfprtpr-與-threshold-trade-off">6) ROC：FPR/TPR 與 threshold
+trade-off</h3>
+<ul>
+<li><strong>TPR = Recall =
+TP/(TP+FN)</strong>（抓到多少真正有病的人）。</li>
+<li><strong>FPR = FP/(FP+TN)</strong>（誤報多少真正沒病的人）。</li>
+<li>threshold <strong>降低</strong> → Recall/TPR ↑、FPR
+↑（漏診少，但誤報多）。</li>
+</ul>
+<h3 id="為什麼-tuning-不能用-test-set">7) 為什麼 tuning 不能用 test
+set？</h3>
+<ul>
+<li>tuning（選 <code>max_depth</code> 等）是訓練流程的一部分，不能用
+test 參與決策。</li>
+<li>正確：<strong>training + CV 做 tuning</strong>；<strong>test set
+只做一次 final evaluation</strong>（期末考只考一次）。</li>
+</ul>
+</body>
+</html>

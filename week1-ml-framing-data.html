@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-02" />
+  <title>WK1｜Framing Questions &amp; Data for ML</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK1｜Framing Questions &amp; Data for ML</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-02</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#開場你要先記住的一句話"
+id="toc-開場你要先記住的一句話">開場：你要先記住的一句話</a></li>
+<li><a href="#延伸資源--快速了解內容"
+id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#workflow-地圖看圖就懂" id="toc-workflow-地圖看圖就懂">1)
+Workflow 地圖（看圖就懂）</a></li>
+<li><a href="#關鍵字速查keywords" id="toc-關鍵字速查keywords">1)
+關鍵字速查（Keywords）</a></li>
+<li><a href="#q-題教學可直接貼-colab" id="toc-q-題教學可直接貼-colab">2)
+Q 題教學（可直接貼 Colab）</a>
+<ul>
+<li><a href="#q1---讀資料並快速檢查read_csv-headinfo"
+id="toc-q1---讀資料並快速檢查read_csv-headinfo">Q1 -
+讀資料並快速檢查（read_csv + head/info）</a></li>
+<li><a href="#q2---看-species-類別比例class-balance-barplot"
+id="toc-q2---看-species-類別比例class-balance-barplot">Q2 - 看 species
+類別比例（class balance barplot）</a></li>
+<li><a href="#q3---自動分出-cat_cols-num_colsprogrammatic"
+id="toc-q3---自動分出-cat_cols-num_colsprogrammatic">Q3 - 自動分出
+cat_cols / num_cols（programmatic）</a></li>
+<li><a href="#q4---一次畫完所有-categorical-barplots"
+id="toc-q4---一次畫完所有-categorical-barplots">Q4 - 一次畫完所有
+categorical barplots</a></li>
+<li><a href="#q5---選一個分類-target-並說明原因framing"
+id="toc-q5---選一個分類-target-並說明原因framing">Q5 - 選一個分類 target
+並說明原因（framing）</a></li>
+<li><a href="#q6---數值分佈-22-hist看尺度偏態離群"
+id="toc-q6---數值分佈-22-hist看尺度偏態離群">Q6 - 數值分佈 2×2
+hist（看尺度/偏態/離群）</a></li>
+<li><a href="#q7---選-regression-target哪個最適合最不適合"
+id="toc-q7---選-regression-target哪個最適合最不適合">Q7 - 選 regression
+target：哪個最適合/最不適合？</a></li>
+<li><a href="#q8---用-pairplot-推理-decision-boundary-與不確定性"
+id="toc-q8---用-pairplot-推理-decision-boundary-與不確定性">Q8 - 用
+pairplot 推理 decision boundary 與不確定性</a></li>
+<li><a href="#q9---pca不看-label先猜群集結構"
+id="toc-q9---pca不看-label先猜群集結構">Q9 - PCA（不看
+label）先猜群集結構</a></li>
+<li><a href="#q10---pca-上色把-label-投影到-2d"
+id="toc-q10---pca-上色把-label-投影到-2d">Q10 - PCA 上色：把 label
+投影到 2D</a></li>
+<li><a href="#q11---比對-pca-結構-vs-species-label-一致性"
+id="toc-q11---比對-pca-結構-vs-species-label-一致性">Q11 - 比對 PCA 結構
+vs species label 一致性</a></li>
+<li><a href="#q12---先預測-split-後-shape理解-xy"
+id="toc-q12---先預測-split-後-shape理解-xy">Q12 - 先預測 split 後
+shape（理解 X/y）</a></li>
+<li><a href="#q13---categorical-missing.nanunknown只針對-features"
+id="toc-q13---categorical-missing.nanunknown只針對-features">Q13 -
+categorical missing：‘.’→NaN→Unknown（只針對 features）</a></li>
+<li><a href="#q14---只用-train-算-medians避免-leakage"
+id="toc-q14---只用-train-算-medians避免-leakage">Q14 - 只用 train 算
+medians（避免 leakage）</a></li>
+<li><a
+href="#q15---用-train-medians-補-traintest-missing正確-imputation"
+id="toc-q15---用-train-medians-補-traintest-missing正確-imputation">Q15
+- 用 train medians 補 train/test missing（正確 imputation）</a></li>
+<li><a href="#q16---用自己的話寫-ml-workflow目前學到的"
+id="toc-q16---用自己的話寫-ml-workflow目前學到的">Q16 - 用自己的話寫 ML
+workflow（目前學到的）</a></li>
+<li><a href="#q17---修正錯誤示例並指出為什麼錯leakage流程"
+id="toc-q17---修正錯誤示例並指出為什麼錯leakage流程">Q17 -
+修正錯誤示例並指出為什麼錯（leakage/流程）</a></li>
+</ul></li>
+<li><a href="#考點清單exam-checklist可直接背版本"
+id="toc-考點清單exam-checklist可直接背版本">3) 考點清單（Exam
+checklist｜可直接背版本）</a></li>
+</ul>
+</nav>
+<h1 id="開場你要先記住的一句話">開場：你要先記住的一句話</h1>
+<p><strong>一句話總結：</strong> ML 不是先挑模型，而是先把
+<strong>問題怎麼問（framing）</strong> +
+<strong>資料長怎樣（EDA）</strong> + <strong>流程紀律（split /
+leakage）</strong> 做對。</p>
+<p><strong>你要背的 3 個重點：</strong></p>
+<ol type="1">
+<li>先定義 target（y）與 features（X）</li>
+<li>先看資料分佈（distribution）、缺失值（missing）、類別比例（imbalance）</li>
+<li>先切 train/test，再做任何「會從資料學到統計量」的處理（avoid data
+leakage）</li>
+</ol>
+<p><strong>最容易錯的 2 個地方：</strong></p>
+<ul>
+<li>把 target 留在 features 裡（模型偷看答案）</li>
+<li>用全資料算 median/mean 補值後才 split（偷看 test）</li>
+</ul>
+<hr />
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://www.notion.so/Cheat-sheet-CSC-408-2e32f430cbe080d3a340fe8879a15f5c?source=copy_link" target="_blank" rel="noopener noreferrer">Notion｜ML Intro Cheatsheet（快速複習）</a>
+  </li>
+  <li>
+    <a href="https://youtu.be/RB42MbgHfnE?si=wmiKsY-2-1h7vwU5" target="_blank" rel="noopener noreferrer">YouTube｜ 8 分鐘搞懂 ML 入門：描述 vs 預測、特徵/標籤、Train/Test、資料外洩、PCA（scikit-learn）</a>
+  </li>
+</ul>
+<hr />
+<h1 id="workflow-地圖看圖就懂">1) Workflow 地圖（看圖就懂）</h1>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:16px 0;">
+<svg viewBox="0 0 980 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .b{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+    .t{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .s{fill:#a7b0c0;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} 
+  </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+    </marker>
+  </defs>
+
+  <rect class="b" x="20"  y="30" width="260" height="70" rx="12"/>
+  <text class="t" x="40" y="60">Load &amp; Preview</text>
+  <text class="s" x="40" y="82">read_csv + head/info</text>
+
+  <rect class="b" x="310" y="30" width="260" height="70" rx="12"/>
+  <text class="t" x="330" y="60">EDA（分佈/缺失）</text>
+  <text class="s" x="330" y="82">bar/hist + cat/num</text>
+
+  <rect class="b" x="600" y="30" width="360" height="70" rx="12"/>
+  <text class="t" x="620" y="60">Framing</text>
+  <text class="s" x="620" y="82">target y vs features X</text>
+
+  <rect class="b" x="20"  y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="40" y="180">Pairplot / PCA</text>
+  <text class="s" x="40" y="202">可分性/不確定性</text>
+
+  <rect class="b" x="350" y="150" width="300" height="70" rx="12"/>
+  <text class="t" x="370" y="180">Missing values</text>
+  <text class="s" x="370" y="202">train stats → fill</text>
+
+  <rect class="b" x="680" y="150" width="280" height="70" rx="12"/>
+  <text class="t" x="700" y="180">Train/Test split</text>
+  <text class="s" x="700" y="202">random_state + leakage</text>
+
+  <path class="a" d="M280,65 L310,65"/>
+  <path class="a" d="M570,65 L600,65"/>
+  <path class="a" d="M780,100 L170,150"/>
+  <path class="a" d="M320,185 L350,185"/>
+  <path class="a" d="M650,185 L680,185"/>
+</svg>
+</div>
+<hr />
+<h1 id="關鍵字速查keywords">1) 關鍵字速查（Keywords）</h1>
+<ul>
+<li><strong>feature（特徵）</strong>：input columns, X</li>
+<li><strong>target/label（目標/標籤）</strong>：what we predict, y</li>
+<li><strong>classification（分類）</strong>：predict a class
+(species)</li>
+<li><strong>regression（回歸）</strong>：predict a number
+(body_mass_g)</li>
+<li><strong>imbalance（類別不平衡）</strong>：some classes dominate</li>
+<li><strong>missing values（缺失值）</strong>：NaN</li>
+<li><strong>data leakage（資料洩漏）</strong>：test info leaks into
+train process</li>
+<li><strong>decision boundary（決策邊界）</strong>：boundary between
+classes</li>
+<li><strong>uncertainty（不確定性）</strong>：overlap area</li>
+<li><strong>PCA（主成分分析）</strong>：dimensionality reduction for
+visualization</li>
+</ul>
+<hr />
+<h1 id="q-題教學可直接貼-colab">2) Q 題教學（可直接貼 Colab）</h1>
+<blockquote>
+<p>本章以課堂常見的 Palmer Penguins
+欄位為例（<code>species, island, sex, bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g</code>）。
+你的檔名/欄名若不同，替換即可。</p>
+</blockquote>
+<h2 id="q1---讀資料並快速檢查read_csv-headinfo">Q1 -
+讀資料並快速檢查（read_csv + head/info）</h2>
+<p><strong>一句話學習目標：</strong> 用 30
+秒確認資料「長相正確」：shape/dtypes/missing。</p>
+<p><strong>老師提醒：</strong> <code>head()</code>
+只能看樣本，<code>info()</code> 才能看到 dtype +
+missing（真正會害你爆炸的地方）。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">&#39;penguins.csv&#39;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;shape:&#39;</span>, df.shape)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>display(df.head())</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>df.info()</span></code></pre></div>
+<p><strong>常見踩雷：</strong> - 只看 <code>head()</code> 不看
+<code>info()</code> → 後面畫圖/建模才發現 dtype 或 missing 全亂。</p>
+<p><strong>小練習：</strong> - 你能說出：哪幾個欄是 numeric？哪幾個是
+categorical？</p>
+<p><strong>一句話總結：</strong> 先用 <code>info()</code>
+把地雷看出來，後面少踩 80%。</p>
+<hr />
+<h2 id="q2---看-species-類別比例class-balance-barplot">Q2 - 看 species
+類別比例（class balance barplot）</h2>
+<p><strong>一句話學習目標：</strong>
+一眼判斷類別是否不平衡（imbalance）。</p>
+<p><strong>老師提醒：</strong>
+不平衡時「看起來很準」可能只是全猜最多類。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>,<span class="dv">4</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>sns.countplot(data<span class="op">=</span>df, x<span class="op">=</span><span class="st">&#39;species&#39;</span>, order<span class="op">=</span>df[<span class="st">&#39;species&#39;</span>].value_counts().index)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;Species&#39;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;Count&#39;</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Species distribution (class balance)&#39;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df[<span class="st">&#39;species&#39;</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span></code></pre></div>
+<p><strong>最容易錯的 1 個地方：</strong> -
+只看圖不看比例（proportion）。</p>
+<hr />
+<h2 id="q3---自動分出-cat_cols-num_colsprogrammatic">Q3 - 自動分出
+cat_cols / num_cols（programmatic）</h2>
+<p><strong>一句話學習目標：</strong> 用 dtype
+自動分類欄位，讓後續畫圖/清理可擴充。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cat_cols <span class="op">=</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">&#39;object&#39;</span>, <span class="st">&#39;category&#39;</span>]).columns.tolist()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>num_cols <span class="op">=</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">&#39;number&#39;</span>]).columns.tolist()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;cat_cols:&#39;</span>, cat_cols)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;num_cols:&#39;</span>, num_cols)</span></code></pre></div>
+<p><strong>老師提醒：</strong> 有些「看起來是數字」其實是
+ID，不能當特徵（shortcut/leakage）。</p>
+<hr />
+<h2 id="q4---一次畫完所有-categorical-barplots">Q4 - 一次畫完所有
+categorical barplots</h2>
+<p><strong>一句話學習目標：</strong> 快速掃出 categorical
+的不平衡、奇怪值、缺失。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版｜完整）：</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> cat_cols.copy()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="bu">len</span>(cols)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> n <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&#39;No categorical columns found.&#39;</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    ncols <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    nrows <span class="op">=</span> math.ceil(n <span class="op">/</span> ncols)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(nrows, ncols, figsize<span class="op">=</span>(<span class="dv">5</span><span class="op">*</span>ncols, <span class="dv">4</span><span class="op">*</span>nrows))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    axes <span class="op">=</span> axes.ravel()</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, col <span class="kw">in</span> <span class="bu">enumerate</span>(cols):</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        order <span class="op">=</span> df[col].value_counts(dropna<span class="op">=</span><span class="va">False</span>).index</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        sns.countplot(data<span class="op">=</span>df, x<span class="op">=</span>col, order<span class="op">=</span>order, ax<span class="op">=</span>axes[i])</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        axes[i].set_title(<span class="ss">f&#39;</span><span class="sc">{</span>col<span class="sc">}</span><span class="ss"> distribution&#39;</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        axes[i].tick_params(axis<span class="op">=</span><span class="st">&#39;x&#39;</span>, rotation<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(i<span class="op">+</span><span class="dv">1</span>, <span class="bu">len</span>(axes)):</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        fig.delaxes(axes[j])</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div>
+<p><strong>常見踩雷：</strong> - 忘記 <code>dropna=False</code> →
+你會看不到 NaN 的數量。</p>
+<hr />
+<h2 id="q5---選一個分類-target-並說明原因framing">Q5 - 選一個分類 target
+並說明原因（framing）</h2>
+<p><strong>一句話學習目標：</strong> 把「可學」的 supervised problem
+說清楚。</p>
+<p><strong>直覺：</strong>
+你不是在選「你喜歡的欄位」，你是在選「一個合理的問題」。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>我會選 <code>species</code> 當 classification 的 target，因為：
+<ol type="1">
+<li>label 清楚、類別數有限</li>
+<li>features（bill/flipper/body mass 等）在生物上合理</li>
+<li>這個問題可被用來檢驗模型是否能學到可分性</li>
+</ol></li>
+</ul>
+<p><strong>最容易錯的 1 個地方：</strong> - 選 ID/編號當
+target（模型可能看似很準但沒有意義）。</p>
+<hr />
+<h2 id="q6---數值分佈-22-hist看尺度偏態離群">Q6 - 數值分佈 2×2
+hist（看尺度/偏態/離群）</h2>
+<p><strong>一句話學習目標：</strong> 一次看出數值欄位的
+range/skew/outliers。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版｜完整）：</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> num_cols[:<span class="dv">4</span>]</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">8</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>axes <span class="op">=</span> axes.ravel()</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, col <span class="kw">in</span> <span class="bu">zip</span>(axes, cols):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    ax.hist(df[col].dropna(), bins<span class="op">=</span><span class="dv">30</span>, edgecolor<span class="op">=</span><span class="st">&#39;white&#39;</span>, color<span class="op">=</span><span class="st">&#39;#38bdf8&#39;</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f&#39;</span><span class="sc">{</span>col<span class="sc">}</span><span class="ss"> histogram&#39;</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(col)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">&#39;Count&#39;</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<p><strong>老師提醒：</strong> -
+嚴重偏態（skew）或離群（outliers）會影響模型與
+scaling（後面週次會深入）。</p>
+<hr />
+<h2 id="q7---選-regression-target哪個最適合最不適合">Q7 - 選 regression
+target：哪個最適合/最不適合？</h2>
+<p><strong>一句話學習目標：</strong> 用「可預測性」而不是直覺喜好來選
+target。</p>
+<p><strong>參考答案：</strong> -
+適合：<code>body_mass_g</code>（連續、單位清楚、可能與其他量測有關） -
+不適合：缺失很多或變異極小的欄位（學不到東西）</p>
+<hr />
+<h2 id="q8---用-pairplot-推理-decision-boundary-與不確定性">Q8 - 用
+pairplot 推理 decision boundary 與不確定性</h2>
+<p><strong>一句話學習目標：</strong>
+看圖推理「分得開嗎？」以及「哪裡會不確定？」</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> [<span class="st">&#39;bill_length_mm&#39;</span>,<span class="st">&#39;bill_depth_mm&#39;</span>,<span class="st">&#39;flipper_length_mm&#39;</span>,<span class="st">&#39;body_mass_g&#39;</span>]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>sns.pairplot(df[cols <span class="op">+</span> [<span class="st">&#39;species&#39;</span>]].dropna(), hue<span class="op">=</span><span class="st">&#39;species&#39;</span>, corner<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+<p><strong>看圖就懂（判讀口訣）：</strong> - 分得開 → boundary 可能簡單
+- 重疊多 → uncertainty 高（錯誤集中在重疊區）</p>
+<hr />
+<h2 id="q9---pca不看-label先猜群集結構">Q9 - PCA（不看
+label）先猜群集結構</h2>
+<p><strong>一句話學習目標：</strong>
+先看結構再看答案，避免先入為主。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>X_num <span class="op">=</span> df[num_cols].dropna()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>X_scaled <span class="op">=</span> StandardScaler().fit_transform(X_num)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>X_2d <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">42</span>).fit_transform(X_scaled)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>,<span class="dv">5</span>))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>plt.scatter(X_2d[:,<span class="dv">0</span>], X_2d[:,<span class="dv">1</span>], s<span class="op">=</span><span class="dv">18</span>, alpha<span class="op">=</span><span class="fl">0.8</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;PC1&#39;</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;PC2&#39;</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;PCA (2D) without labels&#39;</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<hr />
+<h2 id="q10---pca-上色把-label-投影到-2d">Q10 - PCA 上色：把 label
+投影到 2D</h2>
+<p><strong>一句話學習目標：</strong> 用 PCA 檢查「資料結構」和「真實
+label」一致度。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>df_tmp <span class="op">=</span> df[num_cols <span class="op">+</span> [<span class="st">&#39;species&#39;</span>]].dropna()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>X_num <span class="op">=</span> df_tmp[num_cols]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df_tmp[<span class="st">&#39;species&#39;</span>]</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>X_scaled <span class="op">=</span> StandardScaler().fit_transform(X_num)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>X_2d <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">42</span>).fit_transform(X_scaled)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>,<span class="dv">5</span>))</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> sp <span class="kw">in</span> y.unique():</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> (y <span class="op">==</span> sp).values</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    plt.scatter(X_2d[mask,<span class="dv">0</span>], X_2d[mask,<span class="dv">1</span>], s<span class="op">=</span><span class="dv">18</span>, alpha<span class="op">=</span><span class="fl">0.85</span>, label<span class="op">=</span>sp)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;PC1&#39;</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;PC2&#39;</span>)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;PCA (2D) with species labels&#39;</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<hr />
+<h2 id="q11---比對-pca-結構-vs-species-label-一致性">Q11 - 比對 PCA 結構
+vs species label 一致性</h2>
+<p><strong>一句話學習目標：</strong> 你能用 2–4
+句說清楚「好學/難學」的原因。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>若同 species 大致聚在一起 → label
+與結構一致，模型更可能學得好。</li>
+<li>若不同 species 大量混在一起 → features 不足或重疊多，分類更難。</li>
+</ul>
+<hr />
+<h2 id="q12---先預測-split-後-shape理解-xy">Q12 - 先預測 split 後
+shape（理解 X/y）</h2>
+<p><strong>一句話學習目標：</strong> 你真的懂 X/y 形狀與 split
+的結果（不只是背函式）。</p>
+<p><strong>參考答案：</strong> - X.shape = (n_samples, n_features) -
+y.shape = (n_samples,) - split 後 train 約 70%，test 約 30%</p>
+<hr />
+<h2 id="q13---categorical-missing.nanunknown只針對-features">Q13 -
+categorical missing：‘.’→NaN→Unknown（只針對 features）</h2>
+<p><strong>一句話學習目標：</strong> 正確處理 categorical
+missing，且不污染 label。</p>
+<p><strong>老師提醒（超重要）：</strong> 這題雖然是
+categorical，但你要把「先 split 再處理」當成習慣，避免 leak。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df.drop(columns<span class="op">=</span>[<span class="st">&#39;species&#39;</span>]).copy()</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df[<span class="st">&#39;species&#39;</span>].copy()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.30</span>, random_state<span class="op">=</span><span class="dv">42</span>, stratify<span class="op">=</span>y</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">&#39;sex&#39;</span> <span class="kw">in</span> X_train.columns:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    X_train[<span class="st">&#39;sex&#39;</span>] <span class="op">=</span> X_train[<span class="st">&#39;sex&#39;</span>].replace(<span class="st">&#39;.&#39;</span>, np.nan).fillna(<span class="st">&#39;Unknown&#39;</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    X_test[<span class="st">&#39;sex&#39;</span>]  <span class="op">=</span> X_test[<span class="st">&#39;sex&#39;</span>].replace(<span class="st">&#39;.&#39;</span>, np.nan).fillna(<span class="st">&#39;Unknown&#39;</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;train sex missing:&#39;</span>, X_train[<span class="st">&#39;sex&#39;</span>].isna().<span class="bu">sum</span>() <span class="cf">if</span> <span class="st">&#39;sex&#39;</span> <span class="kw">in</span> X_train.columns <span class="cf">else</span> <span class="st">&#39;N/A&#39;</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;test  sex missing:&#39;</span>, X_test[<span class="st">&#39;sex&#39;</span>].isna().<span class="bu">sum</span>()  <span class="cf">if</span> <span class="st">&#39;sex&#39;</span> <span class="kw">in</span> X_test.columns <span class="cf">else</span> <span class="st">&#39;N/A&#39;</span>)</span></code></pre></div>
+<p><strong>最容易錯的 1 個地方：</strong> - 把 y 也一起 replace/fill（把
+label 搞壞）。</p>
+<hr />
+<h2 id="q14---只用-train-算-medians避免-leakage">Q14 - 只用 train 算
+medians（避免 leakage）</h2>
+<p><strong>一句話學習目標：</strong> 用一句話說出：為什麼 median 只能用
+train 算。</p>
+<p><strong>參考答案：</strong> median/mean
+是「從資料學出來的統計量」，若用全資料算，就把 test
+分佈偷看進訓練流程（data leakage）。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>num_cols_train <span class="op">=</span> X_train.select_dtypes(include<span class="op">=</span>[<span class="st">&#39;number&#39;</span>]).columns</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>train_medians <span class="op">=</span> X_train[num_cols_train].median()</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(train_medians)</span></code></pre></div>
+<hr />
+<h2 id="q15---用-train-medians-補-traintest-missing正確-imputation">Q15
+- 用 train medians 補 train/test missing（正確 imputation）</h2>
+<p><strong>一句話學習目標：</strong> 寫出「split → train stats → fill
+train/test」的黃金流程。</p>
+<p><strong>可直接貼進 Colab 的 code（示範版）：</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>X_train[num_cols_train] <span class="op">=</span> X_train[num_cols_train].fillna(train_medians)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>X_test[num_cols_train]  <span class="op">=</span> X_test[num_cols_train].fillna(train_medians)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;train missing after:&#39;</span>, X_train[num_cols_train].isna().<span class="bu">sum</span>().<span class="bu">sum</span>())</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;test  missing after:&#39;</span>, X_test[num_cols_train].isna().<span class="bu">sum</span>().<span class="bu">sum</span>())</span></code></pre></div>
+<p><strong>常見踩雷：</strong> - 先補值再 split → 直接違反 leakage
+黃金規則。</p>
+<hr />
+<h2 id="q16---用自己的話寫-ml-workflow目前學到的">Q16 - 用自己的話寫 ML
+workflow（目前學到的）</h2>
+<p><strong>一句話學習目標：</strong> 用 6–10
+行把整章流程講出來（你才是真的懂）。</p>
+<p><strong>參考答案：</strong></p>
+<ol type="1">
+<li><code>read_csv</code> → <code>head()</code> /
+<code>info()</code></li>
+<li>EDA：class balance + distributions + missing</li>
+<li>Framing：定義 y 與 X（classification/regression）</li>
+<li>Train/test split（固定 <code>random_state</code>；分類可
+<code>stratify</code>）</li>
+<li>Train-only preprocessing（impute/scale）→ apply to test</li>
+<li>pairplot / PCA：建立可分性直覺</li>
+</ol>
+<hr />
+<h2 id="q17---修正錯誤示例並指出為什麼錯leakage流程">Q17 -
+修正錯誤示例並指出為什麼錯（leakage/流程）</h2>
+<p><strong>一句話學習目標：</strong> 你能一眼抓出「錯在哪一步」。</p>
+<p><strong>參考答案：</strong> - 錯法：用全資料算 median/mean 再 split →
+data leakage - 修正：split → median on train → fill train/test</p>
+<ul>
+<li>錯法：X 沒 drop target → 模型偷看答案</li>
+<li>修正：X = df.drop(columns=[target])</li>
+</ul>
+<hr />
+<h1 id="考點清單exam-checklist可直接背版本">3) 考點清單（Exam
+checklist｜可直接背版本）</h1>
+<ol type="1">
+<li><strong>Framing</strong>：先定義 y（target）與 X（features）</li>
+<li><strong>圖要回答的問題</strong>：
+<ul>
+<li>countplot：imbalance？</li>
+<li>histogram：range/skew/outliers？</li>
+<li>pairplot/PCA：separability/uncertainty？</li>
+</ul></li>
+<li><strong>Leakage 黃金規則</strong>：split → train stats → apply to
+test</li>
+<li><strong>最常見錯誤</strong>：target 沒丟掉、補值時偷看 test</li>
+</ol>
+</body>
+</html>

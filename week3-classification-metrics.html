@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW" xml:lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Alyse Lin" />
+  <meta name="dcterms.date" content="2026-02-02" />
+  <title>WK3｜Evaluating Classification Models</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">
+  :root{
+  --bg:#0b1020;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a7b0c0;
+  --link:#7dd3fc;
+  --codebg:#0b1224;
+  --border:#23304a;
+  --accent:#38bdf8;
+  }
+  html,body{background:var(--bg); color:var(--text);}
+  body{max-width: 920px; margin: 0 auto; padding: 28px 18px; line-height: 1.75; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;}
+  h1,h2,h3,h4{color:#f1f5f9; line-height:1.25;}
+  h1{margin-top: 1.6em; border-bottom: 1px solid var(--border); padding-bottom: .35em;}
+  h2{margin-top: 1.4em;}
+  h3{margin-top: 1.2em;}
+  a{color:var(--link);}
+  a:visited{color:#c4b5fd;}
+  blockquote{background:rgba(255,255,255,0.04); border-left: 4px solid var(--accent); padding: 10px 14px; margin: 16px 0; color: var(--text);}
+  code{background: rgba(255,255,255,0.06); padding: 0.15em 0.35em; border-radius: 6px;}
+  pre{background: var(--codebg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;}
+  pre code{background: transparent; padding: 0;}
+  table{border-collapse: collapse; width:100%; margin: 14px 0;}
+  th, td{border: 1px solid var(--border); padding: 8px 10px;}
+  th{background: rgba(255,255,255,0.06);}
+  img{max-width:100%; height:auto; background: transparent; display:block; margin: 14px auto;}
+  #TOC{background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;}
+  #TOC a{color: var(--link);}
+  hr{border: 0; border-top: 1px solid var(--border); margin: 22px 0;}
+  @media (max-width: 520px){ body{padding: 20px 14px;} }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">WK3｜Evaluating Classification Models</h1>
+<p class="author">Alyse Lin</p>
+<p class="date">2026-02-02</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#這章你會學到什麼what-youll-get"
+id="toc-這章你會學到什麼what-youll-get">0. 這章你會學到什麼（What you’ll
+get）</a></li>
+<li><a href="#延伸資源--快速了解內容"
+id="toc-延伸資源--快速了解內容">延伸資源- 快速了解內容</a></li>
+<li><a href="#分類評估的地圖你先看懂再做題"
+id="toc-分類評估的地圖你先看懂再做題">1)
+分類評估的地圖（你先看懂再做題）</a></li>
+<li><a href="#核心觀念rf-模組化先懂再做題"
+id="toc-核心觀念rf-模組化先懂再做題">2) 核心觀念（RF
+模組化｜先懂再做題）</a>
+<ul>
+<li><a href="#關鍵字keywords後面一小句就懂"
+id="toc-關鍵字keywords後面一小句就懂">2.1
+關鍵字（Keywords，後面一小句就懂）</a></li>
+<li><a href="#accuracy-trap為什麼-accuracy-會騙人"
+id="toc-accuracy-trap為什麼-accuracy-會騙人">2.2 Accuracy trap（為什麼
+Accuracy 會騙人）</a></li>
+<li><a href="#confusion-matrixtpfpfntn-的口訣"
+id="toc-confusion-matrixtpfpfntn-的口訣">2.3 Confusion
+Matrix（TP/FP/FN/TN 的口訣）</a></li>
+<li><a href="#precision-recall-f1公式-人話"
+id="toc-precision-recall-f1公式-人話">2.4 Precision / Recall / F1（公式
++ 人話）</a></li>
+<li><a href="#thresholdtrade-off" id="toc-thresholdtrade-off">2.5
+Threshold（trade-off）</a></li>
+<li><a href="#roc-curve-vs-pr-curve什麼時候用哪個"
+id="toc-roc-curve-vs-pr-curve什麼時候用哪個">2.6 ROC curve vs PR
+curve（什麼時候用哪個）</a></li>
+<li><a href="#cross-validationcv用-meanstd-報穩定性"
+id="toc-cross-validationcv用-meanstd-報穩定性">2.7
+Cross-validation（CV）用 mean±std 報穩定性</a></li>
+</ul></li>
+<li><a href="#dataset-a類別分得很好你應該會看到漂亮分數"
+id="toc-dataset-a類別分得很好你應該會看到漂亮分數">3) Dataset
+A：類別分得很好（你應該會看到漂亮分數）</a>
+<ul>
+<li><a href="#step-a1traintest-split"
+id="toc-step-a1traintest-split">Step A1：train/test split</a>
+<ul>
+<li><a href="#q1---切出可重現-dataset-a-split30-test-rs42"
+id="toc-q1---切出可重現-dataset-a-split30-test-rs42">Q1 - 切出可重現
+Dataset A split（30% test, RS=42）</a></li>
+</ul></li>
+<li><a href="#step-a2logistic-regression-predict-probability"
+id="toc-step-a2logistic-regression-predict-probability">Step
+A2：logistic regression + predict + probability</a>
+<ul>
+<li><a href="#q2---訓練-logreg-並輸出-predproba做-rocpr"
+id="toc-q2---訓練-logreg-並輸出-predproba做-rocpr">Q2 - 訓練 LogReg
+並輸出 pred+proba（做 ROC/PR）</a></li>
+</ul></li>
+<li><a
+href="#step-a3寫-evaluate_classificationaccuracyprecisionrecallf1"
+id="toc-step-a3寫-evaluate_classificationaccuracyprecisionrecallf1">Step
+A3：寫 evaluate_classification（Accuracy/Precision/Recall/F1）</a>
+<ul>
+<li><a href="#q3---寫-evaluate_classificationaccprecrecallf1"
+id="toc-q3---寫-evaluate_classificationaccprecrecallf1">Q3 - 寫
+evaluate_classification（Acc/Prec/Recall/F1）</a></li>
+<li><a href="#q4---解讀-dataset-aprecisionrecall-平衡f1-意義"
+id="toc-q4---解讀-dataset-aprecisionrecall-平衡f1-意義">Q4 - 解讀
+Dataset A：precision/recall 平衡？F1 意義？</a></li>
+</ul></li>
+<li><a href="#step-a4視覺化-confusion-matrix"
+id="toc-step-a4視覺化-confusion-matrix">Step A4：視覺化 Confusion
+Matrix</a>
+<ul>
+<li><a href="#q5---讀-cmfp-vs-fn-drug-screening-成本"
+id="toc-q5---讀-cmfp-vs-fn-drug-screening-成本">Q5 - 讀 CM：FP vs FN +
+drug screening 成本</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#dataset-b類別重疊你會看到分數掉"
+id="toc-dataset-b類別重疊你會看到分數掉">4) Dataset
+B：類別重疊（你會看到分數掉）</a>
+<ul>
+<li><a href="#q6---dataset-b全流程評估-cm-prob_b_test"
+id="toc-q6---dataset-b全流程評估-cm-prob_b_test">Q6 - Dataset
+B：全流程評估 + CM + prob_B_test</a></li>
+<li><a href="#q7---比較-a-vs-b哪個指標掉最多為什麼"
+id="toc-q7---比較-a-vs-b哪個指標掉最多為什麼">Q7 - 比較 A vs
+B：哪個指標掉最多？為什麼？</a></li>
+</ul></li>
+<li><a href="#threshold-調整precision-recall-trade-off"
+id="toc-threshold-調整precision-recall-trade-off">5) Threshold
+調整：Precision-Recall trade-off</a>
+<ul>
+<li><a href="#q8---threshold-時-precisionrecall-變化trade-off"
+id="toc-q8---threshold-時-precisionrecall-變化trade-off">Q8 - Threshold↑
+時 precision/recall 變化（trade-off）</a></li>
+</ul></li>
+<li><a href="#roc-pr-curve-與-auc" id="toc-roc-pr-curve-與-auc">6) ROC /
+PR curve 與 AUC</a>
+<ul>
+<li><a href="#q9---rocauca-vs-b-比較與原因"
+id="toc-q9---rocauca-vs-b-比較與原因">Q9 - ROC/AUC：A vs B
+比較與原因</a></li>
+<li><a href="#q10---cv-的-std-意義穩定性敏感度"
+id="toc-q10---cv-的-std-意義穩定性敏感度">Q10 - CV 的 std
+意義：穩定性/敏感度</a></li>
+</ul></li>
+<li><a href="#回到-pic50-真實模型從-notebook-2b-載入"
+id="toc-回到-pic50-真實模型從-notebook-2b-載入">7) 回到 pIC50
+真實模型（從 Notebook 2b 載入）</a>
+<ul>
+<li><a href="#q11---載入-saved-logreg-test-data2b"
+id="toc-q11---載入-saved-logreg-test-data2b">Q11 - 載入 saved logreg +
+test data（2b）</a></li>
+<li><a href="#q12---pic50-test四指標-auc-並解讀"
+id="toc-q12---pic50-test四指標-auc-並解讀">Q12 - pIC50 test：四指標 +
+AUC 並解讀</a></li>
+<li><a href="#q13---stratified-5-fold-cvtrain-only報-auc-meanstd"
+id="toc-q13---stratified-5-fold-cvtrain-only報-auc-meanstd">Q13 -
+Stratified 5-fold CV（train only）報 AUC mean±std</a></li>
+<li><a href="#q14---pr-curve達到-95-recall-時的-precision-代價"
+id="toc-q14---pr-curve達到-95-recall-時的-precision-代價">Q14 - PR
+curve：達到 95% recall 時的 precision 代價</a></li>
+</ul></li>
+<li><a href="#考點清單exam-checklist可直接背版本"
+id="toc-考點清單exam-checklist可直接背版本">8) 考點清單（Exam
+checklist｜可直接背版本）</a></li>
+</ul>
+</nav>
+<h1 id="這章你會學到什麼what-youll-get">0. 這章你會學到什麼（What you’ll
+get）</h1>
+<p>這章是「分類（Classification）」評估的核心章：你會把 Accuracy /
+Precision / Recall / F1 / ROC-AUC / PR curve 真的學到能用、能解釋、能選
+threshold。</p>
+<p><strong>本章一句話：</strong> - 分類評估不是只看 Accuracy；你要看
+<strong>錯在哪種錯（FP vs FN）</strong>，並且知道在不同任務（例如 drug
+screening）要優先哪種錯。</p>
+<p>你會學到：</p>
+<ul>
+<li>為什麼 Accuracy 會騙人（Accuracy trap）</li>
+<li>Confusion Matrix 怎麼讀（TP/FP/FN/TN）</li>
+<li>Precision/Recall/F1 怎麼算、怎麼解釋</li>
+<li>Threshold 怎麼影響 Precision vs Recall（trade-off）</li>
+<li>ROC curve vs Precision-Recall curve：什麼時候該用哪個</li>
+<li>用 cross-validation（CV）報告 mean±std 的穩定性</li>
+</ul>
+<hr />
+<h1 id="延伸資源--快速了解內容">延伸資源- 快速了解內容</h1>
+<ul>
+  <li>
+    <a href="https://gemini.google.com/share/a2fdb7185559" target="_blank" rel="noopener noreferrer">Gemini｜Evaluating Classification Models（快速複習）</a>
+  </li>
+  <li>
+    <a href="https://youtu.be/TZuM0Ilg070?si=X99ifL497OEK6M9e" target="_blank" rel="noopener noreferrer">YouTube｜ 機器學習其實不難｜教你怎麼判斷模型值不值得相信（給完全零基礎的人）</a>
+  </li>
+</ul>
+<hr />
+<h1 id="分類評估的地圖你先看懂再做題">1)
+分類評估的地圖（你先看懂再做題）</h1>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:16px 0;">
+<svg viewBox="0 0 980 240" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .b{fill:#0f172a;stroke:#23304a;stroke-width:2;}
+    .t{fill:#e5e7eb;font: 16px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .s{fill:#a7b0c0;font: 13px -apple-system, BlinkMacSystemFont, 'PingFang TC','Noto Sans TC', Arial;}
+    .a{stroke:#38bdf8;stroke-width:3;marker-end:url(#m);} 
+  </style>
+  <defs>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#38bdf8" />
+    </marker>
+  </defs>
+
+  <rect class="b" x="20" y="30" width="250" height="70" rx="12"/>
+  <text class="t" x="40" y="60">Dataset A（好分）</text>
+  <text class="s" x="40" y="82">train/test → logreg → metrics</text>
+
+  <rect class="b" x="310" y="30" width="260" height="70" rx="12"/>
+  <text class="t" x="330" y="60">Dataset B（重疊）</text>
+  <text class="s" x="330" y="82">metrics 掉哪裡？看 CM</text>
+
+  <rect class="b" x="610" y="30" width="340" height="70" rx="12"/>
+  <text class="t" x="630" y="60">Threshold / Curves</text>
+  <text class="s" x="630" y="82">ROC/PR curve + AUC</text>
+
+  <rect class="b" x="20" y="140" width="430" height="70" rx="12"/>
+  <text class="t" x="40" y="170">用真實 pIC50 模型驗證</text>
+  <text class="s" x="40" y="192">load saved model + metrics + AUC</text>
+
+  <rect class="b" x="500" y="140" width="450" height="70" rx="12"/>
+  <text class="t" x="520" y="170">CV 報告 mean±std（穩定性）</text>
+  <text class="s" x="520" y="192">Stratified 5-fold CV on train</text>
+
+  <path class="a" d="M270,65 L310,65"/>
+  <path class="a" d="M570,65 L610,65"/>
+  <path class="a" d="M780,100 L235,140"/>
+  <path class="a" d="M450,175 L500,175"/>
+</svg>
+</div>
+<p><strong>Key takeaways｜本段帶走：</strong> - 你會先用 Dataset A/B
+建直覺，再回到真實模型（pIC50）。 - 評估的核心：先看
+CM（錯誤類型），再選 metric 與 threshold。</p>
+<hr />
+<h1 id="核心觀念rf-模組化先懂再做題">2) 核心觀念（RF
+模組化｜先懂再做題）</h1>
+<h2 id="關鍵字keywords後面一小句就懂">2.1
+關鍵字（Keywords，後面一小句就懂）</h2>
+<ul>
+<li><strong>accuracy</strong>：整體猜對比例，但在不平衡資料上很會「騙人」</li>
+<li><strong>confusion matrix</strong>：把錯分成
+TP/FP/FN/TN（你要先看這張）</li>
+<li><strong>precision</strong>：我說 1 的裡面，有多少是真的 1（怕
+<strong>FP 誤判</strong>）</li>
+<li><strong>recall / TPR</strong>：真的 1 裡面，我抓回來多少（怕
+<strong>FN 漏掉</strong>）</li>
+<li><strong>F1</strong>：precision/recall 的折衷（harmonic mean）</li>
+<li><strong>threshold</strong>：把機率切成 0/1 的門檻（調它 =
+改策略）</li>
+<li><strong>ROC curve / ROC-AUC</strong>：看 TPR vs
+FPR；類別不平衡時可能太樂觀</li>
+<li><strong>PR curve / Average Precision</strong>：看 precision vs
+recall；不平衡資料更敏感</li>
+<li><strong>cross-validation (CV)</strong>：用多次切分報告
+mean±std（穩定性）</li>
+</ul>
+<hr />
+<h2 id="accuracy-trap為什麼-accuracy-會騙人">2.2 Accuracy trap（為什麼
+Accuracy 會騙人）</h2>
+<p><strong>關鍵字：</strong> accuracy / imbalance / majority class</p>
+<p><strong>老師提醒（會扣分）：</strong> -
+類別不平衡時（正類很少），<strong>全猜 0</strong> 也可能拿到很高的
+accuracy。</p>
+<p><strong>直覺：</strong> - Accuracy 只回答「總共對幾個？」 -
+但我們真正想知道的是：「<strong>你錯在哪一種錯（FP 還是
+FN）？</strong>」</p>
+<p><strong>看圖就懂（1 分鐘例子）：</strong> - 1000
+筆資料，正類（1）只有 10 筆。 - 你全部猜 0： - Accuracy = 990/1000 = 99%
+- Recall = 0/10 = 0（你一個正類都沒抓到）</p>
+<p><strong>常見踩雷：</strong> - 只報 accuracy 就下結論（尤其在 rare
+positive 任務）</p>
+<p><strong>小練習（Quick check）：</strong> - 在你的資料上印出
+<code>y.value_counts(normalize=True)</code>，你覺得它不平衡嗎？</p>
+<p><strong>一句話總結：</strong> - 不平衡資料：<strong>accuracy
+可能很好看，但模型可能沒用。</strong></p>
+<p><strong>你要背的 2 個重點：</strong></p>
+<ol type="1">
+<li>accuracy 在 imbalance 時容易「看起來很高但抓不到正類」</li>
+<li>要搭配 CM + precision/recall/F1（不平衡時更常看 PR curve）</li>
+</ol>
+<p><strong>最容易錯的 1 個地方：</strong> - 把「高
+accuracy」當作「模型真的好」</p>
+<hr />
+<h2 id="confusion-matrixtpfpfntn-的口訣">2.3 Confusion
+Matrix（TP/FP/FN/TN 的口訣）</h2>
+<p><strong>看圖就懂：</strong></p>
+<div style="background:rgba(255,255,255,0.04); border:1px solid #23304a; border-radius:12px; padding:14px; margin:12px 0;">
+<pre style="margin:0; white-space:pre-wrap; color:#e5e7eb; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;">Confusion Matrix
+
+            Pred 0      Pred 1
+Actual 0       TN         FP   (FP=誤判：把 0 說成 1)
+Actual 1       FN         TP   (FN=漏掉：把 1 說成 0)</pre>
+</div>
+<p><strong>老師提醒：</strong> - 先講清楚「哪個 class 是 1」（正類）再談
+precision/recall。</p>
+<p><strong>一句話總結：</strong> - CM
+是分類評估的地圖：你要先知道錯在哪格。</p>
+<hr />
+<h2 id="precision-recall-f1公式-人話">2.4 Precision / Recall / F1（公式
++ 人話）</h2>
+<p><strong>公式（必背）：</strong> - Precision = TP/(TP+FP) - Recall =
+TP/(TP+FN) - F1 = 2PR/(P+R)</p>
+<p><strong>直覺（人話版）：</strong> - Precision：我說「是
+1」時我有多準？（怕 FP） - Recall：真的 1 我有抓回來多少？（怕 FN）</p>
+<p><strong>常見踩雷：</strong> - precision/recall 記反</p>
+<p><strong>一句話總結：</strong> - precision 怕誤判、recall 怕漏掉。</p>
+<hr />
+<h2 id="thresholdtrade-off">2.5 Threshold（trade-off）</h2>
+<p><strong>你要背的 1 句：</strong> - threshold ↑ → precision ↑、recall
+↓（更保守判 1）</p>
+<p><strong>老師提醒：</strong> - <code>predict_proba</code>
+的機率才是本體；<code>predict</code> 是切 threshold 的結果。</p>
+<p><strong>可直接貼 Colab code（示範版）：</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> precision_score, recall_score, f1_score</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>proba <span class="op">=</span> model.predict_proba(X_test)[:,<span class="dv">1</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>]:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> (proba <span class="op">&gt;=</span> t).astype(<span class="bu">int</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(t,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">&#39;P&#39;</span>, <span class="bu">round</span>(precision_score(y_test,y_pred),<span class="dv">3</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">&#39;R&#39;</span>, <span class="bu">round</span>(recall_score(y_test,y_pred),<span class="dv">3</span>),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>          <span class="st">&#39;F1&#39;</span>, <span class="bu">round</span>(f1_score(y_test,y_pred),<span class="dv">3</span>))</span></code></pre></div>
+<hr />
+<h2 id="roc-curve-vs-pr-curve什麼時候用哪個">2.6 ROC curve vs PR
+curve（什麼時候用哪個）</h2>
+<p><strong>老師提醒（考點）：</strong> - 類別接近平衡：ROC-AUC 好用 -
+正類很少（不平衡）：PR curve / Average Precision 更敏感、更誠實</p>
+<p><strong>直覺：</strong> - ROC 的 FPR 會被大量 TN 稀釋 →
+不平衡時看起來太漂亮</p>
+<p><strong>一句話總結：</strong> - 不平衡優先看 PR；平衡再看 ROC。</p>
+<hr />
+<h2 id="cross-validationcv用-meanstd-報穩定性">2.7
+Cross-validation（CV）用 mean±std 報穩定性</h2>
+<p><strong>老師提醒：</strong> - 單次 train/test split
+可能運氣成分很大；用 CV 才能說「穩不穩」。</p>
+<p><strong>可直接貼 Colab code（示範版）：</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> StratifiedKFold, cross_validate</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> StratifiedKFold(n_splits<span class="op">=</span><span class="dv">5</span>, shuffle<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>scoring <span class="op">=</span> {</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;acc&#39;</span>:<span class="st">&#39;accuracy&#39;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;prec&#39;</span>:<span class="st">&#39;precision&#39;</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;rec&#39;</span>:<span class="st">&#39;recall&#39;</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;f1&#39;</span>:<span class="st">&#39;f1&#39;</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;roc_auc&#39;</span>:<span class="st">&#39;roc_auc&#39;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> cross_validate(model, X, y, cv<span class="op">=</span>cv, scoring<span class="op">=</span>scoring)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k,v <span class="kw">in</span> out.items():</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> k.startswith(<span class="st">&#39;test_&#39;</span>):</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        name <span class="op">=</span> k.replace(<span class="st">&#39;test_&#39;</span>,<span class="st">&#39;&#39;</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(name, <span class="ss">f&quot;</span><span class="sc">{</span>np<span class="sc">.</span>mean(v)<span class="sc">:.3f}</span><span class="ss"> ± </span><span class="sc">{</span>np<span class="sc">.</span>std(v)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<hr />
+<h1 id="dataset-a類別分得很好你應該會看到漂亮分數">3) Dataset
+A：類別分得很好（你應該會看到漂亮分數）</h1>
+<h2 id="step-a1traintest-split">Step A1：train/test split</h2>
+<h3 id="q1---切出可重現-dataset-a-split30-test-rs42">Q1 - 切出可重現
+Dataset A split（30% test, RS=42）</h3>
+<p><strong>Learning objective：</strong>
+可重現切分（reproducibility）。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X_A_train, X_A_test, y_A_train, y_A_test <span class="op">=</span> train_test_split(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    X_A, y_A, test_size<span class="op">=</span><span class="fl">0.30</span>, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><strong>Common mistakes：</strong> 忘記 random_state。</p>
+<hr />
+<h2 id="step-a2logistic-regression-predict-probability">Step
+A2：logistic regression + predict + probability</h2>
+<h3 id="q2---訓練-logreg-並輸出-predproba做-rocpr">Q2 - 訓練 LogReg
+並輸出 pred+proba（做 ROC/PR）</h3>
+<p><strong>Learning objective：</strong> 會同時拿到 <code>predict</code>
+與 <code>predict_proba</code>（之後做 ROC/PR 需要 proba）。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>model_A <span class="op">=</span> LogisticRegression()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>model_A.fit(X_A_train, y_A_train)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>pred_A_test <span class="op">=</span> model_A.predict(X_A_test)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>prob_A_test <span class="op">=</span> model_A.predict_proba(X_A_test)[:,<span class="dv">1</span>]</span></code></pre></div>
+<hr />
+<h2 id="step-a3寫-evaluate_classificationaccuracyprecisionrecallf1">Step
+A3：寫 evaluate_classification（Accuracy/Precision/Recall/F1）</h2>
+<h3 id="q3---寫-evaluate_classificationaccprecrecallf1">Q3 - 寫
+evaluate_classification（Acc/Prec/Recall/F1）</h3>
+<p><strong>Learning objective：</strong>
+把常用四指標打包成可重用工具。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> accuracy_score, precision_score, recall_score, f1_score</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evaluate_classification(y_true, y_pred):</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    acc <span class="op">=</span> accuracy_score(y_true, y_pred)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    pre <span class="op">=</span> precision_score(y_true, y_pred)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    rec <span class="op">=</span> recall_score(y_true, y_pred)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    f1  <span class="op">=</span> f1_score(y_true, y_pred)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Accuracy:  </span><span class="sc">{</span>acc<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Precision: </span><span class="sc">{</span>pre<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Recall:    </span><span class="sc">{</span>rec<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;F1:        </span><span class="sc">{</span>f1<span class="sc">:.2f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># run</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>evaluate_classification(y_A_test, pred_A_test)</span></code></pre></div>
+<hr />
+<h3 id="q4---解讀-dataset-aprecisionrecall-平衡f1-意義">Q4 - 解讀
+Dataset A：precision/recall 平衡？F1 意義？</h3>
+<p><strong>Learning objective：</strong> 能把四指標講成人話。</p>
+<p><strong>參考答案：</strong> - Dataset A 類別分得很開，通常 precision
+與 recall 都會高且相近 → F1 也高。 - 若
+precision≈recall，代表模型對正類抓得準、也抓得全。</p>
+<hr />
+<h2 id="step-a4視覺化-confusion-matrix">Step A4：視覺化 Confusion
+Matrix</h2>
+<h3 id="q5---讀-cmfp-vs-fn-drug-screening-成本">Q5 - 讀 CM：FP vs FN +
+drug screening 成本</h3>
+<p><strong>Learning objective：</strong> 能把 FP/FN 連到情境成本。</p>
+<p><strong>參考答案：</strong></p>
+<ul>
+<li>先看 CM：比較 FP vs FN 哪個多。</li>
+<li>drug screening（class1=High Potency）通常 <strong>FN
+更貴</strong>：你漏掉真正高效化合物，等於錯過候選。</li>
+<li>但若後續實驗非常昂貴，FP 也可能變貴（你會做很多無效
+follow-up）。</li>
+</ul>
+<hr />
+<h1 id="dataset-b類別重疊你會看到分數掉">4) Dataset
+B：類別重疊（你會看到分數掉）</h1>
+<h3 id="q6---dataset-b全流程評估-cm-prob_b_test">Q6 - Dataset
+B：全流程評估 + CM + prob_B_test</h3>
+<p><strong>Learning objective：</strong> 同流程套到更難資料，並保存
+<code>prob_B_test</code> 供 ROC/PR。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>X_B_train, X_B_test, y_B_train, y_B_test <span class="op">=</span> train_test_split(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    X_B, y_B, test_size<span class="op">=</span><span class="fl">0.30</span>, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>model_B <span class="op">=</span> LogisticRegression().fit(X_B_train, y_B_train)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>pred_B_test <span class="op">=</span> model_B.predict(X_B_test)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>prob_B_test <span class="op">=</span> model_B.predict_proba(X_B_test)[:,<span class="dv">1</span>]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>evaluate_classification(y_B_test, pred_B_test)</span></code></pre></div>
+<hr />
+<h3 id="q7---比較-a-vs-b哪個指標掉最多為什麼">Q7 - 比較 A vs
+B：哪個指標掉最多？為什麼？</h3>
+<p><strong>Learning objective：</strong> 用指標與 CM
+定位模型失敗模式。</p>
+<p><strong>參考答案：</strong> - 類別重疊時，precision/recall
+常會掉（取決於 threshold 與不平衡）。 - CM 會告訴你錯誤集中在 FP 還是
+FN。</p>
+<hr />
+<h1 id="threshold-調整precision-recall-trade-off">5) Threshold
+調整：Precision-Recall trade-off</h1>
+<h3 id="q8---threshold-時-precisionrecall-變化trade-off">Q8 - Threshold↑
+時 precision/recall 變化（trade-off）</h3>
+<p><strong>Learning objective：</strong> 會用一句話說出 trade-off。</p>
+<p><strong>參考答案：</strong> - threshold ↑ → 模型更保守判 1 →
+<strong>precision ↑、recall ↓</strong> - threshold ↓ → 更容易判 1 →
+precision ↓、recall ↑</p>
+<hr />
+<h1 id="roc-pr-curve-與-auc">6) ROC / PR curve 與 AUC</h1>
+<h3 id="q9---rocauca-vs-b-比較與原因">Q9 - ROC/AUC：A vs B
+比較與原因</h3>
+<p><strong>Learning objective：</strong> AUC 直覺：可分性越強 AUC
+越大。</p>
+<p><strong>參考答案：</strong> - Dataset A 類別分得更開 → AUC 通常更高。
+- Dataset B 重疊多 → AUC 較低。</p>
+<hr />
+<h3 id="q10---cv-的-std-意義穩定性敏感度">Q10 - CV 的 std
+意義：穩定性/敏感度</h3>
+<p><strong>Learning objective：</strong> 會用 mean±std 報告穩定性。</p>
+<p><strong>參考答案：</strong> - std 大 →
+模型對資料切分敏感（不穩），可能資料量小/分佈不均/噪音大。</p>
+<hr />
+<h1 id="回到-pic50-真實模型從-notebook-2b-載入">7) 回到 pIC50
+真實模型（從 Notebook 2b 載入）</h1>
+<h3 id="q11---載入-saved-logreg-test-data2b">Q11 - 載入 saved logreg +
+test data（2b）</h3>
+<p><strong>Learning objective：</strong> 把真實模型載回來做評估。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dill</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 你在 Notebook 2b 存的檔名可能不同（bundle.dill / logreg_bundle.dill）</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;bundle.dill&#39;</span>, <span class="st">&#39;rb&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> dill.load(f)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> b[<span class="st">&#39;model&#39;</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>X_test <span class="op">=</span> b[<span class="st">&#39;data&#39;</span>][<span class="st">&#39;test_data&#39;</span>]</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>y_test <span class="op">=</span> b[<span class="st">&#39;data&#39;</span>][<span class="st">&#39;test_labels&#39;</span>]</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 如果 bundle 裡也有 train（用於 CV）就順便取出</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>X_train <span class="op">=</span> b.get(<span class="st">&#39;data&#39;</span>, {}).get(<span class="st">&#39;train_data&#39;</span>, <span class="va">None</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> b.get(<span class="st">&#39;data&#39;</span>, {}).get(<span class="st">&#39;train_labels&#39;</span>, <span class="va">None</span>)</span></code></pre></div>
+<hr />
+<h3 id="q12---pic50-test四指標-auc-並解讀">Q12 - pIC50 test：四指標 +
+AUC 並解讀</h3>
+<p><strong>Learning objective：</strong> 把 metrics + AUC
+翻成「模型是否可用」。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> accuracy_score, precision_score, recall_score, f1_score, roc_auc_score</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> model.predict(X_test)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>proba <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Accuracy :&#39;</span>, <span class="bu">round</span>(accuracy_score(y_test, pred), <span class="dv">3</span>))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Precision:&#39;</span>, <span class="bu">round</span>(precision_score(y_test, pred), <span class="dv">3</span>))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;Recall   :&#39;</span>, <span class="bu">round</span>(recall_score(y_test, pred), <span class="dv">3</span>))</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;F1       :&#39;</span>, <span class="bu">round</span>(f1_score(y_test, pred), <span class="dv">3</span>))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;ROC-AUC  :&#39;</span>, <span class="bu">round</span>(roc_auc_score(y_test, proba), <span class="dv">3</span>))</span></code></pre></div>
+<p><strong>一句話解讀模板：</strong> -
+如果任務是「抓到高效化合物」，通常 <strong>recall 優先</strong>；ROC-AUC
+高代表整體可分性較好。</p>
+<hr />
+<h3 id="q13---stratified-5-fold-cvtrain-only報-auc-meanstd">Q13 -
+Stratified 5-fold CV（train only）報 AUC mean±std</h3>
+<p><strong>Learning objective：</strong> 會用 stratified CV
+做穩定評估並避免 test leakage。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> StratifiedKFold, cross_val_score</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_auc_score</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> StratifiedKFold(n_splits<span class="op">=</span><span class="dv">5</span>, shuffle<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 只在 train 做 CV（避免 test leakage）</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>auc_scores <span class="op">=</span> cross_val_score(model, X_train, y_train, cv<span class="op">=</span>cv, scoring<span class="op">=</span><span class="st">&#39;roc_auc&#39;</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&#39;ROC-AUC (CV):&#39;</span>, <span class="ss">f&quot;</span><span class="sc">{</span>np<span class="sc">.</span>mean(auc_scores)<span class="sc">:.3f}</span><span class="ss"> ± </span><span class="sc">{</span>np<span class="sc">.</span>std(auc_scores)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<hr />
+<h3 id="q14---pr-curve達到-95-recall-時的-precision-代價">Q14 - PR
+curve：達到 95% recall 時的 precision 代價</h3>
+<p><strong>Learning objective：</strong> 用 PR curve 做「高 recall
+需求」的實務預估。</p>
+<p><strong>參考答案：</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> precision_recall_curve</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>proba <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>precision, recall, thresholds <span class="op">=</span> precision_recall_curve(y_test, proba)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 找到 recall &gt;= 0.95 時，precision 大概是多少</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> np.where(recall <span class="op">&gt;=</span> <span class="fl">0.95</span>)[<span class="dv">0</span>]</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">len</span>(idx) <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&#39;無法達到 95</span><span class="sc">% r</span><span class="st">ecall（模型太弱或資料太重疊）&#39;</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    i <span class="op">=</span> idx[<span class="op">-</span><span class="dv">1</span>]  <span class="co"># 取最接近 0.95 的點</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&#39;Recall   :&#39;</span>, <span class="bu">round</span>(recall[i], <span class="dv">3</span>))</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&#39;Precision:&#39;</span>, <span class="bu">round</span>(precision[i], <span class="dv">3</span>))</span></code></pre></div>
+<p><strong>一句話總結：</strong> - 想要 95% recall，通常會犧牲
+precision（FP 變多），代表你要做更多後續實驗。</p>
+<hr />
+<h1 id="考點清單exam-checklist可直接背版本">8) 考點清單（Exam
+checklist｜可直接背版本）</h1>
+<p><strong>1) Accuracy 為什麼會騙人？</strong> - 不平衡時全猜 0
+也可能很高（Accuracy trap）。</p>
+<p><strong>2) Precision vs Recall 一句話差異</strong> - Precision：你說
+1 的裡面有多少是真的。 - Recall：真的 1 你抓到多少。</p>
+<p><strong>3) threshold ↑ 會發生什麼？</strong> - precision ↑、recall
+↓（更保守判 1）。</p>
+<p><strong>4) ROC vs PR curve 什麼時候用？</strong> - 正類稀少（rare
+positive）時，PR curve 更敏感。</p>
+<p><strong>5) CV 報 mean±std 的意義</strong> - std 大 →
+模型不穩、對切分敏感。</p>
+</body>
+</html>
