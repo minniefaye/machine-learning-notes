@@ -37,11 +37,6 @@ If you see a 404:
 - Use the **Search** box to find topics fast (e.g. `regression`, `metrics`, `tree`, `dill`)
 - Each note is a standalone HTML page
 
-## ➕ How to add new notes (my workflow)
-1. Upload your new `*.html` file(s) to the repo **root** (same level as `index.html`)
-2. Update `index.html` to include the new link under the right section
-3. Commit changes and wait for GitHub Pages to redeploy
-
 ### Naming tips
 - Filenames are **case-sensitive** (must match exactly)
 - Spaces in filenames are OK, but URLs will show `%20` (still works)
