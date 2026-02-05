@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machine Learning Review | Bilingual Cheatsheet</title>
+<style>
+  :root{
+    --font: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --accent-2:#22c55e;
+    --accent-pink:#E17F93;
+    --bg:#f7f7f9; --card:#ffffff; --text:#1b1f23; --muted:#5b6570;
+    --accent:#2b6cb0; --border:#e2e8f0; --code:#0b1020; --codeText:#e6edf3;
+  }
+  [data-theme="dark"]{
+    --bg:#0f1220; --card:#141a2b; --text:#eef2f7; --muted:#aab3c3;
+    --accent:#7ab7ff; --border:#273047; --code:#0b0f1a; --codeText:#e6edf3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.55;}
+  header{padding:20px 16px 8px;text-align:center;}
+  h1{font-size:34px;line-height:1.2;margin:0 0 8px;font-weight:800;}
+  h2{
+    font-size:22px;line-height:1.3;margin:20px 0 10px;font-weight:700;
+    padding-left:10px;border-left:4px solid var(--accent-pink);
+  }
+  h3{font-size:16px;line-height:1.3;margin:10px 0 6px;font-weight:700;}
+  .chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .chip{font-size:12px;padding:4px 8px;border:1px solid rgba(225,127,147,0.35);border-radius:999px;background:var(--card);}
+  nav{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);}
+  nav .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;}
+  nav .links{display:flex;flex-wrap:wrap;gap:8px;}
+  nav a{text-decoration:none;color:var(--accent);padding:6px 8px;border-radius:8px;background:rgba(43,108,176,0.08);border:1px solid transparent;}
+  nav a:hover, nav a:focus, nav a.active{border:1px solid var(--accent-pink);}
+  .actions{display:flex;gap:8px;align-items:center;}
+  button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;}
+  main{padding:12px 14px 40px;max-width:980px;margin:0 auto;}
+  section{margin:18px 0;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;box-shadow:0 1px 2px rgba(0,0,0,0.04);line-height:1.6;}
+  ul{margin:6px 0 0 18px;}
+  li{margin:3px 0;}
+  .card ul.tight li{margin:3px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--border);}
+  thead th{position:sticky;top:0;background:var(--card);z-index:2;border-bottom:2px solid var(--border);}
+  th,td{border:1px solid var(--border);padding:8px;vertical-align:top;}
+  tbody tr:nth-child(even){background:rgba(127,127,127,0.06);}
+  details{margin:10px 0;}
+  summary{font-weight:700;cursor:pointer;outline:none;}
+  summary:focus{outline:2px solid var(--accent-pink);outline-offset:2px;border-radius:6px;}
+  details[open] summary{box-shadow:0 0 0 2px rgba(225,127,147,0.25);}
+  pre{background:var(--code);color:var(--codeText);padding:10px;border-radius:8px;overflow:auto;font-size:12px;border-left:3px solid var(--accent-pink);}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .qa{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0;}
+  .q,.a{margin:6px 0;}
+  .tight ul{margin-left:16px;}
+
+  .fig{margin:10px auto 6px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .fig svg{width:100%;height:auto;display:block;}
+  .fig-sm svg{max-height:280px;}
+  .fig-md svg{max-height:380px;}
+  .fig-lg svg{max-height:480px;}
+  figcaption{font-size:12px;color:var(--muted);text-align:center;}
+
+  @media print{
+    nav{display:none;}
+    .card{box-shadow:none;}
+  }
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <h1>Machine Learning Review</h1>
+  <div class="chips">
+    <span class="chip">Updated: 2026-02-05</span>
+  </div>
+</header>
+
+<nav>
+  <div class="bar">
+    <div class="links">
+      <a href="#tldr">TL;DR</a>
+      <a href="#core">Core Concepts</a>
+      <a href="#keypoints">Key Points</a>
+      <a href="#compare">Compare &amp; Connect</a>
+      <a href="#checklist">Exam Checklist</a>
+      <a href="#practice">Practice</a>
+      <a href="#quickref">One-page Quick Reference</a>
+    </div>
+    <div class="actions">
+      <button id="toggleTheme">Light/Dark</button>
+      <button id="expandAll">Expand All</button>
+      <button id="collapseAll">Collapse All</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="tldr">
+    <h2>TL;DR</h2>
+    <div class="card">
+      <ul>
+        <li>殘差（Residual）是 y − ŷ，回歸指標都從它來。</li>
+        <li>SSE → MSE → RMSE；RMSE 單位回到 y。</li>
+        <li>MAE 對大誤差較不敏感。</li>
+        <li>R² = 1 − SSE/SST，比「只猜平均」好多少。</li>
+        <li>混淆矩陣（Confusion Matrix）有 TN/FP/FN/TP 四格。</li>
+        <li>精確率（Precision）重假警報；召回率（Recall）重漏掉。</li>
+        <li>敏感度（Sensitivity）= 召回率（Recall）。</li>
+        <li>ROC 曲線（ROC Curve）看全部門檻；AUC 越大越好。</li>
+        <li>交叉驗證（Cross-Validation）選模型；測試集（Test Set）只能用一次。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="core">
+    <h2>Core Concepts Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Simple English</th>
+          <th>繁中直覺</th>
+          <th>When to use</th>
+          <th>Common trap</th>
+          <th>Tiny example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Residual<br>(殘差)</td><td>Data minus prediction</td><td>你猜的跟真的差多少</td><td>Regression metrics</td><td>Confuse with error</td><td>y=10, ŷ=12 → -2</td></tr>
+        <tr><td>Error<br>(誤差)</td><td>Data minus true function</td><td>真相差多少</td><td>Theory only</td><td>Think we can compute</td><td>真相 f(x) 不可知</td></tr>
+        <tr><td>SSE<br>(總平方誤差)</td><td>Sum of squared residuals</td><td>全部平方加總</td><td>Model fitting</td><td>Compare across n</td><td>SSE=5</td></tr>
+        <tr><td>MSE<br>(均方誤差)</td><td>SSE / n</td><td>平均平方誤差</td><td>Compare models</td><td>Squared units</td><td>5/5=1</td></tr>
+        <tr><td>RMSE<br>(均方根誤差)</td><td>sqrt(MSE)</td><td>單位回到 y</td><td>Error size</td><td>Outlier sensitive</td><td>RMSE=1</td></tr>
+        <tr><td>MAE<br>(平均絕對誤差)</td><td>Mean abs residual</td><td>每個錯誤同等</td><td>Robust to outliers</td><td>Hide big errors</td><td>MAE=1</td></tr>
+        <tr><td>R²<br>(決定係數)</td><td>1 − SSE/SST</td><td>比猜平均好多少</td><td>Overall fit</td><td>Can be negative</td><td>SSE>SST</td></tr>
+        <tr><td>SST<br>(總平方和)</td><td>Baseline variance</td><td>只猜平均的誤差</td><td>R² baseline</td><td>Mix with SSE</td><td>Σ(y-mean)²</td></tr>
+        <tr><td>Confusion Matrix<br>(混淆矩陣)</td><td>2×2 table</td><td>預測 vs 真實對照</td><td>Classification</td><td>Swap rows/cols</td><td>TN FP / FN TP</td></tr>
+        <tr><td>Precision<br>(精確率)</td><td>TP/(TP+FP)</td><td>我說正的多準</td><td>FP costly</td><td>Ignore FN</td><td>4/5=0.8</td></tr>
+        <tr><td>Recall<br>(召回率)</td><td>TP/(TP+FN)</td><td>真的正抓到多少</td><td>FN costly</td><td>Ignore FP</td><td>4/6=0.67</td></tr>
+        <tr><td>Sensitivity<br>(敏感度)</td><td>Same as recall</td><td>醫學用語</td><td>Same as recall</td><td>Treat as different</td><td>Same formula</td></tr>
+        <tr><td>Specificity<br>(特異度)</td><td>TN/(TN+FP)</td><td>真的負排除多少</td><td>FP control</td><td>Mix with recall</td><td>3/4=0.75</td></tr>
+        <tr><td>ROC Curve<br>(ROC 曲線)</td><td>TPR vs FPR</td><td>看所有門檻</td><td>Threshold tuning</td><td>Only one point</td><td>Curve to top-left</td><td></tr>
+        <tr><td>AUC<br>(曲線下面積)</td><td>Area under ROC</td><td>排序能力</td><td>Ranking quality</td><td>Use for fixed threshold</td><td>0.5=random</td></tr>
+        <tr><td>Threshold<br>(門檻)</td><td>Probability cutoff</td><td>分類門檻</td><td>Trade-off control</td><td>Always 0.5</td><td>p=0.7, thr=0.8 → negative</td></tr>
+        <tr><td>Cross-Validation<br>(交叉驗證)</td><td>Rotate train/val</td><td>訓練內部考試</td><td>Model selection</td><td>Use for final report</td><td>CV mean</td></tr>
+        <tr><td>Test Set<br>(測試集)</td><td>Final check</td><td>期末考一次</td><td>Final evaluation</td><td>Reuse many times</td><td>Touch once</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="keypoints">
+    <h2>Key Points by Section</h2>
+
+    <details open>
+      <summary>[Review Goals]</summary>
+      <div class="card">
+        <p>這份筆記聚焦回歸指標、分類指標、ROC/AUC、CV vs Test。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Regression metrics: 回歸指標。</li>
+          <li>Classification metrics: 分類指標。</li>
+          <li>ROC/AUC: 曲線解讀。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>本週重點是最常混淆的核心考點。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Library Imports]</summary>
+      <div class="card">
+        <p>這些套件支援計算指標、畫圖、切資料。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>sklearn.metrics: 評估指標。</li>
+          <li>train_test_split: 切資料。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>後面所有指標與圖都靠這些工具。</li></ul>
+        <p><strong>Common traps:</strong></p>
+        <ul><li>套件未安裝導致 `ModuleNotFoundError`。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Residual vs Error]</summary>
+      <div class="card">
+        <p>殘差（Residual）可算；誤差（Error）不可算。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>殘差（Residual）= y − ŷ。</li>
+          <li>誤差（Error）= y − f(x)。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>f(x) 是真相，通常不知道。</li>
+          <li>殘差 &gt; 0 代表模型低估。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Metric Family Tree]</summary>
+      <div class="card">
+        <p>SSE → MSE → RMSE 是同一路；MAE 走不同路。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>SSE: 總量。</li>
+          <li>MSE: 平均。</li>
+          <li>RMSE: 回到原單位。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>MAE 用絕對值，對 outlier 較不敏感。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Metric Table + R²]</summary>
+      <div class="card">
+        <p>R² 比的是模型與「只猜平均」的差距。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>SST: baseline。</li>
+          <li>R²: 1 − SSE/SST。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>SST（總平方和）是只猜平均的誤差。</li>
+          <li>R² 可能小於 0。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Worked Regression Metrics]</summary>
+      <div class="card">
+        <p>殘差算出後就能得到 SSE/MSE/RMSE/MAE。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>residuals → SSE → MSE → RMSE/MAE。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>RMSE 回到 y 的單位，最直覺。</li></ul>
+        <p><strong>What the code is doing:</strong></p>
+        <ul>
+          <li>Inputs: `y_true`, `y_pred`</li>
+          <li>Action: 算 residuals、SSE、MSE、RMSE、MAE</li>
+          <li>Output: 殘差與四個指標數值</li>
+        </ul>
+        <pre><code># Simple example: 5 predictions
+y_true = np.array([10, 12, 14, 16, 18])
+y_pred = np.array([11, 11, 15, 15, 19])
+residuals = y_true - y_pred
+SSE = np.sum(residuals**2)
+MSE = SSE / len(residuals)
+RMSE = np.sqrt(MSE)
+MAE = np.mean(np.abs(residuals))</code></pre>
+        <p><strong>Common traps:</strong></p>
+        <ul><li>`y_true` 與 `y_pred` 長度不同。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Regression Key Insights]</summary>
+      <div class="card">
+        <p>RMSE 明顯大於 MAE → 少數大誤差主導。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>R²=1: 完美。</li>
+          <li>R²=0: 猜平均。</li>
+          <li>R²&lt;0: 更差。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>RMSE 對 outlier 很敏感。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Confusion Matrix Basics]</summary>
+      <div class="card">
+        <p>混淆矩陣（Confusion Matrix）是分類指標的根。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>TN/FP/FN/TP: 四格。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>TN: 真負；FP: 假正；FN: 假負；TP: 真正。</li></ul>
+      </div>
+      <div class="card">
+        <h3>Confusion Matrix (混淆矩陣) — one look version</h3>
+        <figure class="fig fig-md">
+          <svg viewBox="0 0 820 360" width="100%" height="auto" role="img" aria-label="Confusion matrix diagram">
+            <defs>
+              <style>
+                .box{fill:rgba(127,127,127,.06);stroke:var(--border);stroke-width:2}
+                .t{font: 16px var(--font); fill: var(--text)}
+                .m{font: 13px var(--font); fill: var(--muted)}
+                .accent{fill: var(--accent); font-weight: 700}
+              </style>
+            </defs>
+            <text x="360" y="24" class="t" text-anchor="middle">Predicted (模型預測)</text>
+            <text x="20" y="190" class="t" transform="rotate(-90 20 190)" text-anchor="middle">Actual (真實)</text>
+            <text x="310" y="55" class="t" text-anchor="middle">Positive (正)</text>
+            <text x="560" y="55" class="t" text-anchor="middle">Negative (負)</text>
+            <text x="120" y="135" class="t" text-anchor="middle">Positive (正)</text>
+            <text x="120" y="255" class="t" text-anchor="middle">Negative (負)</text>
+            <rect x="220" y="90"  width="240" height="110" class="box"></rect>
+            <rect x="460" y="90"  width="240" height="110" class="box"></rect>
+            <rect x="220" y="210" width="240" height="110" class="box"></rect>
+            <rect x="460" y="210" width="240" height="110" class="box"></rect>
+            <text x="340" y="135" class="t accent" text-anchor="middle">TP</text>
+            <text x="340" y="160" class="m" text-anchor="middle">True Positive</text>
+            <text x="580" y="135" class="t accent" text-anchor="middle">FN</text>
+            <text x="580" y="160" class="m" text-anchor="middle">False Negative (漏掉)</text>
+            <text x="340" y="255" class="t accent" text-anchor="middle">FP</text>
+            <text x="340" y="280" class="m" text-anchor="middle">False Positive (誤報)</text>
+            <text x="580" y="255" class="t accent" text-anchor="middle">TN</text>
+            <text x="580" y="280" class="m" text-anchor="middle">True Negative</text>
+            <text x="220" y="340" class="m">Precision = TP/(TP+FP) → “我說正的有多準”</text>
+            <text x="520" y="340" class="m">Recall = TP/(TP+FN) → “真的正我抓到多少”</text>
+          </svg>
+          <figcaption>2×2 結構：TP/FP/FN/TN 一眼懂</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Precision / Recall / Specificity]</summary>
+      <div class="card">
+        <p>Precision 看假警報，Recall 看漏掉。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Precision = TP/(TP+FP)。</li>
+          <li>Recall = TP/(TP+FN)。</li>
+          <li>Specificity = TN/(TN+FP)。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>敏感度（Sensitivity）= 召回率（Recall）。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Row / Column Memory Aid]</summary>
+      <div class="card">
+        <p>Recall 看正類那一列，Precision 看正類那一欄。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Recall: 正類 row。</li>
+          <li>Precision: 正類 column。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>正類 row = TP + FN；正類 column = TP + FP。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Confusion Matrix Example]</summary>
+      <div class="card">
+        <p>由 TN/FP/FN/TP 可算三大指標並畫圖。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>ConfusionMatrixDisplay: 畫矩陣圖。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>讀圖：左上 TN、右上 FP、左下 FN、右下 TP。</li>
+          <li>好圖：TP/TN 高；壞圖：FP/FN 高。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <ul>
+          <li>Inputs: `y_true`, `y_pred`</li>
+          <li>Action: 生成混淆矩陣、計算 precision/recall/specificity</li>
+          <li>Output: 矩陣圖與指標數值</li>
+        </ul>
+        <pre><code>cm = confusion_matrix(y_true, y_pred)
+cmd = ConfusionMatrixDisplay(cm)
+cmd.plot(cmap='Blues')
+TN, FP, FN, TP = cm.ravel()</code></pre>
+        <p><strong>Common traps:</strong></p>
+        <ul><li>把 FP 與 FN 看反。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Threshold Trade-off]</summary>
+      <div class="card">
+        <p>門檻（Threshold）低 → Recall ↑、Precision ↓。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Lower threshold: 多判正類。</li>
+          <li>Higher threshold: 少判正類。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>日常例子：出門帶傘。門檻低會少淋雨（Recall ↑），但常白帶（Precision ↓）。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[ROC Axes + Key Points]</summary>
+      <div class="card">
+        <p>ROC 曲線越靠左上越好。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Y: TPR=Recall。</li>
+          <li>X: FPR=1−Specificity。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>(0,1) 完美；對角線是亂猜。</li>
+          <li>好圖：曲線遠離對角線；壞圖：貼近對角線。</li>
+        </ul>
+        <p><strong>Common traps:</strong></p>
+        <ul><li>只看單一門檻的點。</li></ul>
+      </div>
+      <div class="card">
+        <h3>ROC Curve (ROC 曲線) — quick intuition</h3>
+        <figure class="fig fig-lg">
+          <svg viewBox="0 0 800 500" role="img" aria-label="ROC curve example" style="width:100%;height:auto;">
+            <defs>
+              <style>
+                .axis{stroke:var(--text);stroke-width:3}
+                .lbl{font: 16px var(--font); fill: var(--text)}
+                .muted{font: 13px var(--font); fill: var(--muted)}
+                .diag{stroke:rgba(230,232,238,.5);stroke-width:2}
+                .curve{stroke:#ffffff;stroke-width:4;fill:none}
+                .auc{fill:#E17F93;opacity:.22}
+                .pt{fill:#9E3E55;stroke:#9E3E55;stroke-width:2}
+                .arrow{stroke:#9E3E55;stroke-width:4;fill:none;marker-end:url(#arrowHead)}
+              </style>
+              <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E3E55"></path>
+              </marker>
+            </defs>
+
+            <line x1="110" y1="420" x2="720" y2="420" class="axis"></line>
+            <line x1="110" y1="420" x2="110" y2="70" class="axis"></line>
+            <polygon points="720,420 706,414 706,426" fill="var(--text)"></polygon>
+            <polygon points="110,70 104,84 116,84" fill="var(--text)"></polygon>
+
+            <line x1="110" y1="420" x2="720" y2="70" class="diag"></line>
+
+            <path d="M110 420
+                     C140 250, 240 160, 340 120
+                     C460 85, 600 95, 720 115
+                     L110 420 Z" class="auc"></path>
+
+            <path d="M110 420
+                     C140 250, 240 160, 340 120
+                     C460 85, 600 95, 720 115" class="curve"></path>
+
+            <circle cx="250" cy="180" r="10" class="pt"></circle>
+            <circle cx="360" cy="135" r="10" class="pt"></circle>
+            <circle cx="480" cy="115" r="10" class="pt"></circle>
+            <text x="232" y="170" class="lbl">A</text>
+            <text x="342" y="125" class="lbl">B</text>
+            <text x="462" y="105" class="lbl">C</text>
+
+            <path d="M220 160 C230 90, 340 70, 430 70" class="arrow"></path>
+
+            <text x="415" y="468" class="lbl" text-anchor="middle">p(False Positives are found) or 1 - Specificity (FPR)</text>
+            <text x="26" y="250" class="lbl" transform="rotate(-90 26 250)" text-anchor="middle">
+              p(True Positives are found) or Sensitivity (TPR)
+            </text>
+
+            <text x="90" y="435" class="muted">0%</text>
+            <text x="710" y="435" class="muted">100%</text>
+            <text x="70" y="80" class="muted">100%</text>
+          </svg>
+          <figcaption>Sensitivity versus False Positive Rate (ROC example)</figcaption>
+        </figure>
+        <ul class="tight">
+          <li>圖上的箭頭 A→B→C，通常表示：threshold 從高變低（越來越寬鬆）。</li>
+          <li>A/B/C 是同一模型在不同 threshold 下的 3 個 operating points。</li>
+          <li>threshold 越低 → TPR 上升、FPR 也上升（往右上走）。</li>
+          <li>A (high threshold, very strict): Few predicted positives → low FPR (few false alarms), but lower TPR (miss more true positives).</li>
+          <li>Rule: lower threshold → move up and right on the ROC curve.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[AUC Meaning]</summary>
+      <div class="card">
+        <p>AUC 是排序能力，越大越好。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>AUC=0.5: 隨機。</li>
+          <li>AUC&gt;0.9: 很好。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>AUC 表示正樣本分數比負樣本高的機率。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[ROC Demo Plot]</summary>
+      <div class="card">
+        <p>好模型曲線往左上凸，亂猜接近對角線。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>roc_curve: 畫 ROC。</li>
+          <li>roc_auc_score: 算 AUC。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>好模型曲線越靠左上越好。</li></ul>
+        <p><strong>What the code is doing:</strong></p>
+        <ul>
+          <li>Inputs: `y_true`, `y_prob_good`, `y_prob_random`</li>
+          <li>Action: 算 ROC 與 AUC，畫圖</li>
+          <li>Output: 兩條 ROC 曲線與 AUC</li>
+        </ul>
+        <pre><code>fpr_good, tpr_good, _ = roc_curve(y_true, y_prob_good)
+auc_good = roc_auc_score(y_true, y_prob_good)
+plt.plot(fpr_good, tpr_good, 'b-')</code></pre>
+        <p><strong>Common traps:</strong></p>
+        <ul><li>AUC 高但門檻選錯仍會表現差。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Why Test Set Alone Fails]</summary>
+      <div class="card">
+        <p>反覆用測試集等於偷看答案。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>Test leakage: 測試洩漏。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>評估會過度樂觀，不可信。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Why CV Alone Fails]</summary>
+      <div class="card">
+        <p>只有 CV 沒有真正未知資料。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>CV: 旋轉驗證。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>模型選擇會偏樂觀。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Use Both: Split Diagram]</summary>
+      <div class="card">
+        <p>先切 test，CV 只用 training。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Training: 開發。</li>
+          <li>Test: 最後一次。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>test 只在最後一次使用。</li></ul>
+      </div>
+      <div class="card">
+        <h3>Correct workflow — Train + CV + Test (一張圖背起來)</h3>
+        <figure class="fig fig-sm">
+          <svg viewBox="0 0 920 260" width="100%" height="auto" role="img" aria-label="Train CV Test workflow diagram">
+            <defs>
+              <style>
+                .b{fill:var(--card);stroke:var(--border);stroke-width:2}
+                .t{font: 15px var(--font); fill: var(--text)}
+                .m{font: 13px var(--font); fill: var(--muted)}
+                .a{stroke:var(--accent);stroke-width:3;fill:none;marker-end:url(#arrow)}
+              </style>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+              </marker>
+            </defs>
+            <rect x="40"  y="60" width="240" height="140" rx="16" class="b"></rect>
+            <rect x="340" y="60" width="240" height="140" rx="16" class="b"></rect>
+            <rect x="640" y="60" width="240" height="140" rx="16" class="b"></rect>
+            <text x="160" y="98" class="t" text-anchor="middle">1) Split once</text>
+            <text x="160" y="125" class="m" text-anchor="middle">Hold out Test (別碰它)</text>
+            <text x="160" y="155" class="m" text-anchor="middle">Train/Dev set</text>
+            <text x="460" y="98" class="t" text-anchor="middle">2) Cross-Validation</text>
+            <text x="460" y="125" class="m" text-anchor="middle">Tune / select model</text>
+            <text x="460" y="155" class="m" text-anchor="middle">Only inside Train/Dev</text>
+            <text x="760" y="98" class="t" text-anchor="middle">3) Final Test</text>
+            <text x="760" y="125" class="m" text-anchor="middle">One-time final score</text>
+            <text x="760" y="155" class="m" text-anchor="middle">Report this</text>
+            <path d="M280 130 L340 130" class="a"></path>
+            <path d="M580 130 L640 130" class="a"></path>
+          </svg>
+          <figcaption>流程記憶：Split → CV → Final Test</figcaption>
+        </figure>
+        <ul class="tight">
+          <li>CV：用來「選模型 / 調參」</li>
+          <li>Test：只用一次「最後驗收」</li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Correct Workflow Steps]</summary>
+      <div class="card">
+        <p>先鎖 test，再用 CV 選模型，最後 test 一次。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>Lock test: 不能碰。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>最終模型要用全部 training 重訓。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Analogy Table]</summary>
+      <div class="card">
+        <p>Training=作業，CV=小考，Test=期末考。</p>
+        <p><strong>Key words:</strong></p>
+        <ul><li>Homework / Quiz / Final。</li></ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>期末考只能考一次。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Workflow Demo Code]</summary>
+      <div class="card">
+        <p>正確流程包含 split → CV → final test。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>cross_val_score: CV。</li>
+          <li>predict_proba: 機率。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>test AUC 是唯一可報告的最終分數。</li></ul>
+        <p><strong>What the code is doing:</strong></p>
+        <ul>
+          <li>Inputs: X, y</li>
+          <li>Action: split，CV，fit，test AUC</li>
+          <li>Output: CV 分數與最終 AUC</li>
+        </ul>
+        <pre><code>X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='roc_auc')
+test_auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])</code></pre>
+        <p><strong>Common traps:</strong></p>
+        <ul><li>把 test 放進 CV。</li></ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Quick Concept Check + Summary]</summary>
+      <div class="card">
+        <p>最後的 5 點與總結是考前速讀重點。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>RMSE = √MSE。</li>
+          <li>Sensitivity = Recall。</li>
+          <li>ROC 左上最好。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul><li>CV 用開發，Test 用一次。</li></ul>
+      </div>
+    </details>
+  </section>
+
+  <section id="compare">
+    <h2>Compare &amp; Connect</h2>
+    <div class="card">
+      <ul>
+        <li>Residual vs Error：殘差可算，誤差不可算。</li>
+        <li>SSE vs MSE vs RMSE：總量 vs 平均 vs 回原單位。</li>
+        <li>Precision vs Recall：假警報成本 vs 漏掉成本。</li>
+        <li>Recall vs Specificity：正類 row vs 負類 row。</li>
+        <li>ROC vs AUC：曲線 vs 曲線下面積。</li>
+        <li>CV vs Test：開發用 vs 期末用。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="checklist">
+    <h2>Exam Quick Checklist</h2>
+    <div class="card">
+      <ul>
+        <li>殘差（Residual）= y − ŷ</li>
+        <li>SSE → MSE → RMSE</li>
+        <li>MAE 對 outlier 較不敏感</li>
+        <li>R² = 1 − SSE/SST</li>
+        <li>混淆矩陣四格 TN/FP/FN/TP</li>
+        <li>Precision / Recall / Specificity 公式</li>
+        <li>Sensitivity = Recall</li>
+        <li>ROC: Y=TPR, X=FPR</li>
+        <li>AUC=0.5 random</li>
+        <li>Test 只能用一次</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="practice">
+    <h2>Mini Practice + Solutions</h2>
+
+    <div class="qa">
+      <h3>Practice Q1</h3>
+      <div class="q"><strong>Question:</strong> residuals = [-2, 0, 1, 1]，SSE、MSE、RMSE？</div>
+      <div class="a">
+        <strong>Answer:</strong>
+        <ul>
+          <li>Final answer: SSE=6, MSE=1.5, RMSE≈1.225</li>
+          <li>Steps:
+            <ol>
+              <li>SSE = 4+0+1+1</li>
+              <li>MSE = 6/4，RMSE = √1.5</li>
+            </ol>
+          </li>
+          <li>Why this is correct: 直接套用 SSE/MSE/RMSE 定義。</li>
+          <li>Common mistake: 忘記開根號。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa">
+      <h3>Practice Q2</h3>
+      <div class="q"><strong>Question:</strong> TN=8, FP=2, FN=1, TP=9，precision/recall/specificity？</div>
+      <div class="a">
+        <strong>Answer:</strong>
+        <ul>
+          <li>Final answer: Precision≈0.818, Recall=0.9, Specificity=0.8</li>
+          <li>Steps:
+            <ol>
+              <li>Precision=9/(9+2)</li>
+              <li>Recall=9/(9+1)，Specificity=8/(8+2)</li>
+            </ol>
+          </li>
+          <li>Why this is correct: 代入混淆矩陣公式。</li>
+          <li>Common mistake: 把 FP 與 FN 搞反。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa">
+      <h3>Practice Q3</h3>
+      <div class="q"><strong>Question:</strong> 門檻從 0.5 降到 0.2，precision 和 recall 會怎樣？</div>
+      <div class="a">
+        <strong>Answer:</strong>
+        <ul>
+          <li>Final answer: Recall ↑，Precision ↓</li>
+          <li>Steps:
+            <ol>
+              <li>門檻變低 → 判正類變多</li>
+              <li>真正抓到多，但假警報也多</li>
+            </ol>
+          </li>
+          <li>Why this is correct: trade-off 方向固定。</li>
+          <li>Common mistake: 以為兩個都會變好。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="qa">
+      <h3>Practice Q4</h3>
+      <div class="q"><strong>Question:</strong> 為什麼 test set 不能反覆用？</div>
+      <div class="a">
+        <strong>Answer:</strong>
+        <ul>
+          <li>Final answer: 會偷看答案，評估不可信</li>
+          <li>Steps:
+            <ol>
+              <li>test 是最終一次評估</li>
+              <li>反覆用 = 測試洩漏</li>
+            </ol>
+          </li>
+          <li>Why this is correct: 失去真正未知的意義。</li>
+          <li>Common mistake: 把 test 當 CV 用。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="quickref">
+    <h2>One-page Exam Quick Reference</h2>
+    <div class="card tight">
+      <ul>
+        <li><strong>回歸必背公式</strong>
+          <ul>
+            <li>殘差（Residual）= y − ŷ</li>
+            <li>SSE = Σ(residual²)</li>
+            <li>MSE = SSE/n</li>
+            <li>RMSE = √MSE</li>
+            <li>MAE = 平均 |residual|</li>
+            <li>R² = 1 − SSE/SST，SST = Σ(y−mean)²</li>
+          </ul>
+        </li>
+        <li><strong>分類必背公式</strong>
+          <ul>
+            <li>Precision = TP/(TP+FP)</li>
+            <li>Recall = TP/(TP+FN) = Sensitivity</li>
+            <li>Specificity = TN/(TN+FP)</li>
+          </ul>
+        </li>
+        <li><strong>何時用哪個</strong>
+          <ul>
+            <li>回歸：SSE/MSE/RMSE/MAE/R²</li>
+            <li>分類：Precision/Recall/Specificity/ROC/AUC</li>
+          </ul>
+        </li>
+        <li><strong>門檻提醒</strong>
+          <ul>
+            <li>`predict_proba` → 門檻（Threshold）</li>
+            <li>門檻低：Recall ↑、Precision ↓</li>
+            <li>例：p=0.7，門檻 0.8 → 判負；門檻 0.5 → 判正</li>
+          </ul>
+        </li>
+        <li><strong>輸出怎麼讀</strong>
+          <ul>
+            <li>混淆矩陣：左上 TN、右上 FP、左下 FN、右下 TP</li>
+            <li>ROC：越靠左上越好；對角線是亂猜</li>
+            <li>AUC：0.5 亂猜，>0.9 很好</li>
+          </ul>
+        </li>
+        <li><strong>考試陷阱（5–10）</strong>
+          <ul>
+            <li>把 residual 當 error</li>
+            <li>用 SSE 比較不同 n</li>
+            <li>忘記 RMSE 會放大大誤差</li>
+            <li>把 Recall 當 Specificity</li>
+            <li>把 FP 與 FN 看反</li>
+            <li>只看 ROC 單一點</li>
+            <li>以為 AUC 高就不用調門檻</li>
+            <li>反覆使用 test set</li>
+            <li>用 CV 分數當最終報告</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+  const btn = document.getElementById('toggleTheme');
+  btn.addEventListener('click', () => {
+    const current = document.body.getAttribute('data-theme');
+    document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  });
+  const expandAll = document.getElementById('expandAll');
+  const collapseAll = document.getElementById('collapseAll');
+  expandAll.addEventListener('click', () => {
+    document.querySelectorAll('#keypoints details').forEach(d => d.open = true);
+  });
+  collapseAll.addEventListener('click', () => {
+    document.querySelectorAll('#keypoints details').forEach(d => d.open = false);
+  });
+</script>
+</body>
+</html>
