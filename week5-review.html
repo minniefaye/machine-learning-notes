@@ -177,9 +177,7 @@
         </ul>
         <p><strong>Must-know:</strong></p>
         <ul><li>後面所有指標與圖都靠這些工具。</li></ul>
-        <p><strong>Common traps:</strong></p>
-        <ul><li>套件未安裝導致 `ModuleNotFoundError`。</li></ul>
-      </div>
+              </div>
     </details>
 
     <details open>
@@ -193,8 +191,8 @@
         </ul>
         <p><strong>Must-know:</strong></p>
         <ul>
-          <li>f(x) 是真相，通常不知道。</li>
-          <li>殘差 &gt; 0 代表模型低估。</li>
+          <li>真正世界的真相 f(x) 我們永遠不知道，所以 error 通常算不出來。</li>
+          <li>殘差 &gt; 0 代表模型低估（猜太小)。</li>
         </ul>
       </div>
     </details>
@@ -205,9 +203,9 @@
         <p>SSE → MSE → RMSE 是同一路；MAE 走不同路。</p>
         <p><strong>Key words:</strong></p>
         <ul>
-          <li>SSE: 總量。</li>
+          <li>SSE: 總平方誤差, 資料越多，SSE 通常越大（因為你在加總)。</li>
           <li>MSE: 平均。</li>
-          <li>RMSE: 回到原單位。</li>
+          <li>RMSE: 回到原單位跟 y 一樣, 平方重罰大誤差（outlier 很影響）。</li>
         </ul>
         <p><strong>Must-know:</strong></p>
         <ul><li>MAE 用絕對值，對 outlier 較不敏感。</li></ul>
@@ -477,7 +475,7 @@ TN, FP, FN, TP = cm.ravel()</code></pre>
     <details open>
       <summary>[AUC Meaning]</summary>
       <div class="card">
-        <p>AUC 是排序能力，越大越好。</p>
+        <p>AUC (Area Under the Curve) 在測的是：模型會不會把「該排前面的人」排在前面也就是排序能力（ranking ability)。 模型常常做對 → AUC 接近 1</p>
         <p><strong>Key words:</strong></p>
         <ul>
           <li>AUC=0.5: 隨機。</li>
@@ -527,7 +525,7 @@ plt.plot(fpr_good, tpr_good, 'b-')</code></pre>
     <details open>
       <summary>[Why CV Alone Fails]</summary>
       <div class="card">
-        <p>只有 CV 沒有真正未知資料。</p>
+        <p>只用 Cross-Validation（交叉驗證）就結束了卻沒有另外準備一份「真正完全沒碰過」的測試資料(test data)。</p>
         <p><strong>Key words:</strong></p>
         <ul><li>CV: 旋轉驗證。</li></ul>
         <p><strong>Must-know:</strong></p>
