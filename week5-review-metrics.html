@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ML - Regression + Classification Review</title>
+<style>
+  :root{
+    --font: "Avenir Next", "Noto Sans TC", "PingFang TC", "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --accent:#7ab7ff;
+    --accent-2:#22c55e;
+    --accent-pink:#E17F93;
+    --bg:#0f1220; --card:#141a2b; --text:#eef2f7; --muted:#aab3c3;
+    --border:#273047; --code:#0b0f1a; --codeText:#e6edf3;
+    --shadow:0 8px 22px rgba(2,6,23,0.35);
+  }
+  [data-theme="light"]{
+    --bg:#f7f7fb; --card:#ffffff; --text:#1b1f23; --muted:#5b6570;
+    --accent:#2b6cb0; --border:#e2e8f0; --code:#0b1020; --codeText:#e6edf3;
+    --shadow:0 6px 16px rgba(15,23,42,0.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;}
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;
+    background:radial-gradient(1200px 600px at 10% -10%, rgba(122,183,255,0.18), transparent 60%),
+               radial-gradient(900px 500px at 90% 0%, rgba(225,127,147,0.12), transparent 55%),
+               linear-gradient(180deg, rgba(20,26,43,0.65), rgba(15,18,32,0.85));
+  }
+  header{padding:26px 16px 10px;text-align:center;}
+  h1{font-size:34px;line-height:1.2;margin:0 0 8px;font-weight:800;letter-spacing:0.2px;}
+  h2{font-size:24px;line-height:1.3;margin:22px 0 10px;font-weight:700;padding-left:10px;border-left:4px solid var(--accent-pink);}
+  h3{font-size:17px;line-height:1.3;margin:10px 0 6px;font-weight:700;}
+  h4{font-size:14px;line-height:1.3;margin:0 0 6px;font-weight:700;color:var(--muted);}
+  .chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .chip{font-size:12px;padding:4px 10px;border:1px solid rgba(225,127,147,0.35);border-radius:999px;background:var(--card);}
+  nav{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);backdrop-filter:saturate(140%) blur(6px);}
+  nav .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;}
+  nav .links{display:flex;flex-wrap:wrap;gap:8px;}
+  nav a{text-decoration:none;color:var(--accent);padding:6px 10px;border-radius:10px;background:rgba(122,183,255,0.10);border:1px solid transparent;}
+  nav a:hover, nav a:focus, nav a.active{border:1px solid var(--accent-pink);}
+  a{color:#E17F93;text-decoration:none;}
+  a:hover, a:focus{text-decoration:underline;}
+  .actions{display:flex;gap:8px;align-items:center;}
+  button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:12px;}
+  main{padding:12px 14px 40px;max-width:1060px;margin:0 auto;}
+  section{margin:18px 0;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:8px 0;box-shadow:var(--shadow);}
+  ul{margin:6px 0 0 18px;padding:0;}
+  li{margin:3px 0;}
+  .tight ul{margin-left:16px;}
+  .muted{color:var(--muted);}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--border);}
+  thead th{position:sticky;top:0;background:var(--card);z-index:2;border-bottom:2px solid var(--border);}
+  th,td{border:1px solid var(--border);padding:8px;vertical-align:top;}
+  tbody tr:nth-child(even){background:rgba(127,127,127,0.06);}
+  details{margin:10px 0;}
+  summary{font-weight:700;cursor:pointer;outline:none;}
+  summary:focus{outline:2px solid var(--accent-pink);outline-offset:2px;border-radius:6px;}
+  details[open] summary{box-shadow:0 0 0 2px rgba(225,127,147,0.25);}
+  pre{background:var(--code);color:var(--codeText);padding:10px;border-radius:10px;overflow:auto;font-size:12px;border-left:3px solid var(--accent-pink);}
+  code{font-family:var(--mono);}
+  .qa{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;box-shadow:var(--shadow);}
+  .q,.a{margin:6px 0;}
+  .accent-pink-text{color:#E17F93;font-weight:700;}
+  .accent-pink-plain{color:#E17F93;font-weight:400;}
+  .mk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 18px;margin-top:4px;}
+  .mk-group{margin:0 0 2px;}
+  .mk-list{margin:0 0 14px 16px;padding:0;line-height:1.55;}
+  .mk-list li{margin:4px 0;}
+  .mustknow{margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);}
+  .mustknow-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;align-items:start;}
+  .mk-sec{padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.10);border:1px solid rgba(255,255,255,.06);}
+  .mk-title{font-size:.95rem;font-weight:700;letter-spacing:.2px;margin:0 0 8px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .mk-dot{width:8px;height:8px;border-radius:999px;background:#E17F93;opacity:.85;}
+  .mk-hint{color:var(--muted);font-size:.92rem;margin-top:10px;line-height:1.55;}
+  @media (max-width: 900px){
+    .mustknow-grid{grid-template-columns:1fr;}
+  }
+  .sub-li{margin-left:14px;color:var(--muted);}
+  .sub-li.accent-pink-plain{color:#E17F93;font-weight:400;}
+  @media (max-width: 820px){
+    .mk-grid{grid-template-columns:1fr;}
+  }
+
+  .fig{margin:10px auto 6px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .fig img{width:100%;height:auto;display:block;max-height:300px;border-radius:8px;}
+  .fig-sm img{max-height:240px;}
+  .fig-md img{max-height:300px;}
+  .fig-lg img{max-height:360px;}
+  figcaption{font-size:12px;color:var(--muted);text-align:center;}
+  .figgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+  .figcap{font-size:.9rem;color:var(--muted);margin-top:6px;line-height:1.45;}
+  .chiprow{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px;}
+  .chip-mini{font-size:11px;padding:2px 8px;border:1px solid rgba(225,127,147,0.45);border-radius:999px;background:transparent;color:var(--text);}
+  .footnote{margin-top:10px;color:var(--muted);font-size:.92rem;line-height:1.55;}
+  .footnote sup{color:#E17F93;}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .flow .node{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(122,183,255,0.08);font-size:12px;}
+  .flow .arrow{align-self:center;color:var(--muted);}
+
+  @media print{
+    nav{display:none;}
+    .card,.qa{box-shadow:none;}
+    body::before{display:none;}
+  }
+  @media (max-width: 900px){
+    .figgrid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body data-theme="dark">
+<header>
+  <h1>ML - Regression + Classification Review</h1>
+  <div class="chips">
+    <span class="chip">Updated: 2026-02-06</span>
+  </div>
+</header>
+
+<nav>
+  <div class="bar">
+    <div class="links">
+      <a href="#tldr">TL;DR</a>
+      <a href="#core">Core Concepts</a>
+      <a href="#keypoints">Key Points</a>
+      <a href="#compare">Compare &amp; Connect</a>
+      <a href="#checklist">Exam Checklist</a>
+      <a href="#practice">Practice</a>
+      <a href="#quickref">One-page Quick Reference</a>
+    </div>
+    <div class="actions">
+      <button id="toggleTheme">Light/Dark</button>
+      <button id="expandAll">Expand All</button>
+      <button id="collapseAll">Collapse All</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="tldr">
+    <h2>TL;DR</h2>
+    <div class="card">
+      <ul>
+        <li>殘差（Residual）= y − ŷ，是回歸指標的出發點。</li>
+        <li>線性迴歸（Linear Regression）用 SSE/MSE 最小化；先比 baseline 再談好壞。</li>
+        <li>正則化（Regularization）：Ridge（嶺迴歸）/Lasso（套索迴歸）讓係數不亂飆，gap 變小。</li>
+        <li>平均絕對誤差（MAE）/均方根誤差（RMSE）都在原單位；RMSE 對大錯更敏感。</li>
+        <li>決定係數（R²）是「比猜平均好多少」，R²=1: 完美，可小於 0。</li>
+        <li>邏輯斯迴歸（Logistic Regression）輸出機率；`predict_proba` 才是本體。</li>
+        <li>門檻（Threshold）↑ → precision ↑、recall ↓（更保守判 1）。</li>
+        <li>混淆矩陣（Confusion Matrix）先看 FP(誤報) vs FN(漏掉)，決定你怕哪種錯，再選指標。</li>
+        <li>ROC 曲線（ROC curve）/AUC 看整體可分性；正類稀少(imbalanced)時 PR 曲線（PR curve）更敏感(例如：詐騙偵測)。</li>
+        <li>交叉驗證（Cross-Validation）只在 train；test 只能用一次。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="core">
+    <h2>Core Concepts Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Simple English</th>
+          <th>繁中直覺</th>
+          <th>When to use</th>
+          <th>Common trap</th>
+          <th>Tiny example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Residual<br>(殘差)</td><td>Prediction error per point</td><td>每筆差多少</td><td>回歸診斷</td><td>把 residual 當 true error</td><td>ŷ=8, y=10 → residual=2</td></tr>
+        <tr><td>Error<br>(誤差)</td><td>True model error</td><td>真實世界的誤差</td><td>理論概念</td><td>以為能直接算</td><td>f(x) 不可知</td></tr>
+        <tr><td>MAE<br>(平均絕對誤差)</td><td>Average absolute error</td><td>平均差多少</td><td>同單位解讀</td><td>忽略大錯</td><td>pIC50 平均差 0.6</td></tr>
+        <tr><td>RMSE<br>(均方根誤差)</td><td>Penalize big errors</td><td>大錯會放大</td><td>在乎 outliers</td><td>只看 RMSE 不看 MAE</td><td>RMSE >> MAE 表示大錯多</td></tr>
+        <tr><td>R²<br>(決定係數)</td><td>Better than baseline?</td><td>有沒有學到訊號</td><td>baseline check</td><td>當成「錯多少」</td><td>R²&lt;0 表示比猜平均差</td></tr>
+        <tr><td>Baseline<br>(基準模型)</td><td>Predict mean</td><td>永遠猜平均</td><td>最低門檻</td><td>用 test mean</td><td>y_train.mean()</td></tr>
+        <tr><td>Ridge<br>(L2 正則)</td><td>Shrink all weights</td><td>L2（Ridge）只縮小</td><td>特徵相關</td><td>以為會做特徵選擇</td><td>coef 變小但不為 0</td></tr>
+        <tr><td>Lasso<br>(L1 正則)</td><td>Zero-out weights</td><td>L1（Lasso）會歸零</td><td>少數特徵重要</td><td>相關特徵只留一個</td><td>做特徵選擇coef 變 0</td></tr>
+        <tr><td>Threshold<br>(門檻)</td><td>Prob → class</td><td>切一刀決定 0/1</td><td>調策略</td><td>固定 0.5 不動</td><td>t=0.7 更保守判 1：FP↓、FN↑ → Precision↑、Recall↓</td></tr>
+        <tr><td>Confusion Matrix<br>(混淆矩陣)</td><td>TP/FP/FN/TN map</td><td>先看錯在哪格</td><td>分類評估</td><td>不先定義正類</td><td>FN 高 → 漏掉多</td></tr>
+        <tr><td>Precision<br>(精確率)</td><td>How many predicted 1 are true</td><td>怕誤判 FP</td><td>貴的誤報</td><td>拿 precision 當 recall</td><td>TP/(TP+FP)</td></tr>
+        <tr><td>Recall<br>(召回率)</td><td>How many true 1 found</td><td>怕漏掉 FN</td><td>稀有正類</td><td>只看 recall 忽略 FP</td><td>TP/(TP+FN)</td></tr>
+        <tr><td>ROC Curve<br>(ROC 曲線)</td><td>TPR vs FPR</td><td>全門檻表現</td><td>整體可分性</td><td>不平衡時過於樂觀</td><td>0.5=random、1.0=完美</td></tr>
+        <tr><td>PR Curve<br>(PR 曲線)</td><td>Precision vs Recall</td><td>正類稀少更敏感</td><td>rare positive</td><td>跟 ROC 混用</td><td>95% recall 代價</td></tr>
+        <tr><td>CV<br>(交叉驗證)</td><td>Estimate performance (mean ± std)</td><td>用多次切分</td><td>挑模型／調參</td><td>用 test 做 CV</td><td>std 大 → 不穩</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="keypoints">
+    <h2>Key Points by Section</h2>
+
+    <details open>
+      <summary>[Review Goals]</summary>
+      <div class="card">
+        <p>目標是：把回歸、分類、評估與診斷串成一條可考、可寫作業、可解釋的線。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Regression / Classification：回歸與分類。</li>
+          <li>Metrics / Diagnostics：指標與診斷圖。</li>
+          <li>Workflow：避免 data leakage。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>MSE/SSE 用於回歸；LogLoss 用於分類，不可混用。</li>
+        </ul>
+        <p><strong>Additional Resources:</strong></p>
+        <ul>
+          <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/4535f0219118">Gemini｜Linear Regression &amp; Regularization</a></li>
+          <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/cd24792bd9dc">Gemini｜Logistic Regression</a></li>
+          <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/a162fb18ce62">Gemini｜Performance metrics for Regression and Classification</a></li>
+          <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/326ea471a072">Gemini｜Evaluating Classification Models</a></li>
+          <li>YouTube｜<a href="https://youtu.be/G9vhWWvclNE?si=V1ilRb-QohjNLZZD" target="_blank" rel="noopener noreferrer">機器學習的秘密語言（ML × Statistics）</a></li>
+          <li>YouTube｜<a href="https://youtu.be/3PDABf3mnnM?si=B6uBT5MEV_41p53p" target="_blank" rel="noopener noreferrer">給新手的機器學習：分類與 Logistic Regression</a></li>
+          <li>YouTube｜<a href="https://youtu.be/TZuM0Ilg070?si=X99ifL497OEK6M9e" target="_blank" rel="noopener noreferrer">機器學習其實不難：判斷模型值不值得相信</a></li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Linear Regression]</summary>
+      <div class="card">
+        <p>線性回歸的核心是：用線性加權預測連續值，並讓 SSE/MSE 最小。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>ŷ = β0 + Σβx</li>
+          <li>SSE / MSE</li>
+          <li>Baseline = mean(y_train)</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <div class="mk-grid">
+          <div class="mk-group">
+            <h4>Data prep &amp; leakage</h4>
+            <ul class="mk-list">
+              <li><strong>Imputation</strong>: 只用 train 的統計量（避免 leakage）。</li>
+              <li><strong>Target drop</strong>: target 必須從 X drop。</li>
+              <li><strong>Shape</strong>: sklearn 的 X 一定要 2D用 <code>[[]]</code>。 e.g.（n_samples, n_features）</li>
+              <li><strong>y shape</strong>: y 通常是 1D（n_samples,）。</li>
+            </ul>
+          </div>
+          <div class="mk-group">
+            <h4>Training workflow</h4>
+            <ul class="mk-list">
+              <li><strong>Split</strong>: train/test split（30% test, RS=42）後再 fit。</li>
+              <li><strong>Fit</strong>: 先訓練第一個線回歸，再產生 train/test predictions。</li>
+              <li><strong>Baseline</strong>: 比較基準模型（Baseline）的 train/test MSE。</li>
+              <li><strong>Report</strong>: 優於 baseline 且 gap 小 → 有合理泛化。</li>
+            </ul>
+          </div>
+          <div class="mk-group">
+            <h4>Metrics &amp; plots</h4>
+            <ul class="mk-list">
+              <li><strong>Loss vs Metric</strong>: <span class="accent-pink-text">MSE/SSE 用於回歸；LogLoss 用於分類。</span></li>
+              <li><strong>Residuals</strong>: SSE 是 residual 的平方和。</li>
+              <li><strong>Residual check</strong>: 計算 train/test residuals 看分布。</li>
+              <li><strong>Fit check</strong>: 用 true vs predicted 圖 + MSE 判斷合理性。</li>
+            </ul>
+          </div>
+          <div class="mk-group">
+            <h4>Coefficients &amp; interpretation</h4>
+            <ul class="mk-list">
+              <li><strong>Standardize</strong>: coef × std 才能比較重要性。</li>
+              <li><strong>Scaled coef</strong>: 特徵增加 1 SD，ŷ 會變多少。</li>
+              <li><strong>Direction</strong>: 最大影響看係數大小與正負。</li>
+              <li><strong>Collinearity</strong>: 特徵彼此太像時係數不穩，先看 heatmap 再解讀。</li>
+              <li><strong>Coef table</strong>: 比較 Linear vs Ridge 的係數差異。</li>
+            </ul>
+          </div>
+          <div class="mk-group">
+            <h4>Overfit / Underfit</h4>
+            <ul class="mk-list">
+              <li><strong>Underfit</strong>: one-feature model 可能贏 baseline 仍 underfit。</li>
+              <li><strong>Overfit</strong>: train 低錯、test 高錯（gap 大）。</li>
+              <li><strong>Bias–Variance</strong>: 複雜度↑ bias↓ variance↑。</li>
+            </ul>
+          </div>
+          <div class="mk-group">
+            <h4>Regularization (Ridge/Lasso)</h4>
+            <ul class="mk-list">
+              <li><strong>Effect</strong>: unregularized vs regularized → gap 通常縮小。</li>
+              <li><strong>Ridge vs Lasso</strong>: Ridge 縮小不歸零；Lasso 會做特徵選擇。</li>
+              <li><strong>Correlated</strong>: Lasso 可能只留一個代表。</li>
+              <li><strong>Alpha loop</strong>: 0.01→100 觀察 train/test MSE。</li>
+              <li><strong>Alpha rule</strong>: α=0 = OLS；α↑ → coef 更小、variance↓、bias↑。</li>
+              <li><strong>Small+High-D</strong>: 樣本少、特徵多、少數特徵重要時 → 優先試 Lasso。</li>
+            </ul>
+          </div>
+        </div>
+        <p><strong>Common traps:</strong></p>
+        <ul>
+          <li>先 scaling 再 split → leakage。</li>
+          <li>用 test set 調參或選 alpha。</li>
+          <li>直接用 raw coef 比重要性（單位陷阱）。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python"># 定義 X/y，避免答案洩漏
+X = data.drop(columns=['Cellular_pIC50'])
+y = data['Cellular_pIC50']
+
+# 切分資料
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
+
+# 訓練 + 預測
+model = LinearRegression().fit(X_train, y_train)
+train_pred = model.predict(X_train)
+test_pred = model.predict(X_test)</code></pre>
+        <div class="card">
+          <p><strong>How to read a true vs predicted plot:</strong></p>
+          <ul>
+            <li>Good：點接近 45° 對角線，殘差隨機。</li>
+            <li>Bad：呈彎曲或分段 → 線性假設不夠。</li>
+            <li>Common misread：只看訓練集圖，不看 test。</li>
+          </ul>
+        </div>
+        <div class="fig fig-sm">
+          <div class="flow">
+            <span class="node">Define X/y</span><span class="arrow">→</span>
+            <span class="node">Split</span><span class="arrow">→</span>
+            <span class="node">Fit</span><span class="arrow">→</span>
+            <span class="node">MSE + plots</span><span class="arrow">→</span>
+            <span class="node">Regularize</span>
+          </div>
+          <figcaption>線性回歸 workflow（縮小版）</figcaption>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Residual vs Error]</summary>
+      <div class="card">
+        <p>殘差可算、誤差不可算；考試常要你說清楚這個差別。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Residual = y − ŷ</li>
+          <li>Error = y − f(x)</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>Residual > 0 代表模型低估。</li>
+          <li>Error 需要真實函數 f(x)，所以通常不可觀測。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[MAE / RMSE / R²]</summary>
+      <div class="card">
+        <p>MAE 看平均距離、RMSE 看大錯、R² 看是否比猜平均好。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>MAE = 平均 |y − ŷ|</li>
+          <li>RMSE = sqrt(mean((y − ŷ)²))</li>
+          <li>R² = 1 − SSE/SST</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li><span class="accent-pink-text">RMSE > MAE 幾乎是常態</span>，差越大代表大錯越多。</li>
+          <li>R² = 0 表示跟 baseline 一樣；R² &lt; 0 更差。</li>
+          <li>同時看 MAE/RMSE ：MAE 好解釋、RMSE 對大誤差更敏感（要用同一單位，例如 pIC50）。</li>
+          <li>Mean baseline：先算 μ = mean(y_train)，然後用 μ 預測 train/test（不可用 mean(y_test)）。</li>
+          <li>RMSE vs std(y_test)：RMSE 明顯小於 std 表示有抓到訊號。</li>
+          <li>殘差圖（Residual plot）要看 pattern(沒有形狀)，不只看平均值。</li>
+          <li>Dataset A（線性）通常分數好，作為基準直覺。</li>
+          <li>Dataset B（非線性）通常 MAE/RMSE 高、R² 低 → 線性模型不夠。</li>
+          <li>pIC50 真實模型可用 dill bundle 載入後再評估（model + train/test split）。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python">from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import numpy as np
+
+y_pred = model.predict(X_test)
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
+print(mae, rmse, r2)</code></pre>
+        <div class="card">
+          <p><strong>How to read 殘差圖（Residual plot）：</strong></p>
+          <ul>
+            <li>Good：殘差圍繞 0 隨機散開。</li>
+            <li>Bad：曲線/U 型 → 非線性；漏斗 → 變異不均。</li>
+            <li>Common misread：只看平均 0，不看 pattern。</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Learning Curves]</summary>
+      <div class="card">
+        <p>學習曲線（Learning curve）用 train/validation gap 觀察泛化與資料量。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Train MAE</li>
+          <li>Validation MAE</li>
+          <li>Gap</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>gap 大：overfitting；gap 小但兩者都高：underfitting。</li>
+          <li>validation 分數是多個 fold 平均，所以不會和 test 完全一樣。</li>
+          <li>資料量增加後 gap 變小 → 泛化更穩。</li>
+          <li>X 軸：訓練資料量（training set size）。</li>
+          <li>Y 軸：錯誤（error）或分數（score）。</li>
+          <li class="sub-li">回歸常見：MSE / RMSE / MAE。</li>
+          <li class="sub-li">分類常見：Accuracy / F1 / AUC（也可能用 error = 1 - score）。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python"># 畫 learning curve：觀察 train vs val MAE
+train_sizes, train_scores, val_scores = learning_curve(
+    model, X_train, y_train, scoring='neg_mean_absolute_error')
+</code></pre>
+        <div class="card">
+          <p><strong>How to read a learning curve:</strong></p>
+          <ul>
+            <li>Good：train/val 逐漸接近，且兩者都低。</li>
+            <li>Bad：train 很低、val 很高（gap 大）。</li>
+            <li>Common misread：只看最後一個點，不看趨勢。</li>
+          </ul>
+        </div>
+
+        <section class="figpair">
+          <div class="figgrid">
+
+            <!-- LEFT: Error version -->
+            <figure class="fig fig-md">
+              <div class="chiprow">
+                <span class="chip-mini">Overfit</span>
+                <span class="chip-mini">Underfit</span>
+                <span class="chip-mini">Good fit</span>
+              </div>
+              <img src="learning_curve_error.png" alt="Learning curve (error, MAE) plot" />
+
+              <figcaption class="figcap">
+                <div>Error curve: lower = better</div>
+                <div>Gap large → Overfit • Gap small + both high → Underfit</div>
+              </figcaption>
+            </figure>
+
+            <!-- RIGHT: Score version -->
+            <figure class="fig fig-md">
+              <div class="chiprow">
+                <span class="chip-mini">Overfit</span>
+                <span class="chip-mini">Underfit</span>
+                <span class="chip-mini">Good fit</span>
+              </div>
+              <img src="learning_curve_score.png" alt="Learning curve (score) plot" />
+
+              <figcaption class="figcap">
+                <div>Score curve: higher = better</div>
+                <div>Gap large → Overfit • Gap small + both low → Underfit</div>
+              </figcaption>
+            </figure>
+
+          </div>
+
+          <p class="footnote">
+            <sup>*</sup> Some plots use error (lower better), others use score (higher better). Rule is the same: gap large=overfit; gap small &amp; both bad=underfit.
+          </p>
+        </section>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Logistic Regression]</summary>
+      <div class="card">
+        <p>邏輯斯迴歸（Logistic Regression）輸出機率 P(y=1|x)，再用門檻切成 0/1。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>機率輸出（predict_proba）</li>
+          <li>Threshold</li>
+          <li>對數損失（LogLoss）：越小越好</li>
+          <li>Threshold 會改 Accuracy/F1/Recall。</li>
+          <li>LogLoss = 機率品質；AUC = 排序能力。</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <div class="mk-grid">
+          <div class="mk-group">
+            <h4>Probability &amp; Threshold</h4>
+            <ul class="mk-list">
+              <li><strong>predict_proba</strong>: output [P(0), P(1)], shape = (N, 2)。</li>
+              <li><strong>predict</strong>: hard class after threshold (0/1), not probability。</li>
+              <li><strong>Threshold ↑</strong>: precision ↑、recall ↓（threshold ↓ 則相反）。</li>
+              <li><strong>Gray area (0.45–0.55)</strong>: 最模糊；可人工審或複測。</li>
+            </ul>
+          </div>
+
+          <div class="mk-group">
+            <h4>Metrics &amp; Evaluation</h4>
+            <ul class="mk-list">
+              <li><strong>LogLoss</strong>: 罰「很自信但錯」；越低代表機率校準較好。</li>
+              <li><strong>Exam tip</strong>: Accuracy/F1/Recall 會被 threshold 影響；LogLoss 看機率品質，AUC 看排序能力。</li>
+            </ul>
+          </div>
+
+          <div class="mk-group">
+            <h4>Data Prep &amp; Leakage</h4>
+            <ul class="mk-list">
+              <li><strong>Split first</strong>: scaler/imputer 只在 train fit，再套到 test。</li>
+              <li><strong>Stratify</strong>: 用 stratify=y 保持 0/1 比例一致。</li>
+              <li><strong>Drop label column</strong>: dataset2 cutoff 需重定義，並 drop 原始 label 欄。</li>
+              <li><strong>Apples-to-apples</strong>: 跨分佈比較需同定義與公平設定。</li>
+            </ul>
+          </div>
+
+          <div class="mk-group">
+            <h4>Training Workflow</h4>
+            <ul class="mk-list">
+              <li><strong>Workflow</strong>: define X/y → split → train-only preprocess → fit → evaluate。</li>
+              <li><strong>Distribution shift</strong>: 排除 leakage → 看 X/y 分佈 → 調 threshold / retrain / 重新定義 label。</li>
+            </ul>
+          </div>
+
+          <div class="mk-group">
+            <h4>Coefficients &amp; Interpretation</h4>
+            <ul class="mk-list">
+              <li><strong>Standardize</strong>: 係數比較前先標準化。</li>
+              <li><strong>coef meaning</strong>: 符號代表 log-odds 方向。</li>
+              <li><strong>Dataset2 retrain</strong>: 係數可能漂移，先標準化再比較。</li>
+              <li><strong>Sanity check</strong>: 看高/中/低 proba 樣本是否合理。</li>
+            </ul>
+          </div>
+
+          <div class="mk-group">
+            <h4>Troubleshooting</h4>
+            <ul class="mk-list">
+              <li><strong>ConvergenceWarning</strong>: 常見原因是 max_iter 太低或尺度差太大。模型還沒算完就被迫停下來。</li>
+              <li><span class="accent-pink-text"><strong>Linear vs Logistic</strong>: <span class="accent-pink-plain">連續值 vs 機率；直線 vs S-curve；MSE vs LogLoss。</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <p><strong>Common traps:</strong></p>
+        <ul>
+          <li>把 MSE 用在分類 <span class="accent-pink-plain">(分類要用 LogLoss / Accuracy / F1 / AUC 才對喔！)</span>。</li>
+          <li>threshold 用 test 調參。</li>
+          <li>未 drop label 原始欄 → 超級 leakage。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python"># Logistic regression + proba
+clf = LogisticRegression(max_iter=2000)
+clf.fit(X_train, y_train)
+proba = clf.predict_proba(X_test)[:,1]
+pred = (proba >= 0.5).astype(int)
+</code></pre>
+        <pre><code class="language-python"># LogLoss（罰「自信但錯」）
+from sklearn.metrics import log_loss
+print('log loss:', log_loss(y_test, proba))
+</code></pre>
+        <pre><code class="language-python"># dataset2 先看分佈，再決定 cutoff
+sns.histplot(new_data, x='Cellular_pIC50', bins=30)
+cutoff = 6.5
+new_data['potency'] = (new_data['Cellular_pIC50'] >= cutoff).astype(int)
+X2 = new_data.drop(columns=['potency','Cellular_pIC50'])
+</code></pre>
+        <div class="card">
+          <p><strong>Threshold 直覺（2–3 行生活例子）：</strong></p>
+          <ul>
+            <li>你是門禁：分數高才開門。門檻高 → 少放人進（precision 高）。</li>
+            <li>門檻低 → 盡量放進來（recall 高），但誤放會變多。</li>
+          </ul>
+        </div>
+        <div class="fig fig-sm">
+          <div class="flow">
+            <span class="node">Load data</span><span class="arrow">→</span>
+            <span class="node">Make label</span><span class="arrow">→</span>
+            <span class="node">Split + stratify</span><span class="arrow">→</span>
+            <span class="node">Train</span><span class="arrow">→</span>
+            <span class="node">Prob → threshold</span>
+          </div>
+          <figcaption>Logistic workflow（縮小版）</figcaption>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Confusion Matrix]</summary>
+      <div class="card">
+        <p>混淆矩陣是分類評估地圖：先看錯在 FP還是 FN，再談指標。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>TP/FP/FN/TN</li>
+          <li>正類定義</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>先定義哪個 class 是 1（正類）。</li>
+          <li>FP 多：誤報多；FN 多：漏掉多。</li>
+          <li>drug screening 常重視 FN（漏掉有效化合物）。</li>
+          <li>評估分類模型時要保留 proba供 ROC/PR 使用。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python">from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, pred)
+print(cm)</code></pre>
+        <div class="card">
+          <p><strong>How to read a confusion matrix:</strong></p>
+          <ul>
+            <li>Good：TP 高、FN 低；FP 多少取決於任務成本。</li>
+            <li>Bad：FN 很高（漏掉正類）或 FP 很高（誤報太多）。</li>
+            <li>Common misread：不先說清楚正類是誰。</li>
+          </ul>
+        </div>
+        <div class="fig fig-sm">
+          <div class="flow">
+            <span class="node">Dataset A</span><span class="arrow">→</span>
+            <span class="node">Metrics + CM</span><span class="arrow">→</span>
+            <span class="node">Dataset B</span><span class="arrow">→</span>
+            <span class="node">ROC/PR</span><span class="arrow">→</span>
+            <span class="node">CV mean±std</span>
+          </div>
+          <figcaption>分類評估地圖（縮小版）</figcaption>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Precision / Recall / F1]</summary>
+      <div class="card">
+        <p>精確率（Precision）在乎誤報，召回率（Recall）在乎漏掉，F1 是折衷。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Precision = TP/(TP+FP)</li>
+          <li>Recall = TP/(TP+FN)</li>
+          <li>F1 = 2PR/(P+R)</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>precision ≈ recall → 模型對正類抓得準也抓得全。</li>
+          <li>Accuracy 在不平衡時會騙人，先看 CM + P/R/F1。</li>
+          <li class="sub-li">正類只有 1%，全猜 0 → Accuracy 99%</li>
+          <li>threshold 調整會改變 P/R 的 trade-off。</li>
+        </ul>
+        <div class="card">
+          <p><strong>Accuracy trap 1 分鐘例子：</strong></p>
+          <ul>
+            <li>1000 筆資料只有 10 筆正類；全猜 0 → Accuracy 99%，但 Recall = 0。</li>
+            <li>結論：不平衡任務不能只看 accuracy。</li>
+          </ul>
+        </div>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python">def evaluate_classification(y_true, y_pred):
+    acc = accuracy_score(y_true, y_pred)
+    pre = precision_score(y_true, y_pred)
+    rec = recall_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
+    print(acc, pre, rec, f1)</code></pre>
+        <pre><code class="language-python"># Quick imbalance check
+y.value_counts(normalize=True)</code></pre>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[ROC Curve / AUC]</summary>
+      <div class="card">
+        <p>ROC 看 TPR vs FPR，AUC 代表整體可分性。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>TPR = Recall</li>
+          <li>FPR = FP/(FP+TN)</li>
+          <li>AUC</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>分佈越開→ AUC 越高；兩類分數重疊越多 → AUC 越低。</li>
+          <li>類別極不平衡時，ROC 可能太樂觀。</li>
+          <li>先看 CM 找 FP/FN；再看 ROC/PR 判斷可分性與 threshold。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python">from sklearn.metrics import roc_auc_score
+auc = roc_auc_score(y_test, proba)
+print('ROC-AUC:', auc)</code></pre>
+        <div class="card">
+          <p><strong>How to read ROC:</strong></p>
+          <ul>
+            <li>Good：曲線靠近左上角，AUC 越大越好。</li>
+            <li>Bad：曲線接近對角線，AUC 接近 0.5。</li>
+            <li>Common misread：把 AUC 當成 precision 或 accuracy。</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[PR Curve]</summary>
+      <div class="card">
+        <p>PR 曲線在imbalanced時更敏感：拉高 recall 會讓 precision 掉多少。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>Precision-Recall curve</li>
+          <li>Average Precision</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>需要高 recall（如 95%）時，precision 常會下降。</li>
+          <li>PR curve 更適合 rare positive 任務。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python">from sklearn.metrics import precision_recall_curve
+precision, recall, thresholds = precision_recall_curve(y_test, proba)</code></pre>
+        <pre><code class="language-python"># 找 95% recall 時的 precision
+idx = np.where(recall >= 0.95)[0]
+if len(idx) > 0:
+    i = idx[-1]
+    print('Recall:', recall[i], 'Precision:', precision[i])</code></pre>
+        <div class="card">
+          <p><strong>How to read PR:</strong></p>
+          <ul>
+            <li>Good：在高 recall 區域仍能維持高 precision。</li>
+            <li>Bad：recall 一拉高 precision 就崩。</li>
+            <li>Common misread：把 PR 曲線當成 ROC。</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>[Cross-Validation vs Test Set]</summary>
+      <div class="card">
+        <p>CV 用來選模型與估穩定性，test 只用一次做最終評估。</p>
+        <p><strong>Key words:</strong></p>
+        <ul>
+          <li>mean ± std</li>
+          <li>stratified CV(每一折都維持 0/1 類別比例接近原本資料)</li>
+        </ul>
+        <p><strong>Must-know:</strong></p>
+        <ul>
+          <li>CV std 大 → 模型對切分敏感、不穩。</li>
+          <li>CV 只在 train 做；test 不能拿來調參。</li>
+          <li>Load dill bundle → test 報 Acc/Prec/Rec/F1 + AUC（AUC 用 proba）。</li>
+        </ul>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code class="language-python">cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+auc_scores = cross_val_score(model, X_train, y_train, cv=cv, scoring='roc_auc')
+print(f"ROC-AUC (CV): {auc_scores.mean():.3f}±{auc_scores.std():.3f}")</code></pre>
+        <pre><code class="language-python"># 載入 saved model bundle（dill）
+import dill
+with open('bundle.dill','rb') as f:
+    b = dill.load(f)
+model = b['model']
+X_test = b['data']['test_data']
+y_test = b['data']['test_labels']</code></pre>
+      </div>
+    </details>
+  </section>
+
+  <section id="compare">
+    <h2>Compare &amp; Connect</h2>
+    <div class="card">
+      <ul>
+        <li>Residual vs Error：Residual 可算；Error 需要真實 f(x)。</li>
+        <li>MAE vs RMSE：MAE 看平均距離；RMSE 放大大錯。</li>
+        <li>ROC vs PR：ROC 看整體可分性；PR 對正類稀少更敏感。</li>
+        <li class="sub-li accent-pink-plain">ROC/AUC：看排序分離（TPR vs FPR)；對imbanlance不敏感。</li>
+        <li class="sub-li accent-pink-plain">PR：看抓正類的代價（Recall ↑ 通常 Precision ↓)；對imbanlance敏感。</li>
+        <li>Precision vs Recall：Precision 怕誤判；Recall 怕漏掉。</li>
+        <li>CV vs Test：CV 用來選模型與報穩定；test 只做一次最終報告。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="checklist">
+    <h2>Exam Quick Checklist (60-second scan)</h2>
+    <div class="card">
+      <ul>
+        <li>先定義 X/y，再 split；scaler/imputer 只 fit 在 train。</li>
+        <li><span class="accent-pink-plain">線回歸先比 baseline，模型至少要贏過 baseline，才算真的學到。</span></li>
+        <li>coef 比較前先標準化；共線性會讓係數不穩。</li>
+        <li>MAE/RMSE 是同單位；R² 是 baseline check，R²=0 等於跟「用平均值（mean baseline）」一樣。</li>
+        <li>Residual plot / Learning curve 看 pattern 與 gap。</li>
+        <li><span class="accent-pink-plain">分類先看 CM，再談 P/R/F1。</span></li>
+        <li>threshold 調整 = 改策略，不是改模型。</li>
+        <li>ROC vs PR：Imbalance時用 PR，ROC 可能偏樂觀。</li>
+        <li>CV 用 mean±std 報穩定；test 只能用一次。</li>
+        <li>先排除 leakage，再檢查 X/y 的 distribution shift。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="practice">
+    <h2>Mini Practice + Solutions</h2>
+
+    <div class="qa">
+      <div class="q"><strong>Q1.</strong> 何時做 imputation 才不會 data leakage？</div>
+      <div class="a"><strong>Answer:</strong> 只用 train 的統計量做 imputation，之後再套到 test。</div>
+      <div class="a">split → fit imputer on train → transform train/test。</div>
+      <div class="a"><strong>Why?</strong> 避免 test 資訊提前流入訓練。</div>
+      <div class="a"><strong>Common mistake:</strong> 在 split 前直接補值。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q2.</strong> MAE vs RMSE 差很多代表什麼？</div>
+      <div class="a"><strong>Answer:</strong> 大錯很多或少數極端誤差存在。</div>
+      <div class="a">比較 RMSE 與 MAE；若 RMSE 明顯更大 → 大錯被放大。</div>
+      <div class="a"><strong>Why?</strong> RMSE 會平方放大大誤差。</div>
+      <div class="a"><strong>Common mistake:</strong> 只說「RMSE 比 MAE 大很正常」但不解釋原因。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q3.</strong> threshold ↑ 會發生什麼？</div>
+      <div class="a"><strong>Answer:</strong> precision ↑、recall ↓。</div>
+      <div class="a">門檻提高 → 更少樣本被判成 1。</div>
+      <div class="a"><strong>Why?</strong> 變保守後 FP 變少、FN 變多。</div>
+      <div class="a"><strong>Common mistake:</strong> 以為 precision/recall 同時上升。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q4.</strong> Residual plot 出現曲線代表什麼？</div>
+      <div class="a"><strong>Answer:</strong> 線性模型漏掉非線性結構。</div>
+      <div class="a">看 residual vs ŷ 是否呈 U 型或彎曲。</div>
+      <div class="a"><strong>Why?</strong> 殘差有系統性 pattern → 假設不成立。</div>
+      <div class="a"><strong>Common mistake:</strong> 只看平均 residual 接近 0 就覺得 OK。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q5.</strong> R² &lt; 0 代表什麼？</div>
+      <div class="a"><strong>Answer:</strong> 比 baseline（猜平均）還差。</div>
+      <div class="a">R² = 1 − SSE/SST，小於 0 → SSE &gt; SST。</div>
+      <div class="a"><strong>Why?</strong> 模型誤差比 baseline 更大。</div>
+      <div class="a"><strong>Common mistake:</strong> 把負的 R² 當成「只是小一點」。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q6.</strong> dataset2 掉分時，如何判斷 distribution shift？</div>
+      <div class="a"><strong>Answer:</strong> 先排除 leakage，再比較 X/y 分佈，再決定調 threshold 或 retrain。</div>
+      <div class="a">檢查 preprocessing → 看 histogram/比例 → 調策略。</div>
+      <div class="a"><strong>Why?</strong> 分佈改變會讓模型失靈，但先排除 bug。</div>
+      <div class="a"><strong>Common mistake:</strong> 直接加模型複雜度。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q7.</strong> CV 的 std 很大代表什麼？</div>
+      <div class="a"><strong>Answer:</strong> 模型不穩、對資料切分敏感。</div>
+      <div class="a">看 mean±std；std 大 → 各 fold 差異大。</div>
+      <div class="a"><strong>Why?</strong> 泛化不穩，可能資料量小或噪音大。</div>
+      <div class="a"><strong>Common mistake:</strong> 只報 mean 不報 std。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><span class="accent-pink-plain"><strong>Q8.</strong> Lasso vs Ridge 在小樣本高維時怎麼選？</span></div>
+      <div class="a"><strong>Answer:</strong> 只有少數特徵重要 → Lasso；相關特徵多 → Ridge。</div>
+      <div class="a">判斷特徵稀疏性與相關性。</div>
+      <div class="a"><strong>Why?</strong> L1 做選擇、L2 做縮小且穩定。</div>
+      <div class="a"><strong>Common mistake:</strong> 以為 Lasso 一定比 Ridge 好。</div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><strong>Q9.</strong> ROC vs PR 何時選？</div>
+      <div class="a"><strong>Answer:</strong> 正類稀少時選 PR；整體可分性看 ROC/AUC。</div>
+      <div class="a">檢查 class imbalance，再選曲線。</div>
+      <div class="a"><strong>Why?</strong> PR 對 rare positive 更敏感。</div>
+      <div class="a"><strong>Common mistake:</strong> 只看 ROC 就下結論。</div>
+    </div>
+  </section>
+
+  <section id="quickref">
+    <h2>One-page Exam Quick Reference</h2>
+    <div class="card">
+      <h3>Key Formulas</h3>
+      <ul>
+        <li>ŷ = β0 + Σβx</li>
+        <li>Residual = y − ŷ</li>
+        <li>SSE = Σ(y − ŷ)²</li>
+        <li>MSE = SSE / n</li>
+        <li>MAE = (1/n) Σ|y − ŷ|</li>
+        <li>RMSE = sqrt(MSE)</li>
+        <li>R² = 1 − SSE/SST</li>
+        <li>Precision = TP/(TP+FP)</li>
+        <li>Recall = TP/(TP+FN)</li>
+        <li>F1 = 2PR/(P+R)</li>
+      </ul>
+
+      <h3>When to Use What</h3>
+      <ul>
+        <li>回歸評估：MAE/RMSE/R² + residual plot + learning curve。</li>
+        <li>分類評估：CM → Precision/Recall/F1 → ROC/PR。</li>
+        <li>正類稀少：優先 PR curve。</li>
+      </ul>
+
+      <h3>Threshold Reminder</h3>
+      <ul>
+        <li>`predict_proba` → cutoff → class。</li>
+        <li>threshold ↑ → precision ↑、recall ↓。</li>
+      </ul>
+
+      <h3>How to Read Outputs (Quick Notes)</h3>
+      <ul>
+        <li>Confusion Matrix：先定正類，再看 FP vs FN。</li>
+        <li>ROC：AUC 越大越好；曲線靠左上角越好。</li>
+        <li>PR：高 recall 還維持高 precision 才好。</li>
+        <li>Residual plot：隨機散 → OK；曲線/漏斗 → 假設破。</li>
+        <li>Learning curve：gap 大 → overfit；兩者高 → underfit。</li>
+      </ul>
+
+      <h3>Common Exam Traps</h3>
+      <ul>
+        <li>用 test mean 做 baseline。</li>
+        <li>split 前就 scaling/impute。</li>
+        <li>用 test set 調 alpha 或 threshold。</li>
+        <li>不先標準化就比 coef。</li>
+        <li>共線性下亂解釋係數。</li>
+        <li>只看 accuracy 忽略 P/R/F1。</li>
+        <li>把 ROC 與 PR 混用。</li>
+        <li>忘記 stratify。</li>
+        <li>把 LogLoss 用在 regression（或反之）。</li>
+        <li>看到高 AUC 就忽略 threshold 成本。</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+  const toggleTheme = document.getElementById('toggleTheme');
+  const root = document.body;
+  const applyTheme = (theme) => { root.setAttribute('data-theme', theme); };
+  toggleTheme.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') !== 'light';
+    applyTheme(isDark ? 'light' : 'dark');
+  });
+
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(d => d.open = true);
+  });
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(d => d.open = false);
+  });
+
+  // Active link highlight on scroll
+  const links = document.querySelectorAll('nav a');
+  const sections = [...document.querySelectorAll('main section')];
+  const onScroll = () => {
+    const y = window.scrollY + 120;
+    let current = sections[0]?.id || '';
+    for (const s of sections) {
+      if (s.offsetTop <= y) current = s.id;
+    }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${current}`));
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+</script>
+</body>
+</html>
