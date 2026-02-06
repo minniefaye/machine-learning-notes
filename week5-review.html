@@ -132,17 +132,17 @@
         <tr><td>MSE<br>(均方誤差)</td><td>SSE / n</td><td>平均平方誤差</td><td>Compare models</td><td>Squared units</td><td>5/5=1</td></tr>
         <tr><td>RMSE<br>(均方根誤差)</td><td>sqrt(MSE)</td><td>單位回到 y</td><td>Error size</td><td>Outlier sensitive</td><td>RMSE=1</td></tr>
         <tr><td>MAE<br>(平均絕對誤差)</td><td>Mean abs residual</td><td>每個錯誤同等</td><td>Robust to outliers</td><td>Hide big errors</td><td>MAE=1</td></tr>
-        <tr><td>R²<br>(決定係數)</td><td>1 − SSE/SST</td><td>比猜平均好多少</td><td>Overall fit</td><td>Can be negative</td><td>SSE>SST</td></tr>
+        <tr><td>R²<br>(決定係數)</td><td>1 − SSE/SST</td><td>比猜平均好多少</td><td>Overall fit</td><td>Can be negative</td><td>𝑅2=1(Perfect predictions)</td></tr>
         <tr><td>SST<br>(總平方和)</td><td>Baseline variance</td><td>只猜平均的誤差</td><td>R² baseline</td><td>Mix with SSE</td><td>Σ(y-mean)²</td></tr>
         <tr><td>Confusion Matrix<br>(混淆矩陣)</td><td>2×2 table</td><td>預測 vs 真實對照</td><td>Classification</td><td>Swap rows/cols</td><td>TN FP / FN TP</td></tr>
-        <tr><td>Precision<br>(精確率)</td><td>TP/(TP+FP)</td><td>我說正的多準</td><td>FP costly</td><td>Ignore FN</td><td>4/5=0.8</td></tr>
-        <tr><td>Recall<br>(召回率)</td><td>TP/(TP+FN)</td><td>真的正抓到多少</td><td>FN costly</td><td>Ignore FP</td><td>4/6=0.67</td></tr>
+        <tr><td>Precision<br>(精確率)</td><td>TP/(TP+FP)</td><td>歸類在positive的病人，到底有幾個是真的positive？</td><td>FP costly</td><td>Ignore FN</td><td>4/5=0.8</td></tr>
+        <tr><td>Recall<br>(召回率)</td><td>TP/(TP+FN)</td><td>真正positive的病人中，我抓出了幾個？</td><td>FN costly</td><td>Ignore FP</td><td>4/6=0.67</td></tr>
         <tr><td>Sensitivity<br>(敏感度)</td><td>Same as recall</td><td>醫學用語</td><td>Same as recall</td><td>Treat as different</td><td>Same formula</td></tr>
         <tr><td>Specificity<br>(特異度)</td><td>TN/(TN+FP)</td><td>真的負排除多少</td><td>FP control</td><td>Mix with recall</td><td>3/4=0.75</td></tr>
         <tr><td>ROC Curve<br>(ROC 曲線)</td><td>TPR vs FPR</td><td>看所有門檻</td><td>Threshold tuning</td><td>Only one point</td><td>Curve to top-left</td><td></tr>
         <tr><td>AUC<br>(曲線下面積)</td><td>Area under ROC</td><td>排序能力</td><td>Ranking quality</td><td>Use for fixed threshold</td><td>0.5=random</td></tr>
-        <tr><td>Threshold<br>(門檻)</td><td>Probability cutoff</td><td>分類門檻</td><td>Trade-off control</td><td>Always 0.5</td><td>p=0.7, thr=0.8 → negative</td></tr>
-        <tr><td>Cross-Validation<br>(交叉驗證)</td><td>Rotate train/val</td><td>訓練內部考試</td><td>Model selection</td><td>Use for final report</td><td>CV mean</td></tr>
+        <tr><td>Threshold<br>(門檻)</td><td>Probability cutoff</td><td>分類門檻</td><td>Trade-off control</td><td>Always 0.5</td><td>thr ↑：更保守 → FP↓、FN↑（precision↑、recall↓）<br>thr ↓：更寬鬆 → FN↓、FP↑（recall↑、precision↓）</td></tr>
+        <tr><td>Cross-Validation<br>(交叉驗證)</td><td>Rotate train/val</td><td>訓練內部考試</td><td>Model selection</td><td>Use for final report</td><td>CV mean：K 次分數的平均（代表整體估計表現）</td></tr>
         <tr><td>Test Set<br>(測試集)</td><td>Final check</td><td>期末考一次</td><td>Final evaluation</td><td>Reuse many times</td><td>Touch once</td></tr>
       </tbody>
     </table>
