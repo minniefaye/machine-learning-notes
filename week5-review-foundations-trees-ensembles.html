@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ML - Decision Trees &amp; Random Forests</title>
+<style>
+  :root{
+    --font: "Avenir Next", "Noto Sans TC", "PingFang TC", "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --accent-pink:#E17F93;
+    --bg:#0f1116; --card:#151922; --text:#eef2f7; --muted:#aab3c3;
+    --border:#2a3243; --code:#0b0f14; --codeText:#e6edf3;
+    --shadow:0 10px 24px rgba(0,0,0,0.30);
+  }
+  [data-theme="light"]{
+    --bg:#f6f7fb; --card:#ffffff; --text:#1b1f23; --muted:#556070;
+    --border:#e2e8f0; --code:#0b1020; --codeText:#e6edf3;
+    --shadow:0 8px 16px rgba(15,23,42,0.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;}
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;
+    background:radial-gradient(1200px 620px at 10% -10%, rgba(255,255,255,0.05), transparent 60%),
+               radial-gradient(900px 520px at 90% 0%, rgba(255,255,255,0.04), transparent 55%),
+               linear-gradient(180deg, rgba(20,24,33,0.65), rgba(15,17,22,0.92));
+  }
+  header{padding:26px 16px 10px;text-align:center;}
+  h1{font-size:36px;line-height:1.15;margin:0 0 8px;font-weight:800;letter-spacing:0.2px;}
+  h2{font-size:25px;line-height:1.3;margin:22px 0 10px;font-weight:700;padding-left:10px;border-left:4px solid var(--accent-pink);} /* pink allowed */
+  h3{font-size:18px;line-height:1.3;margin:10px 0 6px;font-weight:700;}
+  h4{font-size:14px;line-height:1.3;margin:0 0 6px;font-weight:700;color:var(--muted);} 
+  .chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .chip{font-size:12px;padding:4px 10px;border:1px solid rgba(225,127,147,0.45);border-radius:999px;background:var(--card);display:inline-block;color:var(--text);} /* pink allowed */
+  .chip:hover,.chip:focus{border-color:rgba(225,127,147,0.85);background:rgba(255,255,255,0.06);cursor:pointer;text-decoration:none;}
+  .chiprow{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px;justify-content:flex-start;}
+  nav{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);backdrop-filter:saturate(140%) blur(6px);} 
+  nav .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;}
+  nav .links{display:flex;flex-wrap:wrap;gap:8px;}
+  nav a{text-decoration:none;color:#E17F93;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid transparent;}
+  nav a:hover, nav a:focus, nav a.active{border:1px solid var(--accent-pink);} /* pink allowed */
+  a{color:#E17F93;text-decoration:none;}
+  a:hover, a:focus{text-decoration:underline;}
+  .actions{display:flex;gap:8px;align-items:center;}
+  button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:12px;}
+  main{padding:12px 14px 40px;max-width:1120px;margin:0 auto;}
+  section{margin:18px 0;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin:8px 0;box-shadow:var(--shadow);} 
+  ul{margin:6px 0 0 18px;padding:0;}
+  li{margin:4px 0;line-height:1.55;}
+  .subpoints{margin-left:26px;display:block;}
+  .muted{color:var(--muted);}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--border);} 
+  thead th{position:sticky;top:0;background:var(--card);z-index:2;border-bottom:2px solid var(--border);} 
+  th,td{border:1px solid var(--border);padding:8px;vertical-align:top;}
+  tbody tr:nth-child(even){background:rgba(127,127,127,0.06);} 
+  details{margin:10px 0;}
+  summary{font-weight:700;cursor:pointer;outline:none;}
+  summary:focus{outline:2px solid var(--accent-pink);outline-offset:2px;border-radius:6px;} /* pink allowed */
+  details[open] summary{box-shadow:0 0 0 2px rgba(225,127,147,0.25);} /* pink allowed */
+  pre{background:var(--code);color:var(--codeText);padding:10px;border-radius:10px;overflow:auto;font-size:12px;border-left:3px solid var(--accent-pink);} /* pink allowed */
+  code{font-family:var(--mono);} 
+  .qa{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;box-shadow:var(--shadow);} 
+  .q,.a{margin:6px 0;}
+  .mustknow{margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);} 
+  .mustknow-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;align-items:start;}
+  .mk-sec{padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.10);border:1px solid rgba(255,255,255,.06);} 
+  .mk-title{font-size:.95rem;font-weight:700;letter-spacing:.2px;margin:0 0 8px;color:var(--text);display:flex;align-items:center;gap:8px;} 
+  .mk-list{margin:0 0 8px 16px;padding:0;line-height:1.55;} 
+  .mk-list li{margin:4px 0;} 
+  @media (max-width: 900px){ .mustknow-grid{grid-template-columns:1fr;} }
+
+  .compare-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  @media (max-width: 900px){ .compare-grid{grid-template-columns:1fr;} }
+
+  .fig{margin:10px auto 6px;display:flex;flex-direction:column;align-items:center;gap:6px;} 
+  .fig img, .fig svg{width:100%;height:auto;display:block;max-height:420px;border-radius:8px;} 
+  .fig-sm img, .fig-sm svg{max-height:280px;} 
+  .fig-md img, .fig-md svg{max-height:360px;} 
+  .fig-lg img, .fig-lg svg{max-height:420px;} 
+  figcaption{font-size:12px;color:var(--muted);text-align:center;} 
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;} 
+  .flow .node{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.05);font-size:12px;} 
+  .flow .arrow{align-self:center;color:var(--muted);} 
+
+  @media print{
+    nav{display:none;}
+    .card,.qa{box-shadow:none;}
+    body::before{display:none;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ML - Decision Trees &amp; Random Forests</h1>
+  <div class="chips">
+    <span class="chip">Updated: 2026-02-06</span>
+    <a class="chip" href="https://github.com/minniefaye" target="_blank" rel="noopener noreferrer">Alyse Lin</a>
+    <a class="chip" href="https://minniefaye.github.io/machine-learning-notes/" target="_blank" rel="noopener noreferrer">Back to ML Notes</a>
+    <a class="chip" href="https://minniefaye.github.io/machine-learning-notes/week5-review-metrics.html" target="_blank" rel="noopener noreferrer">Metrics: Regression + Classification</a>
+    <a class="chip" href="https://minniefaye.github.io/machine-learning-notes/week5-review.html" target="_blank" rel="noopener noreferrer">Machine Learning Overall Review</a>
+  </div>
+</header>
+
+<nav>
+  <div class="bar">
+    <div class="links">
+      <a href="#tldr">TL;DR</a>
+      <a href="#goals">Review Goals</a>
+      <a href="#core">Core Concepts</a>
+      <a href="#keypoints">Key Points</a>
+      <a href="#mustknow">Must-know</a>
+      <a href="#compare">Compare &amp; Connect</a>
+      <a href="#checklist">Exam Checklist</a>
+      <a href="#practice">Practice</a>
+      <a href="#quickref">One-page Quick Reference</a>
+    </div>
+    <div class="actions">
+      <button id="toggleTheme">Light/Dark</button>
+      <button id="expandAll">Expand All</button>
+      <button id="collapseAll">Collapse All</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="tldr">
+    <h2>TL;DR</h2>
+    <div class="card">
+      <ul>
+        <li>監督式學習（Supervised Learning）有標籤 y，常見任務是分類與回歸。</li>
+        <li>非監督式學習（Unsupervised Learning）用來找結構，不直接做預測。</li>
+        <li>基準模型（Baseline）先做簡單可解釋版本，用來比較是否真的進步。</li>
+        <li>決策邊界（Decision Boundary）是模型把類別分開的邊界。</li>
+        <li>主成分分析（PCA）做降維，保留主要變異以簡化表示。</li>
+        <li>基尼不純度（Gini）和資訊熵（Entropy） 量混亂度；p=0.5 正負各半最混（Entropy=1、Gini=0.5）</li>
+        <li>剪枝（Pruning）降低樹的複雜度，避免深度太深易過擬合（overfit）。</li>
+        <li>驗證曲線（Validation Curve）看單一超參數變化；參數熱圖（Heatmap）看多參數組合。</li>
+        <li>特徵重要性（Feature Importance）與置換重要性（Permutation Importance）是影響力估計。
+        <li class="subpoints">RF 的 feature importance 多半是模型內建；Permutation importance 是把某特徵打亂，看分數掉多少。</li></li>
+        <li>重要性≠因果（Importance ≠ Causality），高重要不代表因果關係。</li>
+        <li>裝袋（Bagging）透過多模型平均降低變異。</li>
+        <li>混淆矩陣（Confusion Matrix）先找錯誤格（FP/FN），再談指標。</li>
+        <li>ROC/AUC看排序能力；PR更關注少數正類時的精準率與召回率。</li>
+        <li>邏輯斯迴歸（Logistic Regression）輸出機率；<code>predict_proba</code> 「機率 + 門檻」是決策。</li>
+        <li><code>predict_proba</code> 形狀是 (N,2) = [P(0), P(1)]；<code>predict</code> 才是硬分類。</li>
+        <li>對數損失（LogLoss）：自信錯 → 罰爆；越低越好。</li>
+        <li>門檻（Threshold）提高 → FP↓、FN↑、Precision↑、Recall↓。</li>
+        <li>交叉驗證（Cross-Validation）用於模型選擇與穩定度（mean±std），測試集Test Data只用一次。</li>
+        <li>分層交叉驗證（Stratified CV）適合不平衡分類，維持類別比例。</li>
+        <li>隨機森林(Random Forest)= 多棵樹投票，靠裝袋(Bootstrap/Bagging)+ 特徵隨機(Feature Subsampling)降低變異。</li>
+        <li class="subpoints">Bootstrap：with replacement（可重複抽）。</li>
+        <li class="subpoints">Feature subsampling：通常是不重複抽（without replacement）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="goals">
+    <h2>Review Goals</h2>
+    <div class="card">
+      <ul>
+        <li>能清楚描述監督式/非監督式任務與典型用途。</li>
+        <li>熟悉從資料→模型→評估的完整流程，知道哪裡會發生洩漏。</li>
+        <li>理解樹模型與隨機森林的核心機制與調參直覺。</li>
+        <li>能讀懂混淆矩陣、ROC/PR 曲線與常見重要性圖。</li>
+        <li>能解釋為何使用 CV、何時用 PR、如何調門檻。</li>
+      </ul>
+    </div>
+  
+  <div class="card">
+      <h3>Additional Resources</h3>
+      <ul>
+        <li>My ML Cheatsheets：<a href="https://www.notion.so/Machine-Learning-Introduction-2e32f430cbe080d3a340fe8879a15f5c?source=copy_link" target="_blank" rel="noopener noreferrer">Notion｜Machine Learning Introduction</a></li>
+        <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/44171fa830ae" target="_blank" rel="noopener noreferrer">Gemini｜Decision Trees Cheatsheet</a></li>
+        <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/af4e1002442d" target="_blank" rel="noopener noreferrer">Gemini｜Random Forests</a></li>
+        <li>YouTube｜<a href="https://youtu.be/RB42MbgHfnE?si=4Fzp4XXJJGU8-otu" target="_blank" rel="noopener noreferrer">8 分鐘搞懂 ML 入門：描述 vs 預測、特徵/標籤、Train/Test、資料外洩、PCA（scikit-learn）</a></li>
+        <li>YouTube｜<a href="https://youtu.be/87855CulxXQ?si=Tl1Wp67dMvKIz88v" target="_blank" rel="noopener noreferrer">機器學習：Decision Trees決策樹是怎麼做預測的？</a></li>
+        <li>YouTube｜<a href="https://youtu.be/LcZwPWUwJWw?si=FiRW6SjZ1wiUaO24" target="_blank" rel="noopener noreferrer">機器學習入門：隨機森林（Random Forest）其實就是「很多棵樹投票」</a></li>
+        <li>YouTube｜<a href="https://youtu.be/zue2r05Am24?si=KO383GCy5xt01Orv" target="_blank" rel="noopener noreferrer">一支影片搞懂 Random Forests 隨機森林：Bootstrap、自助抽樣、投票、OOB 一次搞懂</a></li>
+      </ul>
+    </div>
+
+</section>
+
+  <section id="core">
+    <h2>Core Concepts</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>Formal Definition</th>
+            <th>Intuition</th>
+            <th>Example / Code Reminder</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Supervised Learning<br>(監督式學習)</td>
+            <td>有標籤 y 的學習任務，從 (X,y) 學到映射。</td>
+            <td>老師給答案，模型學規則。</td>
+            <td>分類/回歸模型皆屬此類。</td>
+          </tr>
+          <tr>
+            <td>Classification<br>(分類)</td>
+            <td>標籤是離散類別。</td>
+            <td>判斷「是哪一類」。</td>
+            <td><code>LogisticRegression</code>, <code>DecisionTreeClassifier</code></td>
+          </tr>
+          <tr>
+            <td>Regression<br>(回歸)</td>
+            <td>標籤是連續數值。</td>
+            <td>預測「多少」。</td>
+            <td><code>LinearRegression</code>, <code>DecisionTreeRegressor</code></td>
+          </tr>
+          <tr>
+            <td>Unsupervised Learning<br>(非監督式學習)</td>
+            <td>沒有標籤，找資料結構。</td>
+            <td>自己找群與方向。</td>
+            <td>PCA、KMeans</td>
+          </tr>
+          <tr>
+            <td>PCA<br>(主成分分析)</td>
+            <td>Principal Component Analysis<br>用正交方向保留最大變異做降維</td>
+            <td>用更少維度描述重點。</td>
+            <td><code>PCA(n_components=k)</code></td>
+          </tr>
+          <tr>
+            <td>Decision Tree<br>(決策樹)</td>
+            <td>以 if-then 規則切分特徵空間的模型。</td>
+            <td>像流程圖一樣逐步決策。</td>
+            <td><code>DecisionTreeClassifier()</code></td>
+          </tr>
+          <tr>
+            <td>Gini Impurity<br>(基尼不純度)</td>
+            <td>衡量節點混雜程度的指標。</td>
+            <td>越純越好。</td>
+            <td>分類樹常用<br>0.5 越混；接近 0 或 1 越純</td>
+          </tr>
+          <tr>
+            <td>Entropy<br>(資訊熵)</td>
+            <td>以資訊量衡量不確定性。</td>
+            <td>越混亂熵越高。</td>
+            <td>資訊增益分裂 p=0.5 最混(Entropy=1)<br>p→0 或 1 越純(Entropy→0)</td>
+          </tr>
+          <tr>
+            <td>Pruning<br>(剪枝)</td>
+            <td>限制樹深度或葉節點數。</td>
+            <td>剪掉過度複雜的分支。</td>
+            <td><code>max_depth</code>, <code>min_samples_leaf</code></td>
+          </tr>
+          <tr>
+            <td>Random Forest<br>(隨機森林)</td>
+            <td>多棵樹以 Bagging + 特徵隨機形成集成。</td>
+            <td>多個不一樣的樹投票。</td>
+            <td><code>RandomForestClassifier()</code></td>
+          </tr>
+          <tr>
+            <td>Bagging<br>(裝袋法)</td>
+            <td>對樣本做自助抽樣訓練多模型。</td>
+            <td>多個小老師平均。</td>
+            <td><code>bootstrap=True</code></td>
+          </tr>
+          <tr>
+            <td>Bootstrapping<br>(自助抽樣)</td>
+            <td>有放回抽樣（with replacement）。</td>
+            <td>可重複抽到同一筆。</td>
+            <td><code>sample(replace=True)</code></td>
+          </tr>
+          <tr>
+            <td>Feature Subsampling<br>(特徵子抽樣)</td>
+            <td>每次分裂只看部分特徵。</td>
+            <td>增加多樣性。</td>
+            <td><code>max_features</code></td>
+          </tr>
+          <tr>
+            <td>Out-of-Bag<br>(袋外估計)</td>
+            <td>未被抽到的樣本可用來估計效能。</td>
+            <td>像內建驗證集。</td>
+            <td><code>oob_score=True</code></td>
+          </tr>
+          <tr>
+            <td>Feature Importance<br>(特徵重要性)</td>
+            <td>估計特徵對預測的影響程度。</td>
+            <td>看誰最有用。</td>
+            <td>記得「重要性≠因果」。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="keypoints">
+    <h2>Key Points</h2>
+    <div class="card">
+      <details open>
+        <summary>ML Workflow（資料→模型→泛化）</summary>
+        <ul>
+          <li>特徵（Features）是 X，標籤（Labels）是 y。</li>
+          <li>先做訓練/測試分割，再做前處理（例如縮放）。</li>
+          <li>泛化（Generalization）= 訓練好 ≠ 真實世界好。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>資料洩漏（Data Leakage）</summary>
+        <ul>
+          <li>缺值補值、標準化等統計量只能用訓練集估計。</li>
+          <li>不要在測試集Test Data上調門檻或選模型。</li>
+          <li>若用原始標籤製作新欄位，記得移除原欄位避免洩漏。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>混淆矩陣與指標讀法</summary>
+        <ul>
+          <li>先找錯誤在哪一格：FP(誤報) 還是 FN(漏報)。</li>
+          <li>Precision 關注 FP；Recall 關注 FN。</li>
+          <li>不平衡分類時，僅看 Accuracy 會誤導。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>ROC/AUC vs PR</summary>
+        <ul>
+          <li>ROC/AUC 看排序分離能力，較不受正類比例影響。</li>
+          <li>PR 著重 precision + recall，正類很少時更敏感。</li>
+          <li>詐騙、醫療等少數正例場景優先看 PR。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>邏輯斯迴歸與門檻</summary>
+        <ul>
+          <li><code>predict_proba</code> 給機率，<code>predict</code> 是硬分類。</li>
+          <li>範例：P(y=1)=0.53，門檻 0.5 → 正類；門檻 0.6 → 負類。</li>
+          <li>灰色地帶 0.45–0.55 可交由人工複核或再測。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>LogLoss 與機率品質</summary>
+        <ul>
+          <li>對「很自信卻答錯」給高懲罰。</li>
+          <li>越低越好，代表機率校準更合理。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>交叉驗證與測試集Test Data</summary>
+        <ul>
+          <li>CV 用於模型選擇與穩定度，報告 mean±std。</li>
+          <li>分類不平衡時要用 Stratified CV。</li>
+          <li>測試集Test Data只用一次，最後才看。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>決策樹（Decision Tree）直覺</summary>
+        <ul>
+          <li>非線性模型，針對不同區域套用不同規則。</li>
+          <li>深度越深越能擬合，但越容易過擬合。</li>
+          <li>解釋性高，但過度複雜會犧牲泛化。</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>隨機森林（Random Forest）要點</summary>
+        <ul>
+          <li>多棵樹投票，Bagging + 特徵隨機降低變異。</li>
+          <li> Bootstrap 為有放回抽樣；Feature subsampling常是不重複抽。</li>
+          <li>OOB 可作內建驗證；特徵重要性不等於因果。</li>
+        </ul>
+      </details>
+      
+
+</div>
+  </section>
+
+  <section id="mustknow">
+    <h2>Must-know</h2>
+    <div class="mustknow">
+      <div class="mustknow-grid">
+        <div class="mk-sec">
+          <div class="mk-title">Data prep &amp; leakage</div>
+          <ul class="mk-list">
+            <li><strong>統計量來源</strong>：標準化/補值只能用訓練集。</li>
+            <li><strong>欄位洩漏</strong>：用標籤衍生新欄位後，原欄位要移除。</li>
+            <li><strong>分割順序</strong>：先分割再做任何前處理。</li>
+          </ul>
+        </div>
+        <div class="mk-sec">
+          <div class="mk-title">Training workflow</div>
+          <ul class="mk-list">
+            <li><strong>Baseline</strong>：先跑簡單模型當基準。</li>
+            <li><strong>CV</strong>：用於選模型、調參與估穩定度。</li>
+            <li><strong>Test set</strong>：只看一次，不可回頭調整。</li>
+          </ul>
+        </div>
+        <div class="mk-sec">
+          <div class="mk-title">Metrics &amp; plots</div>
+          <ul class="mk-list">
+            <li><strong>Confusion Matrix</strong>：先找 FP 或 FN 再談指標。</li>
+            <li><strong>ROC vs PR</strong>：少數正例優先看 PR。</li>
+            <li><strong>LogLoss</strong>：機率錯得越自信罰越重。</li>
+          </ul>
+        </div>
+        <div class="mk-sec">
+          <div class="mk-title">Coefficients &amp; interpretation</div>
+          <ul class="mk-list">
+            <li><strong>Feature Importance</strong>：是影響力，不是因果。</li>
+            <li><strong>Permutation Importance</strong>：隨機打亂看效能下降。</li>
+            <li><strong>Decision Boundary</strong>：模型切分類別的邊界。</li>
+          </ul>
+        </div>
+        <div class="mk-sec">
+          <div class="mk-title">Overfit / Underfit</div>
+          <ul class="mk-list">
+            <li><strong>Underfit</strong>：模型太簡單，訓練與測試都差。</li>
+            <li><strong>Overfit</strong>：訓練好、測試差；常見於樹太深。</li>
+            <li><strong>Pruning</strong>：限制複雜度提升泛化。</li>
+          </ul>
+        </div>
+        <div class="mk-sec">
+          <div class="mk-title">Trees &amp; Ensembles</div>
+          <ul class="mk-list">
+            <li><strong>Gini/Entropy</strong>：衡量節點純度。</li>
+            <li><strong>Bagging</strong>：抽樣多模型平均降低變異。</li>
+            <li><strong>Random Forest</strong>：Bagging + 特徵隨機 → 多樣化。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Common Traps</h3>
+      <ul>
+        <li>用 MSE 評估分類問題。<br><span class="subpoints"> --> 回歸用 MSE；分類用 CM + P/R/F1；機率用 LogLoss/AUC。</span></li>
+        <li>在測試集Test Data上調門檻或挑模型。</li>
+        <li>忘記移除原始標籤欄位造成洩漏。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="compare">
+    <h2>Compare &amp; Connect</h2>
+    <div class="compare-grid">
+      <div class="card">
+        <h3>分類 vs 回歸</h3>
+        <ul>
+          <li><span style="color:#E17F93">分類：標籤是類別，常看 Precision/Recall。</span></li>
+          <li><span style="color:#E17F93">回歸：標籤是連續數值，常看 MAE/MSE/RMSE。</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>決策樹 vs 隨機森林</h3>
+        <ul>
+          <li>樹：好解釋，但容易過擬合。</li>
+          <li>森林：較穩定，解釋性較弱。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ROC/AUC vs PR</h3>
+        <ul>
+          <li>ROC：看排序能力、對正類比例較穩定。</li>
+          <li>PR：少數正類場景更敏感。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>predict_proba vs predict</h3>
+        <ul>
+          <li><code>predict_proba</code>：輸出機率 [P(y=0|x), P(y=1|x)]</li>
+          <li><code>predict</code>：預設門檻(通常 0.5)切一刀輸出「硬分類 0/1」</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>重要性 vs 因果</h3>
+        <ul>
+          <li>重要性高 ≠ 變數造成結果。</li>
+          <li>需要實驗（RCT/A-B test） 或 因果推論方法證明。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Validation Curve vs Heatmap</h3>
+        <ul>
+          <li>驗證曲線：單參數變化趨勢。</li>
+          <li>參數熱圖：多參數交互的區域表現。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="checklist">
+    <h2>Exam Checklist</h2>
+    <div class="card">
+      <ul>
+        <li>能清楚說明 supervised/unsupervised 與例子。</li>
+        <li>能畫出混淆矩陣並判斷 FP/FN 對指標的影響。</li>
+        <li>知道 ROC vs PR 什麼時候用哪個。</li>
+        <li>能說明 <code>predict_proba</code> 與門檻的作用。</li>
+        <li>說得出 Bagging、Bootstrap、Feature Subsampling 差異。</li>
+        <li>能解釋為什麼重要性不是因果。</li>
+        <li>知道 CV 的目的與測試集Test Data只用一次。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="practice">
+    <h2>Practice</h2>
+    <div class="qa">
+      <div class="q"><strong>Q:</strong> 混淆矩陣看到 FN 很高，代表什麼？應該先調哪個方向？</div>
+      <div class="a"><strong>A:</strong> 代表漏掉很多正類；可考慮降低門檻、提高召回率。</div>
+    </div>
+    <div class="qa">
+      <div class="q"><strong>Q:</strong> 為什麼不應該在測試集Test Data上調門檻？</div>
+      <div class="a"><strong>A:</strong> 會把測試集Test Data資訊洩漏進模型選擇，評估變得不可信。</div>
+    </div>
+    <div class="qa">
+      <div class="q"><strong>Q:</strong> Random Forest 為什麼比單棵樹穩定？</div>
+      <div class="a"><strong>A:</strong> 多棵樹透過 Bagging + 特徵隨機降低變異，投票更穩。</div>
+    </div>
+  </section>
+
+  <section id="quickref">
+    <h2>One-page Quick Reference</h2>
+    <div class="card">
+      <h3>流程</h3>
+      <div class="flow">
+        <div class="node">資料清理</div><div class="arrow">→</div>
+        <div class="node">Train/Test Split</div><div class="arrow">→</div>
+        <div class="node">前處理（僅用 Train）</div><div class="arrow">→</div>
+        <div class="node">模型 + CV</div><div class="arrow">→</div>
+        <div class="node">最後 Test</div>
+      </div>
+
+      <h3>指標重點</h3>
+      <ul>
+        <li>先看混淆矩陣錯在哪一格。</li>
+        <li>ROC 看排序能力；PR 看少數正類。</li>
+        <li>LogLoss 看機率品質。</li>
+      </ul>
+
+      <h3>樹與森林</h3>
+      <ul>
+        <li>樹：if-then 規則，深度太深易過擬合。</li>
+        <li>森林：多棵樹投票，Bagging + Feature Subsampling。</li>
+        <li>重要性不等於因果。</li>
+      </ul>
+
+      <h3>門檻調整</h3>
+      <ul>
+        <li>門檻↑：Precision↑，Recall↓。</li>
+        <li>門檻↓：Recall↑，Precision↓。</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+  const root = document.documentElement;
+  const toggleTheme = document.getElementById('toggleTheme');
+  const applyTheme = (theme) => { root.setAttribute('data-theme', theme); };
+  applyTheme('dark');
+
+  toggleTheme.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') !== 'light';
+    applyTheme(isDark ? 'light' : 'dark');
+  });
+
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(d => d.open = true);
+  });
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(d => d.open = false);
+  });
+
+  const links = document.querySelectorAll('nav a');
+  const sections = [...document.querySelectorAll('main section')];
+  const onScroll = () => {
+    const y = window.scrollY + 120;
+    let current = sections[0]?.id || '';
+    for (const s of sections) {
+      if (s.offsetTop <= y) current = s.id;
+    }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${current}`));
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+</script>
+</body>
+</html>
