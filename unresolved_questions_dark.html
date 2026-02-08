@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Potential Unresolved Questions or Concepts</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-2: #111827;
+      --card: #121826;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(900px 500px at 10% -10%, #1f2937 0%, rgba(31,41,55,0) 60%), var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container { max-width: 980px; margin: 0 auto; padding: 32px 20px 56px; }
+    header {
+      padding: 12px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 30px; margin: 0 0 8px; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .q-title {
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    .q-label {
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .q-desc { margin: 0; color: var(--muted); }
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>My Potential Unresolved Questions or Concepts</h1>
+      <p class="subtitle">Weekly Review — what I still feel unsure about</p>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <div class="q-label">Q1</div>
+        <div class="q-title">ROC/AUC vs PR curve (especially for imbalanced data)</div>
+        <p class="q-desc">I kept asking Generative AI why ROC can look “too good” and why PR is “more sensitive” when positives are rare.</p>
+      </div>
+
+      <div class="card">
+        <div class="q-label">Q2</div>
+        <div class="q-title">Threshold trade-off and how it changes FP/FN → Precision/Recall/F1</div>
+        <p class="q-desc">It returned to “threshold up/down” and what “gray zone 0.45–0.55” really means in decisions.</p>
+      </div>
+
+      <div class="card">
+        <div class="q-label">Q3</div>
+        <div class="q-title">predict_proba vs predict (what each output is used for)</div>
+        <p class="q-desc">I want a clear, simple explanation of the use cases for each output.</p>
+      </div>
+
+      <div class="card">
+        <div class="q-label">Q4</div>
+        <div class="q-title">(N,2) shape, ROC/PR needs probabilities, and “hard class” meaning</div>
+        <p class="q-desc">I asked multiple times about shapes like (N,2), why ROC/PR needs probabilities, and what “hard class” means.</p>
+      </div>
+
+      <div class="card">
+        <div class="q-label">Q5</div>
+        <div class="q-title">LogLoss meaning (probability quality) vs AUC meaning (ranking quality)</div>
+        <p class="q-desc">I was still confused: LogLoss checks probability quality (calibration), while AUC checks ranking/separation, so I needed a concrete example.</p>
+      </div>
+
+      <div class="card">
+        <div class="q-label">Q6</div>
+        <div class="q-title">Bias–variance / overfit–underfit diagnosis using learning curves & validation curves</div>
+        <p class="q-desc">I seemed unsure how to interpret “both bad” vs “train good, val bad.”</p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
