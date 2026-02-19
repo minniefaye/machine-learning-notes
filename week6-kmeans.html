@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ML - Unsupervised Learning &amp; K-means</title>
+<style>
+  :root {
+    --font: "Avenir Next", "Noto Sans TC", "PingFang TC", "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --accent: #E17F93;
+    --bg: #0f1116;
+    --panel: #151922;
+    --panel-2: #11141b;
+    --text: #eef2f7;
+    --muted: #aab3c3;
+    --border: #2a3243;
+    --code-bg: #0b0f14;
+    --code-text: #e6edf3;
+    --shadow: 0 10px 24px rgba(0,0,0,0.30);
+  }
+  [data-theme="light"] {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --panel-2: #f2f3f7;
+    --text: #1b1f23;
+    --muted: #556070;
+    --border: #e2e8f0;
+    --code-bg: #0b1020;
+    --code-text: #e6edf3;
+    --shadow: 0 8px 16px rgba(15,23,42,0.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(1200px 620px at 10% -10%, rgba(255,255,255,0.05), transparent 60%),
+      radial-gradient(900px 520px at 90% 0%, rgba(255,255,255,0.04), transparent 55%),
+      linear-gradient(180deg, rgba(20,24,33,0.65), rgba(15,17,22,0.92));
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header { padding: 26px 16px 10px; text-align: center; }
+  header h1 { font-size: 36px; line-height: 1.15; margin: 0 0 8px; font-weight: 800; letter-spacing: 0.2px; }
+  .chips {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid rgba(225,127,147,0.45);
+    border-radius: 999px;
+    background: var(--panel);
+    display: inline-block;
+    color: var(--text);
+  }
+  .chip:hover,
+  .chip:focus {
+    border-color: rgba(225,127,147,0.85);
+    background: rgba(255,255,255,0.06);
+    text-decoration: none;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: saturate(140%) blur(6px);
+  }
+  nav .bar {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+  nav .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  nav a {
+    text-decoration: none;
+    color: #E17F93;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid transparent;
+  }
+  nav a:hover,
+  nav a:focus,
+  nav a.active { border: 1px solid var(--accent); }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  button {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 12px 14px 40px; }
+  section { margin: 18px 0; }
+  h2 {
+    font-size: 25px;
+    line-height: 1.3;
+    margin: 22px 0 10px;
+    font-weight: 700;
+    padding-left: 10px;
+    border-left: 4px solid var(--accent);
+  }
+  h3 { font-size: 18px; line-height: 1.3; margin: 10px 0 6px; font-weight: 700; }
+  h4 { font-size: 14px; line-height: 1.3; margin: 0 0 6px; font-weight: 700; color: var(--muted); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin: 8px 0;
+    box-shadow: var(--shadow);
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 820px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  ul { margin: 6px 0 0 18px; padding: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+    z-index: 2;
+    border-bottom: 2px solid var(--border);
+    text-align: left;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: rgba(127,127,127,0.06); }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 10px;
+    border-radius: 10px;
+    overflow: auto;
+    font-size: 12px;
+    border-left: 3px solid var(--accent);
+  }
+  code { font-family: var(--mono); }
+
+  details { margin: 10px 0; }
+  details + details { margin-top: 12px; }
+  summary {
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+  }
+  summary:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  details[open] summary { box-shadow: 0 0 0 2px rgba(225,127,147,0.25); }
+
+  .must-know {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+  }
+  @media (max-width: 820px) { .must-know { grid-template-columns: 1fr; } }
+  .must-know p { margin: 0 0 8px; }
+
+  figure {
+    margin: 12px 0 0;
+    text-align: center;
+  }
+  figure svg { max-width: 100%; height: auto; }
+  .fig-sm svg { max-height: 280px; }
+  .fig-md svg { max-height: 380px; }
+  .fig-lg svg { max-height: 480px; }
+  figcaption { color: var(--muted); font-size: 12px; margin-top: 6px; text-align: center; }
+
+  .checklist {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 900px) { .checklist { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .checklist { grid-template-columns: 1fr; } }
+  .check-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  @media print {
+    nav { display: none; }
+    .card, details { box-shadow: none; }
+    body::before { display: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>ML - Unsupervised Learning &amp; K-means</h1>
+    <div class="chips">
+      <span class="chip">Updated: 2026-02-12</span>
+      <a class="chip" href="https://github.com/minniefaye" target="_blank" rel="noopener noreferrer">Alyse Lin</a>
+      <a class="chip" href="https://minniefaye.github.io/machine-learning-notes/" target="_blank" rel="noopener noreferrer">Back to Machine Learning Notes</a>
+    </div>
+  </header>
+
+  <nav>
+    <div class="bar">
+      <div class="links">
+        <a href="#tldr">TL;DR</a>
+        <a href="#concepts">Core</a>
+        <a href="#keypoints">Key Points</a>
+        <a href="#compare">Compare</a>
+        <a href="#checklist">Checklist</a>
+        <a href="#practice">Practice</a>
+        <a href="#quickref">Quick Ref</a>
+      </div>
+      <div class="actions">
+        <button id="toggleTheme" type="button">Light/Dark</button>
+        <button id="expandAll" type="button">Expand All</button>
+        <button id="collapseAll" type="button">Collapse All</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section id="tldr">
+      <h2>TL;DR</h2>
+      <div class="card">
+        <ul>
+          <li>非監督式學習（Unsupervised learning）沒有 y，重點是「找結構」，不是預測。</li>
+          <li>k-means 先選 k，反覆「分配到最近中心」與「更新中心」；中心是平均值。</li>
+          <li>Inertia / WCSS 只用來比較同一份資料、同一前處理下的不同 k。</li>
+          <li>距離法很怕前處理：缺值要補、類別要編碼、尺度要可比。</li>
+          <li>METABRIC 先把 outcome / treatment / 既有診斷「保留不進模型」，只做事後解讀。</li>
+          <li>合理的流程：Impute → One-hot → Scale（只縮放需要的連續欄位）。</li>
+          <li>Elbow 沒明顯折點是常態，會比較一小段 k（例如 4–7）。</li>
+          <li>評估是「解讀」：看 centroid 差異、看 held-out 的 contingency table。</li>
+          <li>cluster label 只是代號；對不上臨床變數不代表失敗。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <h2>Core Concepts Table</h2>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Term</th>
+              <th>Simple English</th>
+              <th>繁中直覺</th>
+              <th>When to use</th>
+              <th>Common trap</th>
+              <th>Tiny example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Unsupervised learning<br>(非監督式學習)</td>
+              <td>Find structure without labels.</td>
+              <td>沒有答案的探索：先看資料形狀。</td>
+              <td>沒有 y 或 y 不可靠時。</td>
+              <td>把結果當成真實分類。</td>
+              <td>病人分群找潛在亞型。</td>
+            </tr>
+            <tr>
+              <td>Clustering<br>(分群)</td>
+              <td>Group similar samples.</td>
+              <td>像分堆：看相似度。</td>
+              <td>想做族群探索、分層。</td>
+              <td>以為標籤有順序意義。</td>
+              <td>把 0/1/2 當成嚴重程度。</td>
+            </tr>
+            <tr>
+              <td>k-means<br>(k 均值分群)</td>
+              <td>Partition into k clusters by distance.</td>
+              <td>找「幾何上最緊密」的切法。</td>
+              <td>特徵全數值、想要快。</td>
+              <td>不先處理尺度與缺值。</td>
+              <td>距離被「年齡」支配。</td>
+            </tr>
+            <tr>
+              <td>Centroid<br>(中心點)</td>
+              <td>Mean vector of a cluster.</td>
+              <td>這群的「平均病人」。</td>
+              <td>描述群的典型輪廓。</td>
+              <td>把中心當真實樣本。</td>
+              <td>中心不是任何實際病人。</td>
+            </tr>
+            <tr>
+              <td>Inertia / WCSS<br>(群內平方和)</td>
+              <td>Sum of squared distances to centroids.</td>
+              <td>群內越散越大。</td>
+              <td>比較不同 k 的緊密度。</td>
+              <td>跨資料集比較數值。</td>
+              <td>同一資料 k=4 vs k=6。</td>
+            </tr>
+            <tr>
+              <td>One-hot encoding<br>(獨熱編碼)</td>
+              <td>Turn category into 0/1 columns.</td>
+              <td>文字變成多個指示欄。</td>
+              <td>類別特徵要進距離法。</td>
+              <td>忘記先處理缺值。</td>
+              <td>tumor subtype → 多欄 0/1。</td>
+            </tr>
+            <tr>
+              <td>Standardization<br>(標準化)</td>
+              <td>Scale to mean 0, std 1.</td>
+              <td>讓尺度可比。</td>
+              <td>連續數值範圍差很大時。</td>
+              <td>把稀有 binary 欄放大。</td>
+              <td>只縮放 age，而非 0/1。</td>
+            </tr>
+            <tr>
+              <td>Contingency table<br>(交叉表)</td>
+              <td>Counts of label by cluster.</td>
+              <td>看每群的標籤比例。</td>
+              <td>用 held-out 做解讀。</td>
+              <td>沒做欄內比例就比較。</td>
+              <td>同群大小不同導致誤判。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="keypoints">
+      <h2>Key Points by Section</h2>
+
+      <details>
+        <summary>Unsupervised Learning: 你在做什麼？</summary>
+        <p>沒有 y、沒有「對答案」，結果是探索用的結構。</p>
+        <p><strong>Key words:</strong> structure, exploration, no labels</p>
+        <div class="must-know">
+          <div>
+            <h4>核心心態</h4>
+            <p><strong>探索性</strong>：分群是「提出問題」不是「給定結論」。</p>
+            <p><strong>任意標籤</strong>：cluster 0/1/2 只是代碼。</p>
+          </div>
+          <div>
+            <h4>跟監督式差別</h4>
+            <p><strong>無指標</strong>：沒有 accuracy/ROC 可評估。</p>
+            <p><strong>後驗解讀</strong>：用 held-out 變數驗證「是否有關聯」。</p>
+          </div>
+          <div>
+            <h4>常見用途</h4>
+            <p><strong>病人分層</strong>：找潛在亞型或異質性。</p>
+            <p><strong>資料探索</strong>：先看看結構再決定後續模型。</p>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>k-means 如何運作？</summary>
+        <p>兩步反覆：分配到最近中心 → 更新中心為平均。</p>
+        <p><strong>Key words:</strong> centroid, assignment, update</p>
+        <div class="must-know">
+          <div>
+            <h4>算法步驟</h4>
+            <p><strong>Assignment</strong>：每點找最近 centroid。</p>
+            <p><strong>Update</strong>：每群 centroid = 平均值。</p>
+          </div>
+          <div>
+            <h4>重現性</h4>
+            <p><strong>random_state</strong>：初始中心不同會有不同結果。</p>
+            <p><strong>n_init</strong>：多跑幾次取最好（低 inertia）。</p>
+          </div>
+          <div>
+            <h4>假設</h4>
+            <p><strong>球狀群</strong>：適合「緊密、對稱」的群。</p>
+            <p><strong>單一平均</strong>：細長或多子群會被誤切。</p>
+          </div>
+        </div>
+        <figure class="fig-md">
+          <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-means: assignment then update">
+            <defs>
+              <style>
+                .panel { fill: none; stroke: rgba(238,242,247,0.18); stroke-width: 1.2; }
+                .title { font: 700 14px/1.2 system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; fill: rgba(238,242,247,0.92); }
+                .sub { font: 12px/1.2 system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; fill: rgba(170,179,195,0.95); }
+                .ptA { fill: rgba(125,211,252,0.85); }
+                .ptB { fill: rgba(225,127,147,0.85); }
+                .cent0 { fill: none; stroke: rgba(238,242,247,0.7); stroke-width: 2; }
+                .cent1 { fill: rgba(238,242,247,0.95); }
+                .arrow { stroke: rgba(238,242,247,0.45); stroke-width: 1.6; marker-end: url(#m); }
+                .move { stroke: rgba(225,127,147,0.70); stroke-width: 2.2; marker-end: url(#m2); }
+                .hint { fill: rgba(170,179,195,0.95); font: 11px/1.2 system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; }
+              </style>
+
+              <marker id="m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(238,242,247,0.45)"/>
+              </marker>
+              <marker id="m2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(225,127,147,0.70)"/>
+              </marker>
+            </defs>
+
+            <rect class="panel" x="20" y="20" width="400" height="260" rx="14"/>
+            <text class="title" x="40" y="52">Step 1 - Assignment（分配）</text>
+            <text class="sub" x="40" y="74">每個點 -&gt; 指派到最近的 centroid</text>
+
+            <rect class="panel" x="440" y="20" width="400" height="260" rx="14"/>
+            <text class="title" x="460" y="52">Step 2 - Update（更新）</text>
+            <text class="sub" x="460" y="74">centroid 移動到「群內平均」</text>
+
+            <circle class="ptA" cx="115" cy="130" r="4"/><circle class="ptA" cx="95" cy="165" r="4"/>
+            <circle class="ptA" cx="145" cy="165" r="4"/><circle class="ptA" cx="165" cy="135" r="4"/>
+            <circle class="ptA" cx="130" cy="195" r="4"/><circle class="ptA" cx="180" cy="175" r="4"/>
+
+            <circle class="ptA" cx="535" cy="130" r="4"/><circle class="ptA" cx="515" cy="165" r="4"/>
+            <circle class="ptA" cx="565" cy="165" r="4"/><circle class="ptA" cx="585" cy="135" r="4"/>
+            <circle class="ptA" cx="550" cy="195" r="4"/><circle class="ptA" cx="600" cy="175" r="4"/>
+
+            <circle class="ptB" cx="285" cy="150" r="4"/><circle class="ptB" cx="310" cy="120" r="4"/>
+            <circle class="ptB" cx="330" cy="160" r="4"/><circle class="ptB" cx="300" cy="190" r="4"/>
+            <circle class="ptB" cx="350" cy="190" r="4"/><circle class="ptB" cx="265" cy="185" r="4"/>
+
+            <circle class="ptB" cx="705" cy="150" r="4"/><circle class="ptB" cx="730" cy="120" r="4"/>
+            <circle class="ptB" cx="750" cy="160" r="4"/><circle class="ptB" cx="720" cy="190" r="4"/>
+            <circle class="ptB" cx="770" cy="190" r="4"/><circle class="ptB" cx="685" cy="185" r="4"/>
+
+            <circle class="cent0" cx="175" cy="115" r="7"/>
+            <circle class="cent0" cx="290" cy="210" r="7"/>
+            <text class="hint" x="190" y="118">C1</text>
+            <text class="hint" x="305" y="213">C2</text>
+
+            <line class="arrow" x1="115" y1="130" x2="172" y2="118"/>
+            <line class="arrow" x1="95"  y1="165" x2="170" y2="122"/>
+            <line class="arrow" x1="145" y1="165" x2="175" y2="122"/>
+            <line class="arrow" x1="165" y1="135" x2="176" y2="120"/>
+            <line class="arrow" x1="130" y1="195" x2="182" y2="125"/>
+            <line class="arrow" x1="180" y1="175" x2="182" y2="125"/>
+
+            <line class="arrow" x1="285" y1="150" x2="292" y2="204"/>
+            <line class="arrow" x1="310" y1="120" x2="295" y2="206"/>
+            <line class="arrow" x1="330" y1="160" x2="296" y2="206"/>
+            <line class="arrow" x1="300" y1="190" x2="294" y2="208"/>
+            <line class="arrow" x1="350" y1="190" x2="296" y2="208"/>
+            <line class="arrow" x1="265" y1="185" x2="292" y2="208"/>
+
+            <circle class="cent0" cx="595" cy="115" r="7"/>
+            <circle class="cent0" cx="710" cy="210" r="7"/>
+            <text class="hint" x="610" y="118">C1(old)</text>
+            <text class="hint" x="725" y="213">C2(old)</text>
+
+            <circle class="cent1" cx="565" cy="160" r="7"/>
+            <circle class="cent1" cx="730" cy="165" r="7"/>
+            <text class="hint" x="580" y="163">C1(new)</text>
+            <text class="hint" x="745" y="168">C2(new)</text>
+
+            <line class="move" x1="595" y1="115" x2="565" y2="160"/>
+            <line class="move" x1="710" y1="210" x2="730" y2="165"/>
+
+            <circle class="ptA" cx="460" cy="258" r="4"/><text class="hint" x="472" y="262">Cluster A points</text>
+            <circle class="ptB" cx="590" cy="258" r="4"/><text class="hint" x="602" y="262">Cluster B points</text>
+          </svg>
+
+          <figcaption>更直覺版：左邊「分配到最近中心」，右邊「中心移到群內平均」（可重複直到穩定）。</figcaption>
+        </figure>
+      </details>
+
+      <details>
+        <summary>Inertia / WCSS：你到底在最小化什麼？</summary>
+        <p>k-means 最小化群內平方距離總和，值越小群越緊。</p>
+        <p><strong>Key words:</strong> inertia, within-cluster SSE</p>
+        <div class="must-know">
+          <div>
+            <h4>怎麼用</h4>
+            <p><strong>只比較同一資料</strong>：不同資料/前處理不能比。</p>
+            <p><strong>k 越大越小</strong>：不代表 k 越大越好。</p>
+          </div>
+          <div>
+            <h4>直覺</h4>
+            <p><strong>重疊資料</strong>：點離中心遠 → inertia 大。</p>
+            <p><strong>分離資料</strong>：群緊密 → inertia 小。</p>
+          </div>
+          <div>
+            <h4>常見誤讀</h4>
+            <p><strong>當成分數</strong>：沒有「好/壞」的絕對值。</p>
+          </div>
+        </div>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code># 先 fit k-means
+km4 = KMeans(n_clusters=4, random_state=42, n_init=20)
+km4.fit(X)
+
+# 取得群內平方和 (within-cluster SSE / inertia)
+inertia_k4 = km4.inertia_
+print(f"inertia (k=4): {inertia_k4:.2f}")</code></pre>
+        <pre><code># 1) 定義要拿來分群的輸入 (不要放 outcome/label，避免把已知答案混進去)
+holdout_cols = ["tumor_stage", "chemotherapy", "death_from_cancer", "cancer_type_detailed"]
+X = data.drop(columns=holdout_cols).copy()
+
+# 2) fit k-means (這裡示範 k=4)
+model = KMeans(n_clusters=4, random_state=42, n_init=20)
+model.fit(X)
+
+# 3) 讀取 inertia 與群標籤
+print("inertia:", model.inertia_)   # within-cluster SSE
+clusters = model.labels_            # 每筆樣本的 cluster id
+
+# 4) 比較多個 k 時，搭配 inertia 看 elbow
+ks = range(2, 9)
+inertias = []
+for k in ks:
+    km = KMeans(n_clusters=k, random_state=42, n_init=20)
+    km.fit(X)
+    inertias.append(km.inertia_)
+
+print(list(zip(ks, [round(v, 2) for v in inertias])))</code></pre>
+      </details>
+
+      <details>
+        <summary>labels_ vs predict：什麼時候需要預測？</summary>
+        <p>同一份資料：看 <code>labels_</code>；要套用到新資料才用 <code>predict</code>。</p>
+        <p><strong>Key words:</strong> labels_, predict, fixed clusters</p>
+        <div class="must-know">
+          <div>
+            <h4>labels_</h4>
+            <p><strong>訓練資料本身</strong>：模型已給每點群號。</p>
+          </div>
+          <div>
+            <h4>predict</h4>
+            <p><strong>新病人</strong>：要固定原有群中心再指派。</p>
+          </div>
+          <div>
+            <h4>常見誤用</h4>
+            <p><strong>重分群</strong>：重新 fit 會改變群定義。</p>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>METABRIC：哪些欄位不能進模型？</summary>
+        <p>Outcome / treatment / 既有診斷會讓分群只反映已知資訊。</p>
+        <p><strong>Key words:</strong> leakage, held-out</p>
+        <div class="must-know">
+          <div>
+            <h4>要保留不用</h4>
+            <p><strong>tumor_stage</strong>：臨床分期。</p>
+            <p><strong>chemotherapy</strong>：治療決策。</p>
+            <p><strong>death_from_cancer</strong>：結局。</p>
+            <p><strong>cancer_type_detailed</strong>：既有診斷分類。</p>
+          </div>
+          <div>
+            <h4>理由</h4>
+            <p><strong>避免洩漏</strong>：分群應該由 baseline 特徵決定。</p>
+            <p><strong>事後解讀</strong>：用這些欄位來看群差異。</p>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>前處理順序：Impute → One-hot → Scale</summary>
+        <p><strong>流程一句話：</strong>先補缺值，再把類別轉成數值，最後只縮放需要的連續欄位。</p>
+        <p><strong>Key words:</strong> imputation, missing values, one-hot, scaling</p>
+        <div class="must-know">
+          <div>
+            <h4>Step 1 - Imputation (Missing Values)</h4>
+            <p><strong>Action</strong>：Fill NaN (Mean/Mode)。</p>
+            <p><strong>Numeric</strong> → mean（或 median）</p>
+            <p><strong>Categorical</strong> → mode</p>
+            <p><strong>Why</strong>：Distances cannot be calculated with blanks.</p>
+          </div>
+          <div>
+            <h4>Step 2 - One-hot</h4>
+            <p><strong>類別轉 0/1</strong>：k-means 只能吃數值欄位。</p>
+            <p><strong>先補再編碼</strong>：避免 NaN 造成欄位不一致。</p>
+          </div>
+          <div>
+            <h4>Step 3 - Scale</h4>
+            <p><strong>只縮放必要連續欄</strong>：例如 age。</p>
+            <p><strong>二元欄位通常不縮放</strong>：稀有 1 可能被過度放大。</p>
+          </div>
+          <div>
+            <h4>Quick Template</h4>
+            <p><strong>順序固定</strong>：Impute → One-hot → Scale。</p>
+            <p><strong>目標</strong>：讓距離計算穩定且可比較。</p>
+          </div>
+        </div>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code># 1) Impute
+X[num_cols] = X[num_cols].fillna(X[num_cols].mean())
+X[cat_cols] = X[cat_cols].apply(lambda s: s.fillna(s.mode().iloc[0]))
+
+# 2) One-hot
+X_oh = pd.get_dummies(X, columns=cat_cols, drop_first=False)
+
+# 3) Scale (continuous only)
+X_oh[cont_cols] = StandardScaler().fit_transform(X_oh[cont_cols])</code></pre>
+      </details>
+
+      <details>
+        <summary>Choosing k：Elbow 不尖很正常</summary>
+        <p>曲線平滑時，就比較一小段 k，看群大小與解讀性。</p>
+        <p><strong>Key words:</strong> elbow, k range, cluster size</p>
+        <div class="must-know">
+          <div>
+            <h4>Elbow 看法</h4>
+            <p><strong>看折點</strong>：不是看「最小值」。</p>
+            <p><strong>平滑常見</strong>：高維資料常無明顯折點。</p>
+          </div>
+          <div>
+            <h4>實務搭配</h4>
+            <p><strong>群大小</strong>：是否有極小群？</p>
+            <p><strong>解讀性</strong>：held-out 有沒有差異。</p>
+          </div>
+        </div>
+        <figure class="fig-lg">
+          <svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Elbow method for choosing k in k-means">
+            <defs>
+              <style>
+                .frame{fill:none;stroke:rgba(238,242,247,.18);stroke-width:1.2;}
+                .axis{stroke:rgba(238,242,247,.28);stroke-width:1.4;}
+                .grid{stroke:rgba(238,242,247,.10);stroke-width:1;}
+                .txt{fill:rgba(238,242,247,.92);font:700 14px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;}
+                .sub{fill:rgba(170,179,195,.95);font:12px/1.35 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;}
+                .note{fill:rgba(170,179,195,.95);font:12px/1.55 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;}
+                .curve{fill:none;stroke:rgba(238,242,247,.90);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
+                .pt{fill:rgba(238,242,247,.92);}
+                .elbow{fill:none;stroke:rgba(225,127,147,.95);stroke-width:3;}
+                .dash{stroke:rgba(225,127,147,.55);stroke-width:2;stroke-dasharray:6 6;}
+                .accent{fill:rgba(225,127,147,.95);font:700 13px/1.2 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;}
+                .pill{fill:rgba(255,255,255,.04);stroke:rgba(238,242,247,.14);stroke-width:1.2;}
+              </style>
+
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(225,127,147,.55)"/>
+              </marker>
+            </defs>
+
+            <!-- Outer frame -->
+            <rect class="frame" x="20" y="20" width="940" height="380" rx="16"/>
+
+            <!-- Left plot panel -->
+            <rect class="frame" x="40" y="50" width="560" height="320" rx="14"/>
+
+            <!-- Title -->
+            <text class="txt" x="60" y="82">Elbow Method（選 k 的直覺圖）</text>
+            <text class="sub" x="60" y="104">Goal：找「增加 k 的收益開始變小（diminishing returns）」的轉折點</text>
+
+            <!-- (Important) reminder -->
+            <text class="sub" x="60" y="132">（重要）inertia 一定會隨 k 增加而下降 → 重點是找「下降變慢」的位置</text>
+
+            <!-- Plot area coordinates:
+                 left=60, right=580, top=120, bottom=350 -->
+
+            <!-- Grid lines -->
+            <line class="grid" x1="60" y1="140" x2="580" y2="140"/>
+            <line class="grid" x1="60" y1="190" x2="580" y2="190"/>
+            <line class="grid" x1="60" y1="240" x2="580" y2="240"/>
+            <line class="grid" x1="60" y1="290" x2="580" y2="290"/>
+            <line class="grid" x1="60" y1="340" x2="580" y2="340"/>
+
+            <!-- Axes -->
+            <line class="axis" x1="60" y1="350" x2="580" y2="350"/>
+            <line class="axis" x1="60" y1="350" x2="60" y2="120"/>
+
+            <!-- Axis labels (NO rotation to avoid "tilted" feeling) -->
+            <text class="sub" x="70" y="156">Inertia / WCSS</text>
+            <text class="sub" x="70" y="174">(lower is better)</text>
+            <text class="sub" x="60" y="372">k (number of clusters)</text>
+
+            <!-- Curve: inertia decreases as k increases (visually goes downward and flattens) -->
+            <!-- points for k=1..8 -->
+            <path class="curve"
+              d="M 100 160
+                 L 160 205
+                 L 220 245
+                 L 280 270
+                 L 340 285
+                 L 400 294
+                 L 460 300
+                 L 520 304" />
+
+            <!-- Points + x labels -->
+            <circle class="pt" cx="100" cy="160" r="6"/><text class="sub" x="95" y="344">1</text>
+            <circle class="pt" cx="160" cy="205" r="6"/><text class="sub" x="155" y="344">2</text>
+            <circle class="pt" cx="220" cy="245" r="6"/><text class="sub" x="215" y="344">3</text>
+            <circle class="pt" cx="280" cy="270" r="6"/><text class="sub" x="275" y="344">4</text>
+            <circle class="pt" cx="340" cy="285" r="6"/><text class="sub" x="335" y="344">5</text>
+            <circle class="pt" cx="400" cy="294" r="6"/><text class="sub" x="395" y="344">6</text>
+            <circle class="pt" cx="460" cy="300" r="6"/><text class="sub" x="455" y="344">7</text>
+            <circle class="pt" cx="520" cy="304" r="6"/><text class="sub" x="515" y="344">8</text>
+
+            <!-- Elbow highlight at k=4 -->
+            <circle class="elbow" cx="280" cy="270" r="14"/>
+            <line class="dash" x1="280" y1="270" x2="310" y2="230" marker-end="url(#arrow)"/>
+            <text class="accent" x="318" y="232">Elbow ≈ k=4</text>
+            <text class="sub" x="318" y="252">after this, improvement slows</text>
+
+            <!-- Right knowledge panel -->
+            <rect class="pill" x="620" y="50" width="320" height="320" rx="14"/>
+            <text class="txt" x="640" y="82">Key knowledge（考點 / 實戰）</text>
+
+            <text class="note" x="640" y="118">• Inertia = Σᵢ ||xᵢ − μ_{cluster(i)}||²</text>
+            <text class="note" x="640" y="142">  → 又叫 WCSS（within-cluster sum of squares）</text>
+
+            <text class="note" x="640" y="176">• 為什麼一定下降？</text>
+            <text class="note" x="660" y="198">k 越大，群越細，點到中心距離平均會變小</text>
+
+            <text class="note" x="640" y="232">• Elbow 什麼時候不明顯？</text>
+            <text class="note" x="660" y="254">① 資料沒有明顯群 ② 群是長條/不對稱</text>
+            <text class="note" x="660" y="276">③ 有離群值(outliers) ④ 特徵未標準化</text>
+
+            <text class="note" x="640" y="310">• 建議一起看：</text>
+            <text class="note" x="660" y="332">silhouette、stability（多次跑一致性）、可解釋性</text>
+
+            <!-- Footer tip -->
+            <text class="sub" x="40" y="398">
+              Tip：先標準化特徵（z-score），k 從 2~10 掃一遍，觀察 elbow + silhouette，再用 domain knowledge 決定。
+            </text>
+          </svg>
+
+          <figcaption>
+            Elbow 的意思不是「有折點就是真理」，而是：當 k 變大時，inertia 的改善幅度開始變小，這時候通常是合理的切點候選。
+          </figcaption>
+        </figure>
+      </details>
+
+      <details>
+        <summary>評估與解讀：centroid 差異 + contingency table</summary>
+        <p>沒有正確答案，只能用「解讀」來描述分群是否有用。</p>
+        <p><strong>Key words:</strong> centroid spread, crosstab, enrichment</p>
+        <div class="must-know">
+          <div>
+            <h4>Centroid spread</h4>
+            <p><strong>max-min</strong>：看哪個特徵在群間差距大。</p>
+            <p><strong>描述性</strong>：不是因果、不是重要性。</p>
+          </div>
+          <div>
+            <h4>Contingency table</h4>
+            <p><strong>欄內比例</strong>：每群內的標籤比例。</p>
+            <p><strong>看 enrichment</strong>：某群特別高/低。</p>
+          </div>
+          <div>
+            <h4>弱關聯不是失敗</h4>
+            <p><strong>生物現實</strong>：分子與臨床可能只弱相關。</p>
+          </div>
+        </div>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code>tab = pd.crosstab(held_out[label], clusters)
+col_norm = tab.div(tab.sum(axis=0), axis=1)</code></pre>
+      </details>
+
+      <details>
+        <summary>結果怎麼講？給出可負責的結論</summary>
+        <p>用「對哪些變數有中度/強度差異」來描述，不要下因果結論。</p>
+        <p><strong>Key words:</strong> interpretation, alignment, caution</p>
+        <div class="must-know">
+          <div>
+            <h4>描述模板</h4>
+            <p><strong>強 vs 弱</strong>：chemotherapy 強、survival 弱。</p>
+            <p><strong>回到目的</strong>：你想分的是什麼？</p>
+          </div>
+          <div>
+            <h4>避免過度解讀</h4>
+            <p><strong>非因果</strong>：只代表關聯。</p>
+            <p><strong>模型依賴</strong>：前處理與 k 會改變結果。</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section id="compare">
+      <h2>Compare & Connect</h2>
+      <div class="card">
+        <ul>
+          <li>k-means vs PCA：k-means 真的分群；PCA 只是降維可視化。</li>
+          <li>inertia vs accuracy：inertia 只能比較 k；accuracy 需要真實 y。</li>
+          <li>labels_ vs predict：labels_ 是訓練資料；predict 是新樣本。</li>
+          <li>one-hot vs label encoding：k-means 需要距離；label encoding 會製造假順序。</li>
+          <li>scaling continuous vs binary：連續要縮放；稀有 0/1 不要放大。</li>
+          <li>held-out vs X：X 用於分群；held-out 用於解讀。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <h2>Exam Quick Checklist</h2>
+      <div class="checklist">
+        <div class="check-item"><strong>非監督式 vs 監督式？</strong><br>答案：非監督式沒有 y、找資料結構；監督式有 y、重點是預測。</div>
+        <div class="check-item"><strong>k-means 兩步？</strong><br>答案：Assignment（分配到最近中心）→ Update（中心移到群內平均）。</div>
+        <div class="check-item"><strong>inertia 怎麼用？</strong><br>答案：只能比較同一資料、同一前處理下的不同 k，不能當絕對分數。</div>
+        <div class="check-item"><strong>前處理順序？</strong><br>答案：Impute → One-hot → Scale。</div>
+        <div class="check-item"><strong>為何 binary 不一定要縮放？</strong><br>答案：稀有 1 可能被過度放大，反而主導距離。</div>
+        <div class="check-item"><strong>contingency table 怎麼解讀？</strong><br>答案：看欄內比例（每群內組成），比較各群是否有 enrichment。</div>
+        <div class="check-item"><strong>cluster label 有順序嗎？</strong><br>答案：沒有，0/1/2 只是代號，可互換。</div>
+        <div class="check-item"><strong>elbow 不明顯怎麼辦？</strong><br>答案：比較一小段 k，再搭配群大小、silhouette、stability、可解釋性。</div>
+        <div class="check-item"><strong>如何寫結論？</strong><br>答案：用強/中/弱差異描述關聯，避免因果推論。</div>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Mini Practice + Solutions</h2>
+      <div class="card">
+        <h3>Q1</h3>
+        <p>為什麼重疊資料的 inertia 會更大？</p>
+        <p><strong>Answer:</strong> 點到中心的距離平均更遠，所以平方和更大。</p>
+        <p><strong>Why?</strong> 群彼此重疊時，中心無法靠近所有點。</p>
+        <p><strong>Common mistake:</strong> 以為 inertia 大代表 k 變小。</p>
+
+        <h3>Q2</h3>
+        <p>為什麼要先 impute 再 one-hot？</p>
+        <p><strong>Answer:</strong> 缺值會破壞編碼結構，先補才有一致欄位。</p>
+        <p><strong>Why?</strong> one-hot 需要完整類別集合。</p>
+        <p><strong>Common mistake:</strong> 補缺值用 "Unknown" 但忘了對應欄位。</p>
+
+        <h3>Q3</h3>
+        <p>Elbow 沒折點，怎麼選 k？</p>
+        <p><strong>Answer:</strong> 比較一小段 k，看群大小與 held-out 差異。</p>
+        <p><strong>Why?</strong> 高維資料常平滑，沒有單一答案。</p>
+        <p><strong>Common mistake:</strong> 只看最低 inertia。</p>
+
+        <h3>Q4</h3>
+        <p>為何 tumor_stage 不能進 X？</p>
+        <p><strong>Answer:</strong> 它是既有臨床標籤，會讓分群只反映已知分類。</p>
+        <p><strong>Why?</strong> 目標是發現新結構，不是重建標籤。</p>
+        <p><strong>Common mistake:</strong> 把所有欄位都丟進 k-means。</p>
+      </div>
+    </section>
+
+    <section id="quickref">
+      <h2>One-page Exam Quick Reference</h2>
+      <div class="card">
+        <h3>公式 / 核心定義</h3>
+        <p><strong>Inertia (WCSS)</strong> = Σᵢ || xᵢ − μ_{c(i)} ||²</p>
+        <p><strong>Centroid</strong> = 群內各特徵的平均值</p>
+
+        <h3>何時用 k-means</h3>
+        <ul>
+          <li>特徵是數值、想快速分群、群大致球狀。</li>
+          <li>不適合：群形狀細長、資料尺度差距大但無法處理。</li>
+        </ul>
+
+        <h3>流程速記</h3>
+        <ul>
+          <li>移除 held-out（outcome / treatment / label）。</li>
+          <li>Impute（連續=mean，類別=mode）。</li>
+          <li>One-hot（類別轉 0/1）。</li>
+          <li>Scale（只縮放必要連續欄，如 age）。</li>
+          <li>試多個 k，畫 elbow + 檢查群大小。</li>
+          <li>用 crosstab + 欄內比例解讀。</li>
+        </ul>
+
+        <h3>輸出怎麼讀</h3>
+        <ul>
+          <li><strong>cluster_centers_</strong>：各群平均特徵值。</li>
+          <li><strong>labels_</strong>：訓練資料的群號。</li>
+          <li><strong>inertia_</strong>：只拿來比較 k。</li>
+        </ul>
+
+        <h3>考試常見陷阱（5–10）</h3>
+        <ul>
+          <li>把 cluster label 當作有順序的等級。</li>
+          <li>用 inertia 比不同資料集或不同前處理。</li>
+          <li>忘記先處理缺值或類別欄。</li>
+          <li>把 binary 欄位標準化導致稀有值被放大。</li>
+          <li>以為 elbow 一定有明顯折點。</li>
+          <li>把 contingency table 的 raw counts 當成結論。</li>
+          <li>看到弱關聯就判定分群失敗。</li>
+          <li>忘記 random_state / n_init 導致結果不穩。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('toggleTheme');
+  const stored = localStorage.getItem('theme');
+  if (stored) root.setAttribute('data-theme', stored);
+
+  themeToggle.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  const expandAll = document.getElementById('expandAll');
+  const collapseAll = document.getElementById('collapseAll');
+  const details = Array.from(document.querySelectorAll('details'));
+  expandAll.addEventListener('click', () => details.forEach(d => d.open = true));
+  collapseAll.addEventListener('click', () => details.forEach(d => d.open = false));
+
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    document.querySelectorAll('main section').forEach(section => {
+      const top = section.offsetTop - 120;
+      if (window.scrollY >= top) current = section.getAttribute('id');
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
