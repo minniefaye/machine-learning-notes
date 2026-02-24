@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ML - Hierarchical Clustering</title>
+<style>
+  :root {
+    --font: "Avenir Next", "Noto Sans TC", "PingFang TC", "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --accent: #E17F93;
+    --bg: #0f1116;
+    --panel: #151922;
+    --panel-2: #11141b;
+    --text: #eef2f7;
+    --muted: #aab3c3;
+    --border: #2a3243;
+    --code-bg: #0b0f14;
+    --code-text: #e6edf3;
+    --shadow: 0 10px 24px rgba(0,0,0,0.30);
+  }
+  [data-theme="light"] {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --panel-2: #f2f3f7;
+    --text: #1b1f23;
+    --muted: #556070;
+    --border: #e2e8f0;
+    --code-bg: #0b1020;
+    --code-text: #e6edf3;
+    --shadow: 0 8px 16px rgba(15,23,42,0.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(1200px 620px at 10% -10%, rgba(255,255,255,0.05), transparent 60%),
+      radial-gradient(900px 520px at 90% 0%, rgba(255,255,255,0.04), transparent 55%),
+      linear-gradient(180deg, rgba(20,24,33,0.65), rgba(15,17,22,0.92));
+  }
+  a { color: #E17F93; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header { padding: 26px 16px 10px; text-align: center; }
+  header h1 { font-size: 36px; line-height: 1.15; margin: 0 0 8px; font-weight: 800; letter-spacing: 0.2px; }
+  .chips {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid rgba(225,127,147,0.45);
+    border-radius: 999px;
+    background: var(--panel);
+    display: inline-block;
+    color: var(--text);
+  }
+  .chip:hover,
+  .chip:focus {
+    border-color: rgba(225,127,147,0.85);
+    background: rgba(255,255,255,0.06);
+    text-decoration: none;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: saturate(140%) blur(6px);
+  }
+  nav .bar {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+  nav .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  nav a {
+    text-decoration: none;
+    color: #E17F93;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid transparent;
+  }
+  nav a:hover,
+  nav a:focus,
+  nav a.active { border: 1px solid var(--accent); }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  button {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 12px 14px 40px; }
+  section { margin: 18px 0; }
+  h2 {
+    font-size: 25px;
+    line-height: 1.3;
+    margin: 22px 0 10px;
+    font-weight: 700;
+    padding-left: 10px;
+    border-left: 4px solid var(--accent);
+  }
+  h3 { font-size: 18px; line-height: 1.3; margin: 10px 0 6px; font-weight: 700; }
+  h4 { font-size: 14px; line-height: 1.3; margin: 0 0 6px; font-weight: 700; color: var(--muted); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin: 8px 0;
+    box-shadow: var(--shadow);
+  }
+  ul { margin: 6px 0 0 18px; padding: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+    z-index: 2;
+    border-bottom: 2px solid var(--border);
+    text-align: left;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: rgba(127,127,127,0.06); }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 10px;
+    border-radius: 10px;
+    overflow: auto;
+    font-size: 12px;
+    border-left: 3px solid var(--accent);
+  }
+  code { font-family: var(--mono); }
+
+  details { margin: 10px 0; }
+  details + details { margin-top: 12px; }
+  summary {
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+  }
+  summary:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  details[open] summary { box-shadow: 0 0 0 2px rgba(225,127,147,0.25); }
+
+  .must-know {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+  }
+  @media (max-width: 820px) { .must-know { grid-template-columns: 1fr; } }
+  .must-know p { margin: 0 0 8px; }
+
+  .checklist {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 900px) { .checklist { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .checklist { grid-template-columns: 1fr; } }
+  .check-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .flow .node {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    font-size: 12px;
+  }
+  .flow .arrow { align-self: center; color: var(--muted); }
+
+  @media print {
+    nav { display: none; }
+    .card, details { box-shadow: none; }
+    body::before { display: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>ML - Hierarchical Clustering</h1>
+    <div class="chips">
+      <span class="chip">Updated: 2026-02-22</span>
+      <a class="chip" href="https://github.com/minniefaye" target="_blank" rel="noopener noreferrer">Alyse Lin</a>
+      <a class="chip" href="https://minniefaye.github.io/machine-learning-notes/" target="_blank" rel="noopener noreferrer">Back to Machine Learning Notes</a>
+      <a class="chip" href="https://minniefaye.github.io/machine-learning-notes/week6-kmeans.html" target="_blank" rel="noopener noreferrer">Related: K-means</a>
+    </div>
+  </header>
+
+  <nav>
+    <div class="bar">
+      <div class="links">
+        <a href="#tldr">TL;DR</a>
+        <a href="#concepts">Core</a>
+        <a href="#keypoints">Key Points</a>
+        <a href="#compare">Compare</a>
+        <a href="#checklist">Checklist</a>
+        <a href="#practice">Practice</a>
+        <a href="#quickref">Quick Ref</a>
+      </div>
+      <div class="actions">
+        <button id="toggleTheme" type="button">Light/Dark</button>
+        <button id="expandAll" type="button">Expand All</button>
+        <button id="collapseAll" type="button">Collapse All</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section id="tldr">
+      <h2>TL;DR</h2>
+      <div class="card">
+        <ul>
+          <li>階層式分群（Hierarchical clustering）是「先建樹，再切群」，不是先猜 k。</li>
+          <li>凝聚式分群（Agglomerative clustering）每步合併最近兩群，結果可重現（deterministic）。</li>
+          <li>distance（距離）在管「兩個點像不像」；linkage（連結法）在管「兩個群要怎麼算距離、要不要合併」。</li>
+          <li>Euclidean 看數值大小；Correlation distance = 1-r 看走勢（pattern）。</li>
+          <li>Ward 連結（Ward linkage）核心是最小化群內變異增加，理論上配 Euclidean 最一致。</li>
+          <li>dendrogram 的 y 軸 (dissimilarity) 是合併不相似度，越高才合代表群差異越大。</li>
+          <li>大資料要用 truncated dendrogram（只看樹頂分支）才讀得懂大結構。</li>
+          <li>跨方法（hierarchical vs k-means）「部分一致」很常見，代表主結構穩 (robust)、邊界模糊 (方法不同切法不同)。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <h2>Core Concepts Table</h2>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Term</th>
+              <th>Simple English</th>
+              <th>繁中直覺</th>
+              <th>When to use</th>
+              <th>Common trap</th>
+              <th>Tiny example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hierarchical Clustering<br>(階層式分群)</td>
+              <td>Build a nested tree of clusters.</td>
+              <td>先長一棵「關係樹」，想要幾群再切。</td>
+              <td>想看多層次結構、群與群關係。</td>
+              <td>以為只有一個「正確 k」。</td>
+              <td>同一棵樹：k=2 看大群，k=5 看子群。</td>
+            </tr>
+            <tr>
+              <td>Agglomerative Clustering<br>(凝聚式分群)</td>
+              <td>Bottom-up merging from singletons.</td>
+              <td>從每個點開始，一直「合併最近的兩群」。</td>
+              <td>需要可重現流程。</td>
+              <td>以為和 k-means 一樣有隨機起點。</td>
+              <td>同設定重跑，樹完全相同。</td>
+            </tr>
+            <tr>
+              <td>Divisive<br>(分裂式/自頂向下)</td>
+              <td>Start with all points, split into smaller clusters.</td>
+              <td>先一大坨，再一路切小。</td>
+              <td>觀念理解用，實務較少在本課用。</td>
+              <td>以為課堂 SciPy 就是 divisive。</td>
+              <td>先分兩群，再把其中一群再切。</td>
+            </tr>
+            <tr>
+              <td>Dendrogram<br>(樹狀圖)</td>
+              <td>Shows merge steps and distances.</td>
+              <td>把每一步「誰和誰在多高合併」畫出來。</td>
+              <td>找切點、看主分支。</td>
+              <td>把 x 軸葉子順序當距離。</td>
+              <td>y 軸越高才合＝差越大。</td>
+            </tr>
+            <tr>
+              <td>Distance Metric<br>(距離度量)</td>
+              <td>Point-to-point similarity rule.</td>
+              <td>定義「兩個點像不像」。</td>
+              <td>任何分群前都要先想清楚。</td>
+              <td>用錯 metric 會把「不該像的」分一起。</td>
+              <td>Euclidean 看大小；Correlation 看走勢。</td>
+            </tr>
+            <tr>
+              <td>Euclidean Distance<br>(歐幾里得距離)</td>
+              <td>Magnitude difference.</td>
+              <td>看絕對數值大小差。</td>
+              <td>特徵同尺度、你在乎絕對大小。</td>
+              <td>忽略 scaling 導致大欄位主導。</td>
+              <td>[1,2] vs [10,20] 會很遠。</td>
+            </tr>
+            <tr>
+              <td>Correlation Distance<br>(相關距離 1-r )</td>
+              <td>Measures pattern similarity.</td>
+              <td>看「上上下下趨勢像不像」，不太看整體音量。</td>
+              <td>gene expression 常見。</td>
+              <td>把 amplitude 差異當成不相似（其實 pattern 一樣）。</td>
+              <td>[1,2,1,2] vs [10,20,10,20] 距離≈0。</td>
+            </tr>
+            <tr>
+              <td>Linkage Method<br>(連結方法)</td>
+              <td>Cluster-to-cluster distance rule.</td>
+              <td>定義「兩群要怎麼算距離」。</td>
+              <td>決定 dendrogram 長相與群形狀。</td>
+              <td>和 metric 混為一談。</td>
+              <td>single / complete / average / ward。</td>
+            </tr>
+            <tr>
+              <td>Single linkage<br>(單連結)</td>
+              <td>Cluster distance = closest pair.</td>
+              <td>兩群只要「有一對很近」就算近。朋友的朋友就是我朋友</td>
+              <td>想找任意形狀群、但要小心 chaining。</td>
+              <td>會形成長條「串鍊」群（chaining）。</td>
+              <td>A 靠近 B，B 靠近 C → A,B,C 被串起來。</td>
+            </tr>
+            <tr>
+              <td>Complete linkage<br>(全連結)</td>
+              <td>Cluster distance = farthest pair.</td>
+              <td>兩群要「最遠那對」也不遠才合。連最不熟的朋友也很熟才算</td>
+              <td>想要更緊密的群。</td>
+              <td>對離群點敏感。</td>
+              <td>群內每個點都要彼此不太遠。</td>
+            </tr>
+            <tr>
+              <td>Average linkage<br>(平均連結)</td>
+              <td>Cluster distance = average of all pairs.</td>
+              <td>用「平均關係」決定合併。</td>
+              <td>折衷版本。</td>
+              <td>對資料尺度仍敏感。</td>
+              <td>不是看最遠也不是看最近。</td>
+            </tr>
+            <tr>
+              <td>Ward Linkage<br>(華德連結)</td>
+              <td>Minimize within-cluster variance increase.</td>
+              <td>每一步都選合併後最不亂的一對群。</td>
+              <td>生物資料常用、群較平衡、視覺乾淨。</td>
+              <td>配 correlation 做理論解釋。</td>
+              <td>生醫資料常見基準做法。</td>
+            </tr>
+            <tr>
+              <td>Linkage Matrix Z<br>(合併矩陣 Z)</td>
+              <td>Numerical merge log of the tree.</td>
+              <td>樹的完整「合併日記」。</td>
+              <td>精準解讀 merge 步驟。</td>
+              <td>不知道新群 ID 規則。</td>
+              <td>n=1000 時 shape=(999,4)。</td>
+            </tr>
+            <tr>
+              <td>Truncated Dendrogram<br>(截斷樹狀圖)</td>
+              <td>Show only top merges.</td>
+              <td>只看大枝樹頂主幹，不看葉子，避免視覺塞爆。</td>
+              <td>大樣本（例如 1000）時。</td>
+              <td>誤以為底下資訊被刪除。</td>
+              <td><code>truncate_mode='lastp', p=30</code></td>
+            </tr>
+            <tr>
+              <td>Clustermap<br>(群聚熱圖)</td>
+              <td>Heatmap + row/column trees.</td>
+              <td>病人和基因一起重排找色塊。</td>
+              <td>高維生物資料探索。</td>
+              <td>只看顏色，不看樹排序。</td>
+              <td><code>sns.clustermap(..., cmap='vlag', center=0)</code>. two-way clustermap 會出現紅/藍方塊。</td>
+            </tr>
+            <tr>
+              <td>Silhouette Score<br>(輪廓分數)</td>
+              <td>Cluster separation quality score (-1 to 1).</td>
+              <td>同群夠近、異群夠遠的程度。</td>
+              <td>比較不同 k 的相對好壞。</td>
+              <td>只看最高分，不管生物可解釋性。</td>
+              <td>k=3/4 ≈0.153，k≥5 掉很低。</td>
+            </tr>
+            <tr>
+              <td>Merge height<br>(合併高度)</td>
+              <td>The distance when two clusters merge.</td>
+              <td>合併那刻的「不相似度」。</td>
+              <td>找大跳躍（natural cut）。</td>
+              <td>以為高度 = 群大小。</td>
+              <td>H=2 先合（很像）；H=7 才合（很不像）。</td>
+            </tr>
+            <tr>
+              <td>Cutting the tree<br>(切樹)</td>
+              <td>Turn the tree into k flat clusters.</td>
+              <td>畫一條水平線，下面幾棵樹幹＝幾群。</td>
+              <td>想得到 labels 做後續分析。</td>
+              <td>亂切只為了湊 k，沒理由。</td>
+              <td>H≈50 → k=5（你做過）。</td>
+            </tr>
+            <tr>
+              <td>Cross-method agreement<br>(跨方法一致性)</td>
+              <td>Compare k-means vs hierarchical.</td>
+              <td>換方法還相似 → 比較可信。</td>
+              <td>做 robustness check。</td>
+              <td>以為要完全一致才算好。</td>
+              <td>你是「部分一致」：小群很對，大群被拆。</td>
+            </tr>
+            <tr>
+              <td>pd.crosstab<br>(對照表)</td>
+              <td>Counts overlap between two labelings.</td>
+              <td>看同一批人被兩方法怎麼分。</td>
+              <td>判斷 strong/partial/weak agreement。</td>
+              <td>忘了 index 對齊會對錯人。</td>
+              <td>H1→K5 15/15、H2→K4 81/86。</td>
+            </tr>
+            <tr>
+              <td>Enrichment<br>(富集)</td>
+              <td>One cluster has higher rate of a clinical label.</td>
+              <td>某群「化療比例特別高/低」。</td>
+              <td>把分群連到臨床意義。</td>
+              <td>用 count 不看比例會誤判。</td>
+              <td>你：Cluster2 chemo=1 比例 0.547 最高。</td>
+            </tr>
+            <tr>
+              <td>Robust signal<br>(穩健訊號)</td>
+              <td>A pattern appears across methods.</td>
+              <td>換 k-means/hierarchical 都看得到。</td>
+              <td>增加信心、較可能是真的結構。</td>
+              <td>把 robust 當成 “causal”。</td>
+              <td>化療 enrichment 在 hierarchical 也存在。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="keypoints">
+      <h2>Key Points by Section</h2>
+
+      <div class="card">
+        <h3>Additional Resources</h3>
+        <ul>
+          <li>My ML Cheatsheets：<a href="https://gemini.google.com/share/5f47fc33a052" target="_blank" rel="noopener noreferrer">Gemini｜Hierarchical Clustering</a></li>
+          <li>YouTube｜<a href="https://youtu.be/vR1UpztFEec" target="_blank" rel="noopener noreferrer">階層式分群 Hierarchical Clustering：用一棵樹看懂你的資料（Dendrogram + Clustermap）</a></li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>[Mental Model] 先有關係樹，再有群標籤</summary>
+        <p>一句話結論：hierarchical clustering 的產品不是先天的「群號」，而是一棵可被多次切割的關係樹。</p>
+        <p><strong>Key words:</strong> tree first, post-hoc cut, deterministic</p>
+        <div class="must-know">
+          <div>
+            <h4>與 k-means 的本質差異</h4>
+            <p><strong>Flat vs Nested</strong>：k-means 直接給平面分群；hierarchical 給巢狀結構。</p>
+            <p><strong>k 的時機</strong>：k-means 先決定 k；hierarchical 事後切 k。</p>
+          </div>
+          <div>
+            <h4>重現性</h4>
+            <p><strong>No random initialization</strong>：同資料 + 同參數，每次都同一棵樹。</p>
+            <p><strong>協作優勢</strong>：討論時不用擔心 seed 換掉就變結果。</p>
+          </div>
+          <div>
+            <h4>為什麼生醫常用</h4>
+            <p><strong>多尺度結構</strong>：可同時看 major subtype 與 subgroup。</p>
+            <p><strong>可視化強</strong>：dendrogram + clustermap 有助臨床/生物解讀。</p>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>[Distance + Linkage] metric 管點，linkage 管群</summary>
+        <p>一句話結論：你怎麼定義「像不像」（metric），以及你怎麼定義「群跟群距離」（linkage），會直接改變樹形和結論。</p>
+        <p><strong>Key words:</strong> euclidean, correlation, ward, chaining</p>
+        <div class="must-know">
+          <div>
+            <h4>Metric: 點對點</h4>
+            <p><strong>Euclidean</strong>：看量級差異，對 scaling 很敏感。</p>
+            <p><strong>Correlation distance (1-r)</strong>：看趨勢，對整體倍率較不敏感。</p>
+          </div>
+          <div>
+            <h4>Linkage: 群對群</h4>
+            <p><strong>Single</strong>：min 距離，易出 chaining（鍊狀拉長）。</p>
+            <p><strong>Complete/Average</strong>：較折衷的群距離聚合。</p>
+            <p><strong>Ward</strong>：最小化群內變異增量，偏好緊密平衡群。</p>
+          </div>
+          <div>
+            <h4>紅旗陷阱</h4>
+            <p><strong>Ward + correlation</strong>：SciPy 可執行，但理論詮釋常不一致。</p>
+            <p><strong>實務建議</strong>：要 Ward 的變異意義，優先用 Euclidean。</p>
+          </div>
+        </div>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code>from scipy.spatial.distance import pdist, squareform
+from scipy.cluster.hierarchy import linkage
+
+# metric: define point-to-point closeness
+D_cor = pdist(X, metric="correlation")
+
+# linkage: define cluster-to-cluster merge rule
+Z_ward = linkage(X, method="ward")</code></pre>
+      </details>
+
+      <details>
+        <summary>[Dendrogram Literacy] 看懂高度、看懂切線、看懂主觀性</summary>
+        <p>一句話結論：樹狀圖最重要的是 merge height（y 軸）與 cut 位置的辯護，不是葉子排列順序。</p>
+        <p><strong>Key words:</strong> merge height, big jump, defensible cut</p>
+        <div class="must-know">
+          <div>
+            <h4>讀圖核心</h4>
+            <p><strong>水平線</strong>：表示某次群合併事件。</p>
+            <p><strong>垂直高度</strong>：該合併的不相似度，越高代表差異越大才合。</p>
+          </div>
+          <div>
+            <h4>切樹直覺</h4>
+            <p><strong>畫水平切線</strong>：線下剩幾個分離子樹，就有幾群。</p>
+            <p><strong>大跳躍（big jump）</strong>：常是有資訊價值的切點候選。</p>
+          </div>
+          <div>
+            <h4>主觀但可科學化</h4>
+            <p><strong>沒有唯一標準答案</strong>：不同研究問題可接受不同 cut。</p>
+            <p><strong>報告要寫理由</strong>：連到生物目標、可解釋性、下游任務。</p>
+          </div>
+          <div>
+            <h4>Z matrix 快速解碼</h4>
+            <p><strong>Z[i] = [a,b,height,size]</strong>：誰跟誰、在多高、合完多大。</p>
+            <p><strong>第一列 Z[0]</strong>：第一個 merge，通常也是最低高度。</p>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>[METABRIC Pipeline] 大資料實戰流程（對齊 → 建樹 → 切樹 → 驗證）</summary>
+        <p>一句話結論：高維資料不能只靠一張圖，要用一致流程把視覺、指標、臨床訊號串起來。</p>
+        <p><strong>Key words:</strong> alignment, truncated tree, validation</p>
+        <div class="must-know">
+          <div>
+            <h4>Step 1 - 對齊檢查</h4>
+            <p><strong>X shape</strong>：<code>(1000, 109)</code></p>
+            <p><strong>held_out shape</strong>：<code>(1000, 4)</code></p>
+            <p><strong>index aligned</strong>：<code>True</code>（必要條件）</p>
+          </div>
+          <div>
+            <h4>Step 2 - 建樹</h4>
+            <p><strong>Z_metabric shape</strong>：<code>(999, 4)</code></p>
+            <p><strong>方法</strong>：<code>linkage(X.values, method='ward')</code></p>
+          </div>
+          <div>
+            <h4>Step 3 - 看主分支</h4>
+            <p><strong>truncated dendrogram</strong>：<code>p=30</code> 或 <code>p=15</code></p>
+            <p><strong>高度-群數關係</strong>：<code>H=45~52 → k=5</code>，<code>H=53~55 → k=4</code>，<code>H=60 → k=3</code></p>
+          </div>
+          <div>
+            <h4>Step 4 - 分數驗證</h4>
+            <p><strong>silhouette</strong>：k=3 (0.1539), k=4 (0.1528), k=5 (0.0414), k=6 (0.0351), k=7 (0.0259)</p>
+            <p><strong>解讀</strong>：較粗粒度（k=3/4）分離較乾淨。</p>
+          </div>
+        </div>
+        <div class="card" style="margin-top:10px;">
+          <div class="flow">
+            <span class="node">Align Index</span><span class="arrow">→</span>
+            <span class="node">Build Z Once</span><span class="arrow">→</span>
+            <span class="node">Truncated Dendrogram</span><span class="arrow">→</span>
+            <span class="node">fcluster (k/H)</span><span class="arrow">→</span>
+            <span class="node">Silhouette + Clinical Check</span>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>[Biological Reading] Clustermap 與臨床穩健性</summary>
+        <p>一句話結論：clustermap 告訴你分子圖樣，clinical table 告訴你訊號是否對外部變數有意義。</p>
+        <p><strong>Key words:</strong> block pattern, co-expression, robustness</p>
+        <div class="must-know">
+          <div>
+            <h4>Clustermap 看什麼</h4>
+            <p><strong>紅/藍 block</strong>：不是單格，重點是成塊的共上調/共下調。</p>
+            <p><strong>rows + cols clustering</strong>：病人與基因同步重排，才看得出 signature。</p>
+          </div>
+          <div>
+            <h4>你這次資料中的關鍵訊號</h4>
+            <p><strong>cross-method comparison</strong>：hierarchical 與 k-means 為「部分一致」。</p>
+            <p><strong>臨床 enrichment</strong>：chemotherapy 比例群間差異明顯（約 54.7% vs 7.9%）。</p>
+          </div>
+          <div>
+            <h4>怎麼寫結論才穩</h4>
+            <p><strong>穩健訊號</strong>：換演算法仍看到類似臨床趨勢。</p>
+            <p><strong>避免過度詮釋</strong>：分群是關聯，不直接等於因果。</p>
+          </div>
+        </div>
+        <p><strong>What the code is doing:</strong></p>
+        <pre><code># cut labels for comparison
+hc_labels = fcluster(Z_metabric, t=5, criterion='maxclust')
+
+# compare with k-means clusters
+comparison = pd.crosstab(hc_labels, kmeans_labels)
+
+# clinical enrichment check
+tab = pd.crosstab(held_out['chemotherapy'], hc_labels)
+tab_norm = tab.div(tab.sum(axis=0), axis=1)</code></pre>
+      </details>
+    </section>
+
+    <section id="compare">
+      <h2>Compare &amp; Connect</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Hierarchical vs K-means</strong>：前者偏探索關係層級，後者偏快速平面分群。</li>
+          <li><strong>Visual cut vs Silhouette</strong>：前者強調結構可視性，後者強調群間分離品質；兩者應互補。</li>
+          <li><strong>Partial agreement 的意義</strong>：通常是「主結構穩定，細邊界不唯一」。</li>
+          <li><strong>Clustermap vs Crosstab</strong>：前者是分子層級圖樣，後者是臨床層級驗證。</li>
+          <li><strong>實務決策原則</strong>：選 k 不只看分數，也看研究問題與解釋成本。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <h2>Exam Quick Checklist</h2>
+      <div class="checklist">
+        <div class="check-item"><strong>Hierarchical 的核心輸出？</strong><br>答案：關係樹（dendrogram），不是先天固定群號。</div>
+        <div class="check-item"><strong>Metric 和 Linkage 差異？</strong><br>答案：metric 管點；linkage 管群。</div>
+        <div class="check-item"><strong>Ward 該配什麼？</strong><br>答案：通常配 Euclidean 才有一致變異詮釋。</div>
+        <div class="check-item"><strong>Dendrogram y 軸代表？</strong><br>答案：合併時不相似度（merge height）。</div>
+        <div class="check-item"><strong>n 筆樣本，Z 的 shape？</strong><br>答案：<code>(n-1, 4)</code>。</div>
+        <div class="check-item"><strong>大樣本怎麼看樹？</strong><br>答案：用 truncated dendrogram（last p merges）。</div>
+        <div class="check-item"><strong>METABRIC silhouette 最佳 k？</strong><br>答案：k=3、k=4（約 0.1539、0.1528）。</div>
+        <div class="check-item"><strong>cross-method 部分一致正常嗎？</strong><br>答案：正常，常代表邊界樣本不唯一。</div>
+        <div class="check-item"><strong>enrichment 可以說因果嗎？</strong><br>答案：不行，先說關聯與穩健性。</div>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Mini Practice + Solutions</h2>
+      <div class="card">
+        <h3>Q1</h3>
+        <p>為什麼 hierarchical clustering 常被說 deterministic？</p>
+        <p><strong>Answer:</strong> 因為沒有隨機初始化；同資料同設定會產生同一棵樹。</p>
+        <p><strong>Why?</strong> 每一步合併由固定規則決定，不像 k-means 受初始中心影響。</p>
+        <p><strong>Common mistake:</strong> 以為也要調 random_state 才能重現。</p>
+
+        <h3>Q2</h3>
+        <p>兩個樣本量級差很多但走勢相同，Euclidean 與 Correlation 哪個會覺得更近？</p>
+        <p><strong>Answer:</strong> Correlation distance 通常更近，Euclidean 通常更遠。</p>
+        <p><strong>Why?</strong> Correlation 看 pattern，Euclidean 看 magnitude。</p>
+        <p><strong>Common mistake:</strong> 把「近」當成所有距離定義都近。</p>
+
+        <h3>Q3</h3>
+        <p>在 METABRIC，視覺 cut 偏 k=5 但 silhouette 偏 k=3/4，該怎麼選？</p>
+        <p><strong>Answer:</strong> 先定研究目標：要粗粒度穩分離可選 k=3/4；要看子群可辯護 k=5。</p>
+        <p><strong>Why?</strong> 指標與視覺各有偏好，沒有唯一正解。</p>
+        <p><strong>Common mistake:</strong> 只用單一數字直接宣布最終答案。</p>
+
+        <h3>Q4</h3>
+        <p>cross-tab 發現部分群對得很乾淨、部分群混在一起，怎麼解讀？</p>
+        <p><strong>Answer:</strong> 大結構可能穩健，但細邊界依演算法假設不同而改變。</p>
+        <p><strong>Why?</strong> k-means 與 hierarchical 的群形假設與切法不同。</p>
+        <p><strong>Common mistake:</strong> 看到不完全一致就判定模型失敗。</p>
+
+        <h3>Q5</h3>
+        <p>chemotherapy 在群間比例差很大（例如 54.7% vs 7.9%），一句話怎麼寫？</p>
+        <p><strong>Answer:</strong> 這是跨演算法仍存在的臨床關聯訊號，具穩健性，值得下游分析。</p>
+        <p><strong>Why?</strong> 外部變數在不同分群方法下都呈現差異，較不可能是偶然切分。</p>
+        <p><strong>Common mistake:</strong> 直接寫成治療造成群差異的因果敘述。</p>
+      </div>
+    </section>
+
+    <section id="quickref">
+      <h2>One-page Exam Quick Reference</h2>
+      <div class="card">
+        <h3>必背公式 / 定義</h3>
+        <p><strong>Correlation distance</strong> = 1 - r</p>
+        <p><strong>Silhouette</strong> = (b-a) / max(a,b)</p>
+        <p><strong>Z row format</strong>：<code>[cluster_a, cluster_b, height, size]</code></p>
+
+        <h3>流程速記（建議背成口訣）</h3>
+        <ul>
+          <li><strong>Align</strong>：先驗 index 對齊（尤其有 held-out 臨床欄位時）。</li>
+          <li><strong>Build</strong>：算一次 Z（不要每次重算整棵樹）。</li>
+          <li><strong>View</strong>：大資料先看 truncated dendrogram 主分支。</li>
+          <li><strong>Cut</strong>：用 k-cut 或 height-cut 取得 labels。</li>
+          <li><strong>Validate</strong>：silhouette、cross-method crosstab、clinical enrichment 一起看。</li>
+        </ul>
+
+        <h3>這份資料的關鍵數字（METABRIC）</h3>
+        <ul>
+          <li><code>X=(1000,109)</code>, <code>held_out=(1000,4)</code>, index aligned = <code>True</code></li>
+          <li><code>Z_metabric.shape=(999,4)</code></li>
+          <li>height cut: <code>H=45~52 → k=5</code>, <code>H=53~55 → k=4</code>, <code>H=60 → k=3</code></li>
+          <li>silhouette: k=3 (0.1539), k=4 (0.1528), k=5 (0.0414), k=6 (0.0351), k=7 (0.0259)</li>
+          <li>chemotherapy composition 有明顯群間差異（例如約 54.7% vs 7.9%）</li>
+        </ul>
+
+        <h3>考試常見陷阱（5-10）</h3>
+        <ul>
+          <li>把 metric 與 linkage 當同一件事。</li>
+          <li>Ward 搭 correlation 後仍用「變異最小化」硬解釋。</li>
+          <li>把 dendrogram 葉子左右順序當距離資訊。</li>
+          <li>大資料硬看完整 dendrogram，忽略 truncated 視角。</li>
+          <li>只看 silhouette 不看生物/臨床可解釋性。</li>
+          <li>cross-method 不完全一致就直接判無效。</li>
+          <li>把 enrichment 結果寫成因果結論。</li>
+          <li>忘記先確認 X 與 held_out 對齊。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('toggleTheme');
+  const stored = localStorage.getItem('theme');
+  if (stored) root.setAttribute('data-theme', stored);
+
+  themeToggle.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  const expandAll = document.getElementById('expandAll');
+  const collapseAll = document.getElementById('collapseAll');
+  const details = Array.from(document.querySelectorAll('details'));
+  expandAll.addEventListener('click', () => details.forEach(d => d.open = true));
+  collapseAll.addEventListener('click', () => details.forEach(d => d.open = false));
+
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    document.querySelectorAll('main section').forEach(section => {
+      const top = section.offsetTop - 120;
+      if (window.scrollY >= top) current = section.getAttribute('id');
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
