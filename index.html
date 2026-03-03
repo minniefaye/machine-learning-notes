@@ -94,12 +94,33 @@
 <script>
 const q = document.getElementById('q');
 function norm(s){ return (s||'').toLowerCase(); }
+const fulltextByHref = new Map();
+
+async function loadSearchIndex(){
+  try{
+    const res = await fetch('search-index.json', { cache: 'no-store' });
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!Array.isArray(data)) return;
+    data.forEach(row=>{
+      const href = row && row.href ? String(row.href) : '';
+      if(!href) return;
+      const text = `${row.title || ''} ${row.content || ''}`.trim();
+      fulltextByHref.set(href, norm(text));
+    });
+  }catch(_e){
+    // Keep title-only search if index file is unavailable.
+  }
+}
+
 function filter(){
   const term = norm(q.value).trim();
   const items = Array.from(document.querySelectorAll('.item'));
   items.forEach(li=>{
-    const txt = norm(li.innerText + ' ' + (li.querySelector('a')?.getAttribute('href') || ''));
-    li.classList.toggle('hidden', term && !txt.includes(term));
+    const href = li.querySelector('a')?.getAttribute('href') || '';
+    const txt = norm(li.innerText + ' ' + href);
+    const full = fulltextByHref.get(href) || '';
+    li.classList.toggle('hidden', term && !(txt.includes(term) || full.includes(term)));
   });
   document.querySelectorAll('[data-section="1"]').forEach(sec=>{
     const anyVisible = Array.from(sec.querySelectorAll('.item')).some(li=>!li.classList.contains('hidden'));
@@ -107,6 +128,7 @@ function filter(){
   });
 }
 q.addEventListener('input', filter);
+loadSearchIndex().then(filter);
 </script>
 
 </div></body></html>
